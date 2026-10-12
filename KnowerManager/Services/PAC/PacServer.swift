@@ -16,6 +16,9 @@ class PacServer: ObservableObject {
         
         do {
             let params = NWParameters.tcp
+            // Разрешаем переиспользование локального адреса: иначе быстрый
+            // stop/start на том же порту может упасть с "address already in use".
+            params.allowLocalEndpointReuse = true
             let newListener = try NWListener(using: params, on: port)
             
             newListener.stateUpdateHandler = { state in

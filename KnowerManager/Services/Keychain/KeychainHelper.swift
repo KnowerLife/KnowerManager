@@ -11,11 +11,18 @@ final class KeychainHelper {
     
     private init() {}
     
-    func save(_ data: String) {
-        let data = Data(data.utf8)
-        let query = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account, kSecValueData: data] as [String: Any]
+    @discardableResult
+    func save(_ data: String) -> Bool {
+        let value = Data(data.utf8)
+        // Удаляем существующий элемент ТОЛЬКО по ключу (service+account).
+        // Раньше в запрос на удаление попадал kSecValueData, поэтому удаление
+        // срабатывало лишь при совпадении нового и старого пароля, а SecItemAdd
+        // возвращал errSecDuplicateItem — пароль молча не обновлялся.
+        let query = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account] as [String: Any]
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        var addQuery = query
+        addQuery[kSecValueData as String] = value
+        return SecItemAdd(addQuery as CFDictionary, nil) == errSecSuccess
     }
     
     func read() -> String? {

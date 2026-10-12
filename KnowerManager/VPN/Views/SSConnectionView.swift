@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SSConnectionView: View {
     @StateObject var xray = XrayService.shared
+    @ObservedObject var subs = SubscriptionManager.shared
     @ObservedObject var settings = SettingsManager.shared
     @ObservedObject var routing = RoutingManager.shared
     
@@ -9,16 +10,30 @@ struct SSConnectionView: View {
     @State private var searchText = ""
     
     // Состояния UI
-    @State private var isShowingUrlSheet = false
-    @State private var subscriptionUrl = ""
     @State private var isSortedByPing = false
     @State private var showRouting = false
+    @State private var showSubscriptions = false
+    
+    // Фильтр по источнику (все / ручные / конкретная подписка)
+    enum ProfileFilter: Hashable {
+        case all
+        case manual
+        case subscription(UUID)
+    }
+    @State private var profileFilter: ProfileFilter = .all
     
     // --- МУЛЬТИ-ВЫБОР ---
     @State private var selectedIds = Set<UUID>()
     
     // --- РЕДАКТИРОВАНИЕ ---
     @State private var profileToEdit: ShadowsocksProfile?
+    
+    // --- QR ЭКСПОРТ ---
+    @State private var qrExportProfile: ShadowsocksProfile?
+    
+    // --- ТЕСТ ПРОФИЛЯ / ЛОГ ---
+    @State private var testProfile: ShadowsocksProfile?
+    @State private var isLogExpanded = false
     
     // --- ОПТИМИЗАЦИЯ: СПИСОК ДЛЯ ОТОБРАЖЕНИЯ ---
     @State private var displayedProfiles: [ShadowsocksProfile] = []
@@ -114,14 +129,59 @@ struct SSConnectionView: View {
                 .cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.gray.opacity(0.2), lineWidth: 1))
                 
+                // Фильтр по источнику (виден, если есть подписки)
+                if !subs.subscriptions.isEmpty {
+                    Menu {
+                        Button {
+                            profileFilter = .all
+                        } label: {
+                            Label(settings.t(.subFilterAll), systemImage: "tray.full")
+                            if profileFilter == .all { Image(systemName: "checkmark") }
+                        }
+                        Button {
+                            profileFilter = .manual
+                        } label: {
+                            Label(settings.t(.subFilterManual), systemImage: "pencil.and.scribble")
+                            if profileFilter == .manual { Image(systemName: "checkmark") }
+                        }
+                        Divider()
+                        ForEach(subs.subscriptions) { sub in
+                            Button {
+                                profileFilter = .subscription(sub.id)
+                            } label: {
+                                Label(sub.displayName, systemImage: "arrow.triangle.2.circlepath")
+                                if profileFilter == .subscription(sub.id) { Image(systemName: "checkmark") }
+                            }
+                        }
+                    } label: {
+                        IconBtn(icon: "line.3.horizontal.decrease.circle",
+                                color: profileFilter == .all ? .primary : .blue)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .frame(width: 28, height: 28)
+                    .help(settings.t(.subFilterHelp))
+                }
+                
                 // Действия (Справа)
                 HStack(spacing: 4) {
                     
-                    // A. Import
+                    // A. Подписки
+                    Button(action: { showSubscriptions = true }) {
+                        IconBtn(icon: "arrow.triangle.2.circlepath.circle",
+                                color: !subs.subscriptions.isEmpty ? .blue : .primary)
+                    }
+                    .buttonStyle(.plain)
+                    .help(settings.t(.vpnSubscriptions))
+                    
+                    // B. Import
                     Menu {
                         Button { xray.importFromClipboard() } label: { Label(settings.t(.vpnImportClipboard), systemImage: "doc.on.clipboard") }
                         Button { xray.importFromFile() } label: { Label(settings.t(.vpnImportFile), systemImage: "doc.text") }
-                        Button { isShowingUrlSheet = true } label: { Label(settings.t(.vpnImportUrl), systemImage: "link") }
+                        Divider()
+                        Button { xray.importFromQRClipboard() } label: { Label(settings.t(.vpnQrImportClipboard), systemImage: "qrcode.viewfinder") }
+                        Button { xray.importFromQRImageFile() } label: { Label(settings.t(.vpnQrImportImage), systemImage: "photo") }
+                        Divider()
+                        Button { showSubscriptions = true } label: { Label(settings.t(.vpnImportUrl), systemImage: "link") }
                         Divider()
                         Button {
                             let newProfile = ShadowsocksProfile(name: "New Profile", protocolType: .vless)
@@ -130,7 +190,7 @@ struct SSConnectionView: View {
                     } label: {
                         IconBtn(icon: "plus", color: .blue)
                     }
-                    .menuStyle(BorderlessButtonMenuStyle())
+                    .menuStyle(.borderlessButton)
                     .frame(width: 28, height: 28)
                     .help(settings.t(.btnImport))
                     
@@ -160,7 +220,7 @@ struct SSConnectionView: View {
                                     IconBtn(icon: "bolt", color: .primary)
                                 }
                             }
-                            .menuStyle(BorderlessButtonMenuStyle())
+                            .menuStyle(.borderlessButton)
                             .frame(width: 28, height: 28)
                             .help(settings.t(.vpnPingAll))
                         }
@@ -191,7 +251,7 @@ struct SSConnectionView: View {
                     } label: {
                         IconBtn(icon: "trash", color: !selectedIds.isEmpty ? .red : .primary)
                     }
-                    .menuStyle(BorderlessButtonMenuStyle())
+                    .menuStyle(.borderlessButton)
                     .frame(width: 28, height: 28)
                     .help("Delete Options")
                 }
@@ -215,7 +275,7 @@ struct SSConnectionView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    Button("Import Profile") { isShowingUrlSheet = true }
+                    Button("Import Profile") { showSubscriptions = true }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                     Spacer()
@@ -233,6 +293,8 @@ struct SSConnectionView: View {
                                                    onPing: { xray.pingProfiles(ids: [$0]) },
                                                    onEdit: { profileToEdit = $0 },
                                                    onConnect: { xray.selectedProfileId = $0; xray.toggleConnection() },
+                                                   onShare: { qrExportProfile = $0 },
+                                                   onTest: { testProfile = $0 },
                                                    onFavorite: { xray.toggleFavorite(id: $0) },
                                                    onDelete: {
                                     if selectedIds.contains($0) { deleteSelected() }
@@ -273,7 +335,55 @@ struct SSConnectionView: View {
                 .buttonStyle(PlainButtonStyle())
                 .disabled(xray.selectedProfileId == nil && !xray.isRunning)
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            
+            // ==========================================
+            // 5. XRAY LOG (сворачиваемый)
+            // ==========================================
+            VStack(spacing: 0) {
+                Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isLogExpanded.toggle() } }) {
+                    HStack(spacing: 6) {
+                        Circle().fill(xray.isRunning ? Color.green : Color.secondary)
+                            .frame(width: 6, height: 6)
+                        Text(settings.t(.vpnLogTitle))
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(isLogExpanded ? "Скрыть" : "Показать")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary)
+                        Image(systemName: isLogExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 8))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+                
+                if isLogExpanded {
+                    ScrollViewReader { reader in
+                        ScrollView {
+                            Text(xray.xrayLog.isEmpty ? settings.t(.vpnLogEmpty) : xray.xrayLog)
+                                .font(.system(size: 9, design: .monospaced))
+                                .foregroundColor(xray.isRunning ? Color.green : Color.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(8)
+                                .id("logBottom")
+                                .onChange(of: xray.xrayLog) { _ in
+                                    reader.scrollTo("logBottom", anchor: .bottom)
+                                }
+                        }
+                        .frame(height: 90)
+                    }
+                    .background(Color(NSColor.textBackgroundColor))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+                }
+            }
+            .padding(.bottom, isLogExpanded ? 8 : 16)
             .background(DesignSystem.cardColor)
         }
         .background(DesignSystem.cardColor)
@@ -285,11 +395,18 @@ struct SSConnectionView: View {
             if xray.isImporting { LoadingOverlay(text: settings.t(.vpnImporting)) }
             else if xray.isDeepScanning { DeepScanOverlay(current: xray.scanProgress.current, total: xray.scanProgress.total, onStop: { xray.stopDeepScan() }) }
         }
-        .sheet(isPresented: $isShowingUrlSheet) { URLImportSheet(url: $subscriptionUrl, isPresented: $isShowingUrlSheet, onImport: { xray.importFromURL($0) }) }
+        .sheet(isPresented: $showSubscriptions) { SubscriptionsView() }
         .sheet(item: $profileToEdit) { profile in
             ProfileEditView(profile: $profileToEdit, onSave: { xray.updateProfile($0) })
         }
+        .sheet(item: $qrExportProfile) { profile in
+            ProfileQRExportView(profile: profile)
+        }
+        .sheet(item: $testProfile) { profile in
+            ProfileSpeedTestView(profile: profile)
+        }
         .onReceive(xray.$profiles) { _ in performSearch() }
+        .onReceive(subs.$subscriptions) { _ in performSearch() }
         .onAppear { performSearch() }
     }
     
@@ -311,8 +428,17 @@ struct SSConnectionView: View {
         let query = searchText
         let snapshot = xray.profiles
         let sortedByPing = isSortedByPing
+        let filter = profileFilter
         let task = DispatchWorkItem {
             var result = snapshot
+            // Фильтр по источнику
+            switch filter {
+            case .all: break
+            case .manual:
+                result = result.filter { $0.subscriptionId == nil }
+            case .subscription(let id):
+                result = result.filter { $0.subscriptionId == id }
+            }
             if !query.isEmpty {
                 result = result.filter {
                     $0.name.localizedCaseInsensitiveContains(query) ||
@@ -440,6 +566,8 @@ struct ProfileContextMenu: View {
     let onPing: (UUID) -> Void
     let onEdit: (ShadowsocksProfile) -> Void
     let onConnect: (UUID) -> Void
+    let onShare: (ShadowsocksProfile) -> Void
+    let onTest: (ShadowsocksProfile) -> Void
     let onFavorite: (UUID) -> Void
     let onDelete: (UUID) -> Void
     @ObservedObject var settings = SettingsManager.shared
@@ -449,6 +577,8 @@ struct ProfileContextMenu: View {
         Button { onPing(profile.id) } label: { Label(settings.t(.contextPing), systemImage: "bolt") }
         Divider()
         Button { onEdit(profile) } label: { Label(settings.t(.contextEdit), systemImage: "pencil") }
+        Button { onShare(profile) } label: { Label(settings.t(.vpnQrExport), systemImage: "qrcode") }
+        Button { onTest(profile) } label: { Label(settings.t(.contextProxyTest), systemImage: "speedometer") }
         Button { onFavorite(profile.id) } label: { Label(profile.isBookmarked ? settings.t(.contextUnfavorite) : settings.t(.contextFavorite), systemImage: "star") }
         Divider()
         Button { onDelete(profile.id) } label: { Label(settings.t(.contextDelete), systemImage: "trash") }
@@ -483,24 +613,6 @@ struct DeepScanOverlay: View {
                 }.buttonStyle(.plain)
             }.padding(30).background(Color.black.opacity(0.5)).cornerRadius(16)
         }
-    }
-}
-
-struct URLImportSheet: View {
-    @Binding var url: String
-    @Binding var isPresented: Bool
-    let onImport: (String) -> Void
-    @ObservedObject var settings = SettingsManager.shared
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            Text(settings.t(.vpnEnterUrlTitle)).font(.headline)
-            TextField("vless://...", text: $url).textFieldStyle(.roundedBorder).frame(width: 300)
-            HStack {
-                Button(settings.t(.btnCancel)) { isPresented = false }
-                Button(settings.t(.btnImport)) { onImport(url); isPresented = false; url = "" }.buttonStyle(.borderedProminent)
-            }
-        }.padding(24)
     }
 }
 

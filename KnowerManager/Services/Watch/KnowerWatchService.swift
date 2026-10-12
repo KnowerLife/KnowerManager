@@ -14,8 +14,10 @@ class KnowerWatchService: ObservableObject {
     static let shared = KnowerWatchService()
     
     // --- НАСТРОЙКИ ---
-    @Published var isEnabled: Bool = false {
+    private static let enabledKey = "knowerWatchEnabled"
+    @Published var isEnabled: Bool = UserDefaults.standard.bool(forKey: KnowerWatchService.enabledKey) {
         didSet {
+            UserDefaults.standard.set(isEnabled, forKey: Self.enabledKey)
             if isEnabled { startMonitoring() } else { stopMonitoring() }
         }
     }
@@ -28,7 +30,9 @@ class KnowerWatchService: ObservableObject {
     private var timer: Timer?
     private var isHealing = false
     
-    private let testPort = "12988"
+    // Порт отличается от порта авто-проверки KnowerManager (12988), иначе
+    // одновременные пробы конфликтуют и дают ложные сбои.
+    private let testPort = "12989"
     private var workingDir: URL { return URL(fileURLWithPath: "/tmp/KnowerManager", isDirectory: true) }
     private var tpwsPath: URL { return workingDir.appendingPathComponent("tpws") }
     
@@ -49,7 +53,12 @@ class KnowerWatchService: ObservableObject {
         "https://www.google.com"
     ]
     
-    private init() {}
+    private init() {
+        // Если функция была включена в прошлом запуске — восстанавливаем мониторинг.
+        if isEnabled {
+            DispatchQueue.main.async { [weak self] in self?.startMonitoring() }
+        }
+    }
     
     // MARK: - MONITORING
     
@@ -188,6 +197,9 @@ class KnowerWatchService: ObservableObject {
     }
     
     private func sendNotification(body: String) {
+            // Уважаем общий переключатель уведомлений и не трогаем
+            // UNUserNotificationCenter без настоящего bundle identifier.
+            guard SettingsManager.shared.showNotifications, Bundle.main.bundleIdentifier != nil else { return }
             // Создаем контент уведомления (современный API)
             let content = UNMutableNotificationContent()
             

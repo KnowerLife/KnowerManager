@@ -5,11 +5,20 @@ macOS-приложение в строке меню для обхода блок
 ## Возможности
 
 - **Обход (Zapret / tpws)** — локальный SOCKS-прокси с набором стратегий обхода DPI, режимами маршрутизации (Global / OnlyList / Exclude), Kill Switch (pf).
-- **VPN (Xray)** — клиент VLESS / VMess / Trojan / Shadowsocks с импортом из буфера, файла и по URL, пингом и «глубоким» сканированием, режимами маршрутизации.
+- **VPN (Xray)** — клиент VLESS / VMess / Trojan / Shadowsocks / Hysteria2 / TUIC / SOCKS5 / HTTP с импортом из буфера, файла, URL и QR-кода, подписками с автообновлением, пингом, «глубоким» сканированием, реальным тестом через прокси (задержка + скорость), живым логом Xray и режимами маршрутизации.
 - **WARP** — генератор конфигураций WARP/AmneziaWG (Clash, Sing-Box, WireGuard, Amnezia).
 - **OCR + AI** — распознавание текста с экрана и обработка текста через AI-провайдеров (DeepSeek, OpenAI, Anthropic, локальный Ollama).
 - **Инструменты** — мониторинг пинга, тест скорости, сканер IP, редактор hostlist, диагностика, лог трафика.
 - **KnowerWatch** — автовосстановление соединения и уведомления.
+
+## Возможности VPN (Xray)
+
+- **Протоколы:** VLESS (Reality, Vision, gRPC, WS, HTTPUpgrade, SplitHTTP, H2, KCP, QUIC), VMess, Trojan, Shadowsocks (SIP002 + legacy), Hysteria2, TUIC, SOCKS5, HTTP(S).
+- **Подписки:** добавление по URL, автообновление по расписанию, отображение трафика и срока действия (subscription-userinfo), стабильные ID профилей при обновлении.
+- **QR-коды:** экспорт профиля в QR (контекстное меню → «QR код»), импорт из буфера обмена или файла изображения (Vision framework).
+- **Реальный тест через прокси:** запуск Xray на временном порту, измерение задержки (HEAD 204 через SOCKS) и скорости загрузки (8 МБ через speed.cloudflare.com).
+- **Живой лог Xray:** захват stdout/stderr в кольцевой буфер (400 строк), сворачиваемая панель в карточке VPN.
+- **Глубокое сканирование:** 24 параллельных воркера, каждый запускает Xray на своём порту и проверяет связность через curl.
 
 ## Требования
 
@@ -43,7 +52,7 @@ xcodebuild -project KnowerManager.xcodeproj -scheme KnowerManager -configuration
 
 | Файл | Назначение | Откуда взять |
 |------|-----------|--------------|
-| `KnowerManager/Resources/Binaries/xray-core` | исполняемый файл Xray (arm64/x86_64) | [XTLS/Xray-core releases](https://github.com/XTLS/Xray-core/releases) |
+| `KnowerManager/Resources/Binaries/xray-core` | исполняемый файл Xray (universal: arm64 + x86_64) | [XTLS/Xray-core releases](https://github.com/XTLS/Xray-core/releases) |
 | `KnowerManager/Resources/Data/geoip.dat` | база GeoIP для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
 | `KnowerManager/Resources/Data/geosite.dat` | база доменов для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
 
@@ -64,6 +73,10 @@ KnowerManager/
 ├── App/            # Точка входа и главные View (KnowerApp, ContentView, MiniMenu, AboutView)
 ├── Core/           # Ядро: KnowerManager, SettingsManager, MenuBarManager, Routing/General sheets
 ├── VPN/            # Xray-клиент: Models / Parsers / Routing / Services / Utils / Views
+│   ├── Parsers/     # SS, VMess, VLESS, Hysteria2, TUIC, SOCKS/HTTP + LinkParser
+│   ├── Services/    # XrayService, SubscriptionManager, ProfileProxyTester
+│   ├── Utils/       # LinkParser, LinkExporter, QRCodeService, TCPPing
+│   └── Views/       # SSConnectionView, SubscriptionsView, ProfileEditView, ProfileQRExportView, ProfileSpeedTestView
 ├── WARP/           # Генератор WARP-конфигов (Models / Services / Views)
 ├── OCR/            # Захват экрана и OCR (Models / Services / Utils)
 ├── Services/       # AI, Keychain, PAC-сервер, Watch, Diagnostics

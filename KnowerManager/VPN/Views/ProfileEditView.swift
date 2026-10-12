@@ -31,15 +31,31 @@ struct ProfileEditView: View {
     @State private var fingerprint: String = "chrome"
     @State private var spiderX: String = ""
     
-    let networks = ["tcp", "ws", "grpc"]
+    // KCP / QUIC
+    @State private var kcpSeed: String = ""
+    @State private var quicSecurity: String = ""
+    @State private var quicKey: String = ""
+    
+    // ALPN (список через запятую)
+    @State private var alpn: String = ""
+    
+    let networks = ["tcp", "ws", "httpupgrade", "splithttp", "h2", "grpc", "kcp", "quic"]
     let securities = ["none", "tls", "reality"]
     let fingerprints = ["chrome", "firefox", "safari", "ios", "randomized"]
     let flows = ["", "xtls-rprx-vision"]
     
+    // Транспорт/безопасность настраиваются только для Xray-протоколов
+    private var isXrayProtocol: Bool {
+        selectedProtocol == .vless || selectedProtocol == .vmess || selectedProtocol == .trojan
+    }
+    private var isSimpleProxy: Bool {
+        selectedProtocol == .socks || selectedProtocol == .http
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // Заголовок
-            Text(profile?.id == nil ? settings.t(.btnCreateProfile) : settings.t(.editTitle))
+            Text(profile == nil ? settings.t(.btnCreateProfile) : settings.t(.editTitle))
                 .font(.headline)
                 .padding(.top)
             
@@ -73,7 +89,7 @@ struct ProfileEditView: View {
                 }
                 
                 // 2. TRANSPORT (NETWORK)
-                if selectedProtocol != .shadowsocks {
+                if isXrayProtocol {
                     Section(settings.t(.labelNetwork)) {
                         Picker(settings.t(.labelNetwork), selection: $network) {
                             ForEach(networks, id: \.self) { net in
@@ -87,10 +103,20 @@ struct ProfileEditView: View {
                             Toggle(settings.t(.labelMultiMode), isOn: $grpcMultiMode)
                         }
                         
-                        // WebSocket Settings
-                        if network == "ws" {
+                        // WebSocket / HTTPUpgrade / SplitHTTP / H2 — общие поля Path/Host
+                        if ["ws", "httpupgrade", "splithttp", "h2"].contains(network) {
                             TextField(settings.t(.labelPath), text: $wsPath)
                             TextField(settings.t(.labelHost), text: $wsHost)
+                        }
+                        
+                        // KCP / QUIC
+                        if network == "kcp" {
+                            TextField("Seed", text: $kcpSeed)
+                        }
+                        if network == "quic" {
+                            TextField("QUIC Security", text: $quicSecurity)
+                                .help("chacha20-poly1305, aes-128-gcm, none")
+                            TextField("QUIC Key", text: $quicKey)
                         }
                     }
                     
@@ -123,6 +149,12 @@ struct ProfileEditView: View {
                             TextField(settings.t(.labelShortId), text: $sid)
                             TextField(settings.t(.labelSpiderX), text: $spiderX)
                         }
+                        
+                        // ALPN (список через запятую: h2,http/1.1)
+                        if security == "tls" || security == "reality" {
+                            TextField("ALPN", text: $alpn)
+                                .help("h2,http/1.1 — через запятую, например: h2,http/1.1")
+                        }
                     }
                 }
             }
@@ -139,13 +171,18 @@ struct ProfileEditView: View {
                 Button(settings.t(.btnSave)) { saveChanges() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
-                .disabled(server.isEmpty || port.isEmpty)
+                .disabled(server.isEmpty || !isPortValid)
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
         }
         .frame(width: 380, height: 600) // Увеличили высоту для настроек
         .onAppear { loadValues() }
+    }
+    
+    private var isPortValid: Bool {
+        guard let p = Int(port) else { return false }
+        return (1...65535).contains(p)
     }
     
     private func loadValues() {
@@ -167,7 +204,13 @@ struct ProfileEditView: View {
         wsPath = p.wsPath ?? "/"
         wsHost = p.wsHost ?? ""
         
-        security = p.security ?? "none"
+        // Для Shadowsocks шифр хранится в p.method, а не в p.security —
+        // иначе поле показывало "none" и перезаписывало реальный cipher.
+        if p.protocolType == .shadowsocks {
+            security = p.method ?? "aes-256-gcm"
+        } else {
+            security = p.security ?? "none"
+        }
         sni = p.sni ?? ""
         allowInsecure = p.allowInsecure ?? false
         
@@ -176,13 +219,18 @@ struct ProfileEditView: View {
         fingerprint = p.fingerprint ?? "chrome"
         spiderX = p.spiderX ?? ""
         flow = p.flow ?? ""
+        
+        kcpSeed = p.kcpSeed ?? ""
+        quicSecurity = p.quicSecurity ?? ""
+        quicKey = p.quicKey ?? ""
+        alpn = p.alpn ?? ""
     }
     
     private func saveChanges() {
         // Если это новый профиль, создаем структуру
         var p = profile ?? ShadowsocksProfile(name: name, protocolType: selectedProtocol)
         
-        guard let portInt = Int(port) else { return }
+        guard let portInt = Int(port), (1...65535).contains(portInt) else { return }
         
         p.name = name
         p.protocolType = selectedProtocol
@@ -191,10 +239,31 @@ struct ProfileEditView: View {
         p.password = uuidOrPassword
         
         if selectedProtocol == .shadowsocks {
-            // Для SS method пишем в method, а security не используем
-            p.method = security // Используем поле security из UI для метода SS
+            // Для SS метод шифрования пишем в method (в UI он лежит в поле security).
+            // Если поле осталось от другого режима — берём дефолт, иначе Xray
+            // не запустится с невалидным cipher.
+            let cipher = (security.isEmpty || ["none", "tls", "reality"].contains(security)) ? "aes-256-gcm" : security
+            p.method = cipher
             p.security = nil
             p.network = "tcp"
+            p.sni = nil; p.fingerprint = nil
+            p.pbk = nil; p.sid = nil; p.spiderX = nil; p.flow = nil
+            p.wsPath = nil; p.wsHost = nil
+            p.grpcServiceName = nil; p.grpcMultiMode = nil
+            p.allowInsecure = nil
+        } else if isSimpleProxy {
+            // SOCKS5 / HTTP: сохраняем только адрес, порт и авторизацию.
+            p.network = "tcp"
+            p.security = nil
+            p.sni = nil; p.fingerprint = nil; p.flow = nil
+        } else if selectedProtocol == .hysteria2 || selectedProtocol == .tuic {
+            // Hysteria2 / TUIC: базовые поля без streamSettings.
+            p.network = nil
+            p.security = nil
+            p.sni = sni.isEmpty ? nil : sni
+            p.fingerprint = fingerprint
+            p.allowInsecure = allowInsecure
+            p.alpn = (selectedProtocol == .tuic) ? "h3" : nil
         } else {
             // VLESS / VMess / Trojan
             p.network = network
@@ -211,13 +280,26 @@ struct ProfileEditView: View {
                 p.grpcServiceName = nil; p.grpcMultiMode = nil
             }
             
-            // WS
-            if network == "ws" {
+            // WS / HTTPUpgrade / SplitHTTP / H2
+            if ["ws", "httpupgrade", "splithttp", "h2"].contains(network) {
                 p.wsPath = wsPath
                 p.wsHost = wsHost
             } else {
                 p.wsPath = nil; p.wsHost = nil
             }
+            
+            // KCP / QUIC
+            if network == "kcp" {
+                p.kcpSeed = kcpSeed.isEmpty ? nil : kcpSeed
+                p.quicSecurity = nil; p.quicKey = nil
+            } else if network == "quic" {
+                p.quicSecurity = quicSecurity.isEmpty ? "none" : quicSecurity
+                p.quicKey = quicKey.isEmpty ? nil : quicKey
+                p.kcpSeed = nil
+            } else {
+                p.kcpSeed = nil; p.quicSecurity = nil; p.quicKey = nil
+            }
+            p.alpn = alpn.isEmpty ? nil : alpn
             
             // TLS
             if security == "tls" {

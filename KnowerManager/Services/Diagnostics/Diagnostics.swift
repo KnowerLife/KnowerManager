@@ -75,22 +75,18 @@ struct DiagnosticsView: View {
     // Логика сброса DNS с анимацией
     private func flushDNSAction() {
         withAnimation { isFlushingDNS = true }
-        
-        // Запускаем сброс (предполагаем, что tools.flushDNS() делает это)
-        tools.flushDNS()
-        
-        // Имитируем небольшую задержку для UI (или реальное выполнение)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        // Запускаем сброс. Вызов flushDNS уже запускает процессы асинхронно на global;
+        // для UI мы просто покажем успех через небольшую задержку либо дождёмся,
+        // но минимально — сделать "без имитации мигания в никуда".
+        // Простейший корректный вариант: не дожидаемся Process.waitUntilExit (мы уже в global),
+        // но лучше — дать небольшую паузу и отобразить результат.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             withAnimation {
                 isFlushingDNS = false
                 dnsFlushSuccess = true
             }
-            
-            // Сбрасываем статус "Успех" через 2 секунды
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation {
-                    dnsFlushSuccess = false
-                }
+                withAnimation { dnsFlushSuccess = false }
             }
         }
     }

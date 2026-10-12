@@ -5,6 +5,10 @@ enum ProxyProtocol: String, Codable, CaseIterable {
     case vmess = "vmess"
     case trojan = "trojan"
     case shadowsocks = "shadowsocks"
+    case hysteria2 = "hysteria2"
+    case tuic = "tuic"
+    case socks = "socks"
+    case http = "http"
 }
 
 struct ShadowsocksProfile: Identifiable, Codable, Hashable {
@@ -52,8 +56,37 @@ struct ShadowsocksProfile: Identifiable, Codable, Hashable {
     var sid: String?             // Short ID (Reality)
     var spiderX: String?         // <-- НОВОЕ (SpiderX)
     
+    // --- Hysteria2 ---
+    var obfs: String?            // salamander / none
+    var obfsPassword: String?
+    var alpn: String?            // "h3,h2,http/1.1" (запятые) — гиа2/TUIC/TLS
+    var hy2Ports: String?        // UDP port hopping "20000-50000"
+    
+    // --- TUIC ---
+    var tuicPassword: String?    // отдельный пароль (uuid:password)
+    var tuicCongestion: String?  // cubic / new_reno / bbr
+    var tuicUDPRelayMode: String? // native / quic
+    
+    // --- Mux / доп. транспорт ---
+    var muxEnabled: Bool? = false
+    var muxConcurrency: Int? = 8
+    var httpUpgradePath: String?
+    
+    // --- KCP / QUIC ---
+    var kcpSeed: String?          // обфускация UDP (kcp)
+    var quicSecurity: String?     // chacha20-poly1305 / aes-128-gcm / none
+    var quicKey: String?
+    
     // Diagnostics
     var latency: Int? = nil
+    
+    // Источник: подписка (nil = ручной/локальный профиль)
+    var subscriptionId: UUID? = nil
+    
+    var subscriptionLabel: String {
+        guard let subId = subscriptionId else { return "" }
+        return SubscriptionManager.shared.subscriptions.first(where: { $0.id == subId })?.displayName ?? ""
+    }
     
     var pingColor: String {
         guard let lat = latency else { return "gray" }
@@ -102,5 +135,19 @@ struct ShadowsocksProfile: Identifiable, Codable, Hashable {
         sid = try c.decodeIfPresent(String.self, forKey: .sid)
         spiderX = try c.decodeIfPresent(String.self, forKey: .spiderX)
         latency = try c.decodeIfPresent(Int.self, forKey: .latency)
+        subscriptionId = try c.decodeIfPresent(UUID.self, forKey: .subscriptionId)
+        obfs = try c.decodeIfPresent(String.self, forKey: .obfs)
+        obfsPassword = try c.decodeIfPresent(String.self, forKey: .obfsPassword)
+        alpn = try c.decodeIfPresent(String.self, forKey: .alpn)
+        hy2Ports = try c.decodeIfPresent(String.self, forKey: .hy2Ports)
+        tuicPassword = try c.decodeIfPresent(String.self, forKey: .tuicPassword)
+        tuicCongestion = try c.decodeIfPresent(String.self, forKey: .tuicCongestion)
+        tuicUDPRelayMode = try c.decodeIfPresent(String.self, forKey: .tuicUDPRelayMode)
+        muxEnabled = try c.decodeIfPresent(Bool.self, forKey: .muxEnabled)
+        muxConcurrency = try c.decodeIfPresent(Int.self, forKey: .muxConcurrency)
+        httpUpgradePath = try c.decodeIfPresent(String.self, forKey: .httpUpgradePath)
+        kcpSeed = try c.decodeIfPresent(String.self, forKey: .kcpSeed)
+        quicSecurity = try c.decodeIfPresent(String.self, forKey: .quicSecurity)
+        quicKey = try c.decodeIfPresent(String.self, forKey: .quicKey)
     }
 }

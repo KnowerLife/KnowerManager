@@ -32,8 +32,8 @@ class AIService: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    init(config: AIConfig = AIConfig.default) {
-        self.config = AIService.loadConfig()
+    init(config: AIConfig? = nil) {
+        self.config = config ?? AIService.loadConfig()
     }
     
     private static let apiKeyAccount = "ai_api_key"
@@ -103,11 +103,8 @@ class AIService: ObservableObject {
         }
         
         defer {
-            Task { @MainActor in
-                isLoading = false
-            }
+            isLoading = false
         }
-        
         let prompt = "\(operation.prompt)\n\n\(text)"
         
         // Для локальных моделей через Ollama
@@ -185,7 +182,63 @@ class AIService: ObservableObject {
         return result
     }
     
+    private func processWithAnthropic(prompt: String) async throws -> String {
+        guard let url = URL(string: "\(config.provider.baseURL)/messages") else {
+            throw AIError.configurationError("Некорректный URL провайдера")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 60
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(config.apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        
+        let messages: [[String: Any]] = [
+            ["role": "user", "content": prompt]
+        ]
+        
+        let body: [String: Any] = [
+            "model": config.model,
+            "system": "Ты полезный AI ассистент, специализирующийся на обработке текста. Отвечай только на языке пользователя.",
+            "messages": messages,
+            "max_tokens": config.maxTokens,
+            "temperature": config.temperature
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIError.networkError("Некорректный ответ от сервера")
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let errorMessage = try await parseAPIError(data: data, statusCode: httpResponse.statusCode)
+            throw AIError.apiError("Ошибка API: \(httpResponse.statusCode) - \(errorMessage)")
+        }
+        
+        let decoded = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+        let result = decoded.content.first(where: { $0.type == "text" })?.text ?? ""
+        
+        await MainActor.run {
+            if let usage = decoded.usage {
+                self.tokenUsage += usage.input_tokens + usage.output_tokens
+                self.lastCost = estimateCost(tokens: usage.input_tokens + usage.output_tokens)
+            } else {
+                self.tokenUsage += prompt.count / 4
+            }
+        }
+        
+        return result
+    }
+    
     private func processWithCloudAPI(prompt: String) async throws -> String {
+        // Anthropic использует Messages API с собственной структурой запроса/ответа.
+        if config.provider == .anthropic {
+            return try await processWithAnthropic(prompt: prompt)
+        }
+        
         guard let url = URL(string: "\(config.provider.baseURL)/chat/completions") else {
             throw AIError.configurationError("Некорректный URL провайдера")
         }
@@ -196,11 +249,6 @@ class AIService: ObservableObject {
         
         // Устанавливаем заголовок авторизации
         request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        
-        // Для Anthropic нужен специальный заголовок
-        if config.provider == .anthropic {
-            request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        }
         
         let messages: [[String: String]] = [
             ["role": "system", "content": "Ты полезный AI ассистент, специализирующийся на обработке текста. Отвечай только на языке пользователя."],
@@ -324,8 +372,12 @@ class AIService: ObservableObject {
             return true // В режиме отладки всегда успешно
         }
         
-        guard config.enabled && !config.apiKey.isEmpty else {
+        guard config.enabled else {
             throw AIError.configurationError("ИИ не настроен")
+        }
+        
+        if config.provider != .local && config.apiKey.isEmpty {
+            throw AIError.configurationError("API ключ не установлен")
         }
         
         let testText = "Привет, это тестовое сообщение."
@@ -367,11 +419,8 @@ class AIService: ObservableObject {
             error = nil
         }
         defer {
-            Task { @MainActor in
-                isLoading = false
-            }
+            isLoading = false
         }
-        
         // Используем переданный пользовательский промпт, а не встроенный.
         let prompt = "\(customPrompt)\n\n\(text)"
         

@@ -111,8 +111,9 @@ class XrayConfigGenerator {
         
         // --- 2. НАСТРОЙКИ СЕТИ (Transport) ---
         var networkSettings = ""
+        let network = p.network ?? "tcp"
         
-        if p.network == "ws" {
+        if network == "ws" {
             let hostValue = (p.wsHost?.isEmpty == false) ? p.wsHost! : resolvedSNI
             let headersBlock = hostValue.isEmpty ? "\"headers\": {}" : "\"headers\": { \"Host\": \(jstr(hostValue)) }"
             
@@ -122,7 +123,58 @@ class XrayConfigGenerator {
                 \(headersBlock)
             },
             """
-        } else if p.network == "grpc" {
+        } else if network == "httpupgrade" {
+            let hostValue = (p.wsHost?.isEmpty == false) ? p.wsHost! : resolvedSNI
+            let headersBlock = hostValue.isEmpty ? "\"headers\": {}" : "\"headers\": { \"Host\": \(jstr(hostValue)) }"
+            networkSettings = """
+            "httpupgradeSettings": {
+                "path": \(jstr(p.wsPath ?? "/")),
+                \(headersBlock)
+            },
+            """
+        } else if network == "splithttp" {
+            let hostValue = (p.wsHost?.isEmpty == false) ? p.wsHost! : resolvedSNI
+            let headersBlock = hostValue.isEmpty ? "\"headers\": {}" : "\"headers\": { \"Host\": \(jstr(hostValue)) }"
+            networkSettings = """
+            "splitHttpSettings": {
+                "path": \(jstr(p.wsPath ?? "/")),
+                \(headersBlock)
+            },
+            """
+        } else if network == "h2" {
+            let hostValue = (p.wsHost?.isEmpty == false) ? p.wsHost! : resolvedSNI
+            let hostBlock = hostValue.isEmpty ? "\"host\": []" : "\"host\": [\(jstr(hostValue))]"
+            networkSettings = """
+            "httpSettings": {
+                "path": \(jstr(p.wsPath ?? "/")),
+                \(hostBlock)
+            },
+            """
+        } else if network == "kcp" {
+            let seedJson = (p.kcpSeed?.isEmpty == false) ? "\"seed\": \(jstr(p.kcpSeed!))," : ""
+            networkSettings = """
+            "kcpSettings": {
+                "mtu": 1350,
+                "tti": 50,
+                "uplinkCapacity": 12,
+                "downlinkCapacity": 100,
+                "congestion": false,
+                "readBufferSize": 1,
+                "writeBufferSize": 1,
+                \(seedJson)
+                "header": { "type": "none" }
+            },
+            """
+        } else if network == "quic" {
+            let qsec = p.quicSecurity ?? "none"
+            networkSettings = """
+            "quicSettings": {
+                "security": \(jstr(qsec)),
+                "key": \(jstr(p.quicKey ?? "")),
+                "header": { "type": "none" }
+            },
+            """
+        } else if network == "grpc" {
             // Используем настройку MultiMode из профиля
             let multiMode = p.grpcMultiMode == true ? "true" : "false"
             networkSettings = """
@@ -140,6 +192,15 @@ class XrayConfigGenerator {
         
         func serverNameJson(_ name: String) -> String {
             return name.isEmpty ? "" : "\"serverName\": \(jstr(name)),"
+        }
+
+        // ALPN (список через запятую в профиле)
+        func alpnJson() -> String {
+            guard let a = p.alpn, !a.isEmpty else { return "" }
+            let vals = a.split(separator: ",")
+                .map { jstr(String($0).trimmingCharacters(in: .whitespaces)) }
+                .joined(separator: ", ")
+            return "\"alpn\": [\(vals)],"
         }
         
         var securitySettings = ""
@@ -164,6 +225,7 @@ class XrayConfigGenerator {
             securitySettings = """
             "tlsSettings": {
                 \(serverNameJson(resolvedSNI))
+                \(alpnJson())
                 "fingerprint": \(jstr(fp)),
                 "allowInsecure": \(insecure)
             }
@@ -174,11 +236,11 @@ class XrayConfigGenerator {
         var streamSettings = ""
         if security != "none" {
             streamSettings = """
-            , "streamSettings": { "network": \(jstr(p.network ?? "tcp")), "security": \(jstr(security)), \(networkSettings) \(securitySettings) }
+            , "streamSettings": { "network": \(jstr(network)), "security": \(jstr(security)), \(networkSettings) \(securitySettings) }
             """
         } else {
             streamSettings = """
-            , "streamSettings": { "network": \(jstr(p.network ?? "tcp")), "security": "none", \(networkSettings) "dsSettings": {} }
+            , "streamSettings": { "network": \(jstr(network)), "security": "none", \(networkSettings) "dsSettings": {} }
             """
         }
 
@@ -241,6 +303,100 @@ class XrayConfigGenerator {
                \(streamSettings)
              }
              """
+        } else if p.protocolType == .hysteria2 {
+            // Hysteria2 (hy2)
+            let sni = resolvedSNI.isEmpty ? p.server : resolvedSNI
+            let fp = (p.fingerprint == nil || p.fingerprint!.isEmpty) ? "chrome" : p.fingerprint!
+            let insecure = p.allowInsecure == true ? "true" : "false"
+            let obfs = p.obfs ?? ""
+            let obfsPassword = p.obfsPassword ?? ""
+            return """
+            {
+              "protocol": "hysteria2",
+              "tag": "proxy",
+              "settings": {
+                "address": \(jstr(p.server)),
+                "port": \(p.port),
+                "password": \(jstr(userId)),
+                "obfs": \(jstr(obfs)),
+                "obfsPassword": \(jstr(obfsPassword)),
+                "tlsSettings": {
+                  "serverName": \(jstr(sni)),
+                  \(alpnJson2(p))
+                  "fingerprint": \(jstr(fp)),
+                  "allowInsecure": \(insecure),
+                  "omitEmpty": true
+                }
+              }
+            }
+            """
+        } else if p.protocolType == .tuic {
+            // TUIC
+            let sni = resolvedSNI.isEmpty ? p.server : resolvedSNI
+            let fp = (p.fingerprint == nil || p.fingerprint!.isEmpty) ? "chrome" : p.fingerprint!
+            let insecure = p.allowInsecure == true ? "true" : "false"
+            let congestion = p.tuicCongestion ?? "bbr"
+            let udpMode = p.tuicUDPRelayMode ?? "native"
+            return """
+            {
+              "protocol": "tuic",
+              "tag": "proxy",
+              "settings": {
+                "address": \(jstr(p.server)),
+                "port": \(p.port),
+                "uuid": \(jstr(userId)),
+                "password": \(jstr(p.tuicPassword ?? "")),
+                "congestion_control": \(jstr(congestion)),
+                "udp_relay_mode": \(jstr(udpMode)),
+                "zero_rtt_handshake": false,
+                "auth_timeout": "3s",
+                "heartbeat_interval": "10s",
+                "tlsSettings": {
+                  "serverName": \(jstr(sni)),
+                  \(alpnJson2(p))
+                  "fingerprint": \(jstr(fp)),
+                  "allowInsecure": \(insecure),
+                  "disableSystemRoot": false
+                }
+              }
+            }
+            """
+        } else if p.protocolType == .socks {
+            let hasAuth = (p.method?.isEmpty == false)
+            var serverObj = "{\n      \"address\": \(jstr(p.server)),\n      \"port\": \(p.port)"
+            if hasAuth {
+                serverObj += ",\n      \"users\": [ { \"user\": \(jstr(p.method!)), \"pass\": \(jstr(p.password ?? "")) } ]"
+            }
+            serverObj += "\n    }"
+            return """
+            {
+              "protocol": "socks",
+              "tag": "proxy",
+              "settings": {
+                "servers": [
+                  \(serverObj)
+                ]
+              }
+            }
+            """
+        } else if p.protocolType == .http {
+            let hasAuth = (p.method?.isEmpty == false)
+            var serverObj = "{\n      \"address\": \(jstr(p.server)),\n      \"port\": \(p.port)"
+            if hasAuth {
+                serverObj += ",\n      \"users\": [ { \"user\": \(jstr(p.method!)), \"pass\": \(jstr(p.password ?? "")) } ]"
+            }
+            serverObj += "\n    }"
+            return """
+            {
+              "protocol": "http",
+              "tag": "proxy",
+              "settings": {
+                "servers": [
+                  \(serverObj)
+                ]
+              }
+            }
+            """
         } else {
             // Shadowsocks
             let method = p.method ?? "chacha20-ietf-poly1305"
@@ -265,6 +421,15 @@ class XrayConfigGenerator {
             }
             """
         }
+    }
+
+    /// ALPN для hysteria2/tuic (те же поля, что и alpnJson внутри generateOutbound).
+    private func alpnJson2(_ p: ShadowsocksProfile) -> String {
+        guard let a = p.alpn, !a.isEmpty else { return "" }
+        let vals = a.split(separator: ",")
+            .map { jstr(String($0).trimmingCharacters(in: .whitespaces)) }
+            .joined(separator: ", ")
+        return "\"alpn\": [\(vals)],"
     }
     
     // Helpers

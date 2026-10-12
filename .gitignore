@@ -32,3 +32,6 @@ Package.resolved
 *.orig
 *.rej
 *.log
+
+# OpenCode (служебная директория агента)
+.opencode/

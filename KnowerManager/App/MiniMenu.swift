@@ -53,9 +53,9 @@ struct MiniMenu: View {
             footerSection
         }
         .frame(width: 290)
-        .background(VisualEffectView(material: .popover, blendingMode: .behindWindow))
+        .background(AppThemeTokens.Surface.glass)
         .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppThemeTokens.Border.subtle, lineWidth: 1))
         .sheet(isPresented: $showRoutingSheet) {
             RoutingSheet()
                 .preferredColorScheme(currentColorScheme)
@@ -96,7 +96,7 @@ struct MiniMenu: View {
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.black.opacity(0.05), lineWidth: 1))
         }
         .padding(12)
-        .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
+        .background(AppThemeTokens.Surface.elevated)
     }
     
     private var mainControlsSection: some View {
@@ -263,18 +263,18 @@ struct MiniMenu: View {
                 // Главное окно
                 Button(action: { MenuBarManager.shared.openMainWindow() }) {
                     Image(systemName: "macwindow")
-                        .font(.system(size: 13))
+                        .font(DesignTokens.Typography.callout.weight(.medium))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(IconButtonStyle())
                 .foregroundColor(.blue)
                 .help(settings.t(.menuOpenShort))
                 
                 // About (ВЕРНУЛИ!)
                 Button(action: { MenuBarManager.shared.openAbout() }) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 13))
+                        .font(DesignTokens.Typography.callout.weight(.medium))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(IconButtonStyle())
                 .foregroundColor(.secondary)
                 .help(settings.t(.menuAbout))
             }
@@ -337,10 +337,10 @@ struct MiniMenu: View {
                 
                 Button(action: { MenuBarManager.shared.quitApp() }) {
                     Image(systemName: "power")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(DesignTokens.Typography.callout.weight(.semibold))
                 }
-                .buttonStyle(PlainButtonStyle())
-                .foregroundColor(.red.opacity(0.8))
+                .buttonStyle(IconButtonStyle())
+                .foregroundColor(.red.opacity(0.9))
                 .help(settings.t(.menuQuitShort))
             }
         }

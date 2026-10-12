@@ -12,8 +12,8 @@ class SSParser {
         
         guard cleanLink.hasPrefix("ss://") else { return nil }
         
-        // Убираем префикс
-        var content = cleanLink.replacingOccurrences(of: "ss://", with: "")
+        // Убираем префикс (только ведущий — replacingOccurrences удалял бы все вхождения)
+        var content = String(cleanLink.dropFirst("ss://".count))
         
         // 2. Отделяем тег (#Name)
         var name = "Shadowsocks Server"
@@ -86,13 +86,15 @@ class SSParser {
     }
     
     private func parseHostPort(_ input: String, server: inout String, port: inout Int) {
-        let cleanInput = input.split(separator: "?")[0]
+        // input.split(separator: "?")[0] трапает, если строка пустая или начинается с "?".
+        let cleanInput = String(input.prefix { $0 != "?" })
+        guard !cleanInput.isEmpty else { return }
         
         if let colonIndex = cleanInput.lastIndex(of: ":") {
             server = String(cleanInput[..<colonIndex])
             server = server.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
             
-            if let p = Int(String(cleanInput[cleanInput.index(after: colonIndex)...])) {
+            if let p = Int(String(cleanInput[cleanInput.index(after: colonIndex)...])), (1...65535).contains(p) {
                 port = p
             }
         }

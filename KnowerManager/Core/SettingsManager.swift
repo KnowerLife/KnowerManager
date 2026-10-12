@@ -80,6 +80,13 @@ class SettingsManager: ObservableObject {
     
     init() {
         updateDockIconVisibility()
+        requestNotificationAuthorizationIfPossible()
+    }
+    
+    private func requestNotificationAuthorizationIfPossible() {
+        // UNUserNotificationCenter.current() бросает ObjC-исключение, если у
+        // процесса нет bundle identifier (запуск "голого" бинарника, превью и т.п.).
+        guard Bundle.main.bundleIdentifier != nil else { return }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
     
@@ -101,7 +108,7 @@ class SettingsManager: ObservableObject {
     }
     
     func sendNotification(title: String, body: String) {
-        guard showNotifications else { return }
+        guard showNotifications, Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
@@ -415,6 +422,45 @@ enum StringKey {
     case faqDeepScanQ
     case faqDeepScanA
     
+    // --- Подписки (Subscriptions) ---
+    case vpnSubscriptions
+    case subAddTitle
+    case subName
+    case subInterval
+    case subUpdateAll
+    case subUpdateNow
+    case subDelete
+    case subEnable
+    case subDisable
+    case subNoSubscriptions
+    case subAddHint
+    case subUsed
+    case subExpires
+    case subExpired
+    case subLastUpdate
+    case subNeverUpdated
+    case subFilterAll
+    case subFilterManual
+    case subFilterHelp
+    
+    // --- QR для профилей VPN ---
+    case vpnQrExport
+    case vpnQrImportClipboard
+    case vpnQrImportImage
+    case vpnQrExportTitle
+    case vpnQrCopyLink
+    case vpnQrImportFound
+    case vpnQrImportEmpty
+    
+    // --- Лог Xray & реальный тест профиля ---
+    case vpnLogTitle
+    case vpnLogEmpty
+    case contextProxyTest
+    case proxyTestTitle
+    case proxyTestLatency
+    case proxyTestSpeed
+    case proxyTestRun
+    
     // --- Routing (Маршрутизация) ---
         case routingMode
         case routeGlobal
@@ -565,6 +611,45 @@ enum StringKey {
                             
             case .faqDeepScanQ: return "Что такое Turbo Deep Scan?"
             case .faqDeepScanA: return "Мощный сканер прокси. Проверяет тысячи серверов в 24 потока, автоматически находит живые (Alive), сортирует по скорости и удаляет мертвые."
+
+            // --- Подписки (RU) ---
+            case .vpnSubscriptions: return "Подписки"
+            case .subAddTitle: return "Добавить подписку"
+            case .subName: return "Название"
+            case .subInterval: return "Интервал обновления"
+            case .subUpdateAll: return "Обновить все"
+            case .subUpdateNow: return "Обновить сейчас"
+            case .subDelete: return "Удалить подписку"
+            case .subEnable: return "Включить"
+            case .subDisable: return "Выключить"
+            case .subNoSubscriptions: return "Нет подписок"
+            case .subAddHint: return "Добавьте ссылку на подписку — профили будут загружены и автоматически обновляться."
+            case .subUsed: return "использовано"
+            case .subExpires: return "Действует до"
+            case .subExpired: return "Истекла"
+            case .subLastUpdate: return "Обновлено"
+            case .subNeverUpdated: return "Ещё не обновлялась"
+            case .subFilterAll: return "Все"
+            case .subFilterManual: return "Ручные"
+            case .subFilterHelp: return "Фильтр по источнику"
+
+            // --- QR для профилей VPN (RU) ---
+            case .vpnQrExport: return "QR код"
+            case .vpnQrImportClipboard: return "Импорт QR из буфера"
+            case .vpnQrImportImage: return "Импорт QR из файла"
+            case .vpnQrExportTitle: return "Поделиться профилем"
+            case .vpnQrCopyLink: return "Копировать ссылку"
+            case .vpnQrImportFound: return "Импортировано профилей из QR:"
+            case .vpnQrImportEmpty: return "QR-код не найден на изображении"
+
+            // --- Лог Xray & тест профиля (RU) ---
+            case .vpnLogTitle: return "Лог Xray"
+            case .vpnLogEmpty: return "Лог пуст. Подключитесь, чтобы увидеть вывод Xray."
+            case .contextProxyTest: return "Тест через прокси"
+            case .proxyTestTitle: return "Тест профиля"
+            case .proxyTestLatency: return "Задержка"
+            case .proxyTestSpeed: return "Скорость загрузки"
+            case .proxyTestRun: return "Запустить тест"
 
             // 3. Инструменты
             case .faqToolsQ: return "Какие есть Инструменты?"
@@ -1138,6 +1223,45 @@ enum StringKey {
                             
             case .faqDeepScanQ: return "What is Turbo Deep Scan?"
             case .faqDeepScanA: return "A powerful proxy scanner. Checks thousands of servers in 24 threads, automatically finds Alive ones, sorts by speed, and removes dead ones."
+
+            // --- Subscriptions (EN) ---
+            case .vpnSubscriptions: return "Subscriptions"
+            case .subAddTitle: return "Add Subscription"
+            case .subName: return "Name"
+            case .subInterval: return "Update Interval"
+            case .subUpdateAll: return "Update All"
+            case .subUpdateNow: return "Update Now"
+            case .subDelete: return "Delete Subscription"
+            case .subEnable: return "Enable"
+            case .subDisable: return "Disable"
+            case .subNoSubscriptions: return "No subscriptions"
+            case .subAddHint: return "Add a subscription URL — profiles will be fetched and auto-updated."
+            case .subUsed: return "used"
+            case .subExpires: return "Expires"
+            case .subExpired: return "Expired"
+            case .subLastUpdate: return "Updated"
+            case .subNeverUpdated: return "Never updated"
+            case .subFilterAll: return "All"
+            case .subFilterManual: return "Manual"
+            case .subFilterHelp: return "Filter by source"
+
+            // --- QR for VPN profiles (EN) ---
+            case .vpnQrExport: return "QR Code"
+            case .vpnQrImportClipboard: return "Import QR from Clipboard"
+            case .vpnQrImportImage: return "Import QR from File"
+            case .vpnQrExportTitle: return "Share Profile"
+            case .vpnQrCopyLink: return "Copy Link"
+            case .vpnQrImportFound: return "Profiles imported from QR:"
+            case .vpnQrImportEmpty: return "No QR code found in the image"
+
+            // --- Xray log & proxy test (EN) ---
+            case .vpnLogTitle: return "Xray Log"
+            case .vpnLogEmpty: return "Log is empty. Connect to see Xray output."
+            case .contextProxyTest: return "Test via Proxy"
+            case .proxyTestTitle: return "Profile Test"
+            case .proxyTestLatency: return "Latency"
+            case .proxyTestSpeed: return "Download Speed"
+            case .proxyTestRun: return "Run Test"
 
             // 3. Tools
             case .faqToolsQ: return "What Tools are available?"

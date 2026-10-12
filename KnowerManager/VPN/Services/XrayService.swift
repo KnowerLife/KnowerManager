@@ -226,6 +226,11 @@ class XrayService: ObservableObject {
     private var process: Process?
     private let localPort = 10808
     
+    // --- ЛОГ XRAY ---
+    @Published var xrayLog: String = ""
+    private let logMaxLines = 400
+    private var logLines: [String] = []
+    
     private var workDir: URL { FileManager.default.temporaryDirectory.appendingPathComponent("KnowerXray") }
     private var configPath: URL { workDir.appendingPathComponent("config.json") }
     
@@ -471,30 +476,50 @@ class XrayService: ObservableObject {
         }
     }
     func importFromURL(_ urlString: String) {
-        guard let url = URL(string: urlString.trimmingCharacters(in: .whitespacesAndNewlines)) else { return }
-        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
-            if let data = data, let text = String(data: data, encoding: .utf8) { self?.parseAndAdd(text: text) }
+        // Ссылка превращается в подписку с автообновлением.
+        SubscriptionManager.shared.addSubscription(url: urlString)
+    }
+
+    /// Импорт QR-кода из буфера обмена (изображение).
+    func importFromQRClipboard() {
+        guard let image = QRCodeService.imageFromPasteboard() else {
+            DispatchQueue.main.async { self.isImporting = false }
+            return
         }
-        task.resume()
+        importQRFromImage(image)
+    }
+
+    /// Импорт QR-кода из файла изображения.
+    func importFromQRImageFile() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.image, .png, .jpeg, .tiff]
+        panel.allowsMultipleSelection = false
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url,
+                  let image = NSImage(contentsOf: url) else { return }
+            self?.importQRFromImage(image)
+        }
+    }
+
+    /// Декодирует QR на изображении и импортирует найденные ссылки.
+    func importQRFromImage(_ image: NSImage) {
+        DispatchQueue.main.async { self.isImporting = true }
+        Task {
+            let payloads = await QRCodeService.decode(in: image)
+            let text = payloads.joined(separator: "\n")
+            if text.isEmpty {
+                DispatchQueue.main.async { self.isImporting = false }
+                return
+            }
+            parseAndAdd(text: text)
+        }
     }
     
     private func parseAndAdd(text: String) {
         DispatchQueue.main.async { self.isImporting = true }
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            var cleanText = text.replacingOccurrences(of: "<br>", with: "\n").replacingOccurrences(of: " ", with: "\n")
-            if !cleanText.contains("://"), let data = Data(base64Encoded: cleanText.trimmingCharacters(in: .whitespacesAndNewlines)), let decoded = String(data: data, encoding: .utf8) { cleanText = decoded }
-            
-            let lines = cleanText.components(separatedBy: .newlines)
-            var newProfiles: [ShadowsocksProfile] = []
-            for line in lines {
-                let trim = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                if trim.isEmpty { continue }
-                if trim.hasPrefix("ss://") { if let p = SSParser.shared.parse(link: trim) { newProfiles.append(p) } }
-                else if trim.hasPrefix("vmess://") { if let p = VMessParser.shared.parse(link: trim) { newProfiles.append(p) } }
-                else if trim.hasPrefix("vless://") || trim.hasPrefix("trojan://") { if let p = VLESSParser.shared.parse(link: trim) { newProfiles.append(p) } }
-            }
-            
+            let newProfiles = LinkParser.parseLinks(from: text)
             let existingKeys = Set(self.profiles.map { "\($0.server):\($0.port)" })
             let uniqueProfiles = newProfiles.filter { !existingKeys.contains("\($0.server):\($0.port)") }
             
@@ -510,6 +535,59 @@ class XrayService: ObservableObject {
     // --- УПРАВЛЕНИЕ СПИСКОМ ---
     func toggleFavorite(id: UUID) {
         if let index = profiles.firstIndex(where: { $0.id == id }) { profiles[index].isBookmarked.toggle() }
+    }
+    
+    // --- ПОДПИСКИ ---
+
+    /// Заменяет профили подписки новыми. Для существующих серверов
+    /// сохраняет стабильный id, пинг и «избранное».
+    func applySubscriptionProfiles(_ newProfiles: [ShadowsocksProfile], subscriptionId: UUID) {
+        DispatchQueue.main.async { [self] in
+            let oldProfiles = self.profiles.filter { $0.subscriptionId == subscriptionId }
+            var oldIndex: [String: ShadowsocksProfile] = [:]
+            for p in oldProfiles {
+                oldIndex["\(p.server.lowercased()):\(p.port):\(p.protocolType.rawValue)"] = p
+            }
+            let manual = self.profiles.filter { $0.subscriptionId == nil }
+
+            var updated: [ShadowsocksProfile] = []
+            for var p in newProfiles {
+                let key = "\(p.server.lowercased()):\(p.port):\(p.protocolType.rawValue)"
+                if let old = oldIndex[key] {
+                    // Сохраняем стабильный id + накопленные метаданные.
+                    p.id = old.id
+                    p.isFavorite = old.isFavorite
+                    p.latency = old.latency
+                } else {
+                    p.id = UUID()
+                    p.latency = nil
+                }
+                p.subscriptionId = subscriptionId
+                updated.append(p)
+            }
+
+            // Единое присваивание — один didSet и одна запись на диск.
+            self.profiles = manual + updated
+            if let sel = self.selectedProfileId, !self.profiles.contains(where: { $0.id == sel }) {
+                self.selectedProfileId = nil
+            }
+            print("✅ Subscription \(subscriptionId) update applied: \(updated.count) profiles")
+        }
+    }
+
+    /// Удаляет все профили подписки (при удалении самой подписки).
+    func removeProfiles(subscriptionId: UUID) {
+        DispatchQueue.main.async { [self] in
+            let selectedWasRemoved = self.selectedProfileId.flatMap { sel in
+                self.profiles.first(where: { $0.id == sel })?.subscriptionId == subscriptionId
+            } ?? false
+            self.profiles.removeAll { $0.subscriptionId == subscriptionId }
+            if selectedWasRemoved {
+                self.selectedProfileId = nil
+                if self.isRunning { self.stop() }
+            }
+            print("🗑 Removed profiles of subscription \(subscriptionId)")
+        }
     }
     
     func removeDeadProfiles() {
@@ -544,10 +622,22 @@ class XrayService: ObservableObject {
         task.standardOutput = pipe
         task.standardError = pipe
         let startTime = Date()
+        clearLog()
         
         do {
             try task.run()
             self.process = task
+            // Читаем stdout/stderr в фоне: буфер канала (64КБ) без чтения
+            // заблокировал бы Xray при обильном логировании.
+            let fh = pipe.fileHandleForReading
+            Thread.detachNewThread { [weak self] in
+                while true {
+                    let data = fh.availableData
+                    if data.isEmpty { break } // EOF
+                    guard let text = String(data: data, encoding: .utf8) else { continue }
+                    self?.appendXrayLog(text)
+                }
+            }
             task.terminationHandler = { [weak self] _ in
                 guard let self = self else { return }
                 let duration = Date().timeIntervalSince(startTime)
@@ -564,6 +654,28 @@ class XrayService: ObservableObject {
             print("✅ Xray started on \(localPort)")
             setSystemProxy(enabled: true)
         } catch { print("❌ Start failed: \(error)") }
+    }
+    
+    // MARK: - Лог Xray (кольцевой буфер последних строк)
+    
+    private func clearLog() {
+        DispatchQueue.main.async {
+            self.logLines.removeAll()
+            self.xrayLog = ""
+        }
+    }
+    
+    private func appendXrayLog(_ chunk: String) {
+        DispatchQueue.main.async {
+            for line in chunk.components(separatedBy: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { self.logLines.append(trimmed) }
+            }
+            if self.logLines.count > self.logMaxLines {
+                self.logLines.removeFirst(self.logLines.count - self.logMaxLines)
+            }
+            self.xrayLog = self.logLines.joined(separator: "\n")
+        }
     }
     
     func stop() {

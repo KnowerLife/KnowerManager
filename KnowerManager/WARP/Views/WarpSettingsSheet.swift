@@ -3,11 +3,11 @@ import SwiftUI
 struct WarpSettingsSheet: View {
     @ObservedObject var warpManager: WarpManager
     @ObservedObject var settings = SettingsManager.shared
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(spacing: 0) {
-            HStack { Text(settings.t(.warpGenSettings)).font(.headline); Spacer(); Button(settings.t(.btnDone)) { presentationMode.wrappedValue.dismiss() }.buttonStyle(PlainButtonStyle()).foregroundColor(.blue) }.padding().background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
+            HStack { Text(settings.t(.warpGenSettings)).font(.headline); Spacer(); Button(settings.t(.btnDone)) { dismiss() }.buttonStyle(PlainButtonStyle()).foregroundColor(.blue) }.padding().background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
             ScrollView {
                 VStack(spacing: 20) {
                     // Method & SSH
@@ -48,5 +48,5 @@ struct WarpSettingsSheet: View {
 
 struct SectionCard<Content: View>: View { let title: String; let icon: String; let content: Content; init(title: String, icon: String, @ViewBuilder content: () -> Content) { self.title = title; self.icon = icon; self.content = content() }; var body: some View { VStack(alignment: .leading, spacing: 12) { HStack { Image(systemName: icon).foregroundColor(.blue); Text(title).font(.system(size: 13, weight: .semibold)) }; content }.padding().background(Color(NSColor.controlBackgroundColor).opacity(0.6)).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(NSColor.separatorColor).opacity(0.3), lineWidth: 1)) } }
 struct SettingsTextField: View { let icon: String; let placeholder: String; @Binding var text: String; let title: String; var isSecure: Bool = false; var body: some View { VStack(alignment: .leading, spacing: 4) { Text(title).font(.caption).foregroundColor(.secondary); HStack { Image(systemName: icon).foregroundColor(.secondary).font(.caption); if isSecure { SecureField(placeholder, text: $text).textFieldStyle(PlainTextFieldStyle()) } else { TextField(placeholder, text: $text).textFieldStyle(PlainTextFieldStyle()) } }.padding(6).background(Color(NSColor.controlBackgroundColor)).cornerRadius(6).overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.gray.opacity(0.2), lineWidth: 1)) } } }
-struct ParamField: View { let label: String; @Binding var value: Int; var body: some View { VStack(alignment: .leading, spacing: 2) { Text(label).font(.caption).foregroundColor(.secondary); TextField("", value: $value, formatter: NumberFormatter()).textFieldStyle(RoundedBorderTextFieldStyle()).frame(width: 50) } } }
+struct ParamField: View { let label: String; @Binding var value: Int; private static let formatter: NumberFormatter = { let f = NumberFormatter(); f.numberStyle = .none; f.allowsFloats = false; return f }(); var body: some View { VStack(alignment: .leading, spacing: 2) { Text(label).font(.caption).foregroundColor(.secondary); TextField("", value: $value, formatter: Self.formatter).textFieldStyle(RoundedBorderTextFieldStyle()).frame(width: 50) } } }
 struct ToggleRow: View { let title: String; @Binding var isOn: Bool; var body: some View { Toggle(isOn: $isOn) { Text(title).font(.system(size: 13)) }.toggleStyle(SwitchToggleStyle(tint: .blue)) } }

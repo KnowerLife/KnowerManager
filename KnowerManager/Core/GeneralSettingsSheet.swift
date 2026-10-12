@@ -3,10 +3,7 @@ import SwiftUI
 struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
     @StateObject var knowerWatch = KnowerWatchService.shared
-    @Environment(\.presentationMode) var presentationMode
-    
-    @AppStorage("hideDockIcon") private var hideDockIcon = false
-    @AppStorage("showNotifications") private var showNotifications = true
+    @Environment(\.dismiss) private var dismiss
     
     var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.2"
@@ -21,7 +18,7 @@ struct GeneralSettingsSheet: View {
                 Text(settings.t(.settingsTitle)).font(.headline)
                 Spacer()
                 Button(settings.t(.btnDone)) {
-                    presentationMode.wrappedValue.dismiss()
+                    dismiss()
                 }
                 .buttonStyle(PlainButtonStyle())
                 .foregroundColor(.blue)
@@ -44,7 +41,7 @@ struct GeneralSettingsSheet: View {
                                 Divider()
                                 
                                 // Hide Dock
-                                SettingsRow(icon: "dock.rectangle", color: .blue, title: settings.t(.hideDockTitle), desc: settings.t(.hideDockDesc), toggle: $hideDockIcon)
+                                SettingsRow(icon: "dock.rectangle", color: .blue, title: settings.t(.hideDockTitle), desc: settings.t(.hideDockDesc), toggle: $settings.hideDockIcon)
                                 
                                 Divider()
                                 
@@ -81,7 +78,7 @@ struct GeneralSettingsSheet: View {
                         SectionHeader(title: settings.t(.automationTitle))
                         GroupBox {
                             VStack(spacing: 12) {
-                                SettingsRow(icon: "bell.badge.fill", color: .red, title: settings.t(.notificationsTitle), desc: settings.t(.notificationsDesc), toggle: $showNotifications)
+                                SettingsRow(icon: "bell.badge.fill", color: .red, title: settings.t(.notificationsTitle), desc: settings.t(.notificationsDesc), toggle: $settings.showNotifications)
                                 Divider()
                                 SettingsRow(icon: "eye.fill", color: .green, title: settings.t(.kwTitle), desc: settings.t(.kwDesc), toggle: $knowerWatch.isEnabled)
                             }
