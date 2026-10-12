@@ -90,7 +90,7 @@ struct ProfileQRExportView: View {
             }
         }
         .padding(20)
-        .frame(width: 330)
+        .frame(width: 330, height: 480)
         .onAppear(perform: generate)
     }
 

@@ -402,7 +402,7 @@ struct OCRTTSSheet: View {
                     }
                 }
                 .labelsHidden()
-                .frame(maxHeight: 120)
+                .frame(maxHeight: .infinity)
 
                 OCRSliderRow(title: settings.t(.ocrTTSRate),
                              valueText: String(format: "%.2f", speech.config.rate),

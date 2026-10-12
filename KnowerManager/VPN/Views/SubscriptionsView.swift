@@ -107,37 +107,39 @@ struct SubscriptionsView: View {
     // MARK: Add form
 
     private var addForm: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(settings.t(.subAddTitle)).font(.headline)
-            TextField(settings.t(.subName), text: $newName)
-                .textFieldStyle(.roundedBorder)
-            TextField("URL (https://...)", text: $newURL)
-                .textFieldStyle(.roundedBorder)
-                .font(.system(size: 11, design: .monospaced))
-            TextField("User-Agent", text: $newUA)
-                .textFieldStyle(.roundedBorder)
-            Picker(settings.t(.subInterval), selection: $newInterval) {
-                ForEach(intervalOptions, id: \.self) { h in
-                    Text(intervalLabel(h)).tag(h)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(settings.t(.subAddTitle)).font(.headline)
+                TextField(settings.t(.subName), text: $newName)
+                    .textFieldStyle(.roundedBorder)
+                TextField("URL (https://...)", text: $newURL)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 11, design: .monospaced))
+                TextField("User-Agent", text: $newUA)
+                    .textFieldStyle(.roundedBorder)
+                Picker(settings.t(.subInterval), selection: $newInterval) {
+                    ForEach(intervalOptions, id: \.self) { h in
+                        Text(intervalLabel(h)).tag(h)
+                    }
+                }
+                .pickerStyle(.menu)
+                HStack {
+                    Button(settings.t(.btnCancel)) {
+                        withAnimation { isAdding = false }
+                        newName = ""; newURL = ""; newUA = ""
+                    }
+                    Spacer()
+                    Button {
+                        addNew()
+                    } label: {
+                        Label(settings.t(.subAddTitle), systemImage: "plus")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(newURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .pickerStyle(.menu)
-            HStack {
-                Button(settings.t(.btnCancel)) {
-                    withAnimation { isAdding = false }
-                    newName = ""; newURL = ""; newUA = ""
-                }
-                Spacer()
-                Button {
-                    addNew()
-                } label: {
-                    Label(settings.t(.subAddTitle), systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(newURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
+            .padding(14)
         }
-        .padding(14)
         .background(Color(NSColor.controlBackgroundColor))
         .overlay(Rectangle().frame(height: 1).foregroundColor(Color(NSColor.separatorColor)), alignment: .top)
     }

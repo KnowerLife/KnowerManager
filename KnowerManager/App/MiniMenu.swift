@@ -52,7 +52,7 @@ struct MiniMenu: View {
             Divider()
             footerSection
         }
-        .frame(width: 290)
+        .frame(width: 320)
         .background(AppThemeTokens.Surface.glass)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppThemeTokens.Border.subtle, lineWidth: 1))

@@ -84,7 +84,7 @@ struct ProfileSpeedTestView: View {
             }
         }
         .padding(20)
-        .frame(width: 340)
+        .frame(width: 340, height: 320)
         .onDisappear { tester.cancel() }
     }
 

@@ -176,7 +176,7 @@ struct ProfileEditView: View {
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
         }
-        .frame(width: 380, height: 600) // Увеличили высоту для настроек
+        .frame(width: 420, height: 600)
         .onAppear { loadValues() }
     }
     
