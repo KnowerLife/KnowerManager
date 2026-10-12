@@ -22,14 +22,14 @@ struct WarpSettingsSheet: View {
                             }.padding(.top, 8)
                         }
                     }
-                    
+
                     // Amnezia Params
                     SectionCard(title: settings.t(.warpParams), icon: "slider.horizontal.3") {
                         HStack(spacing: 16) { ParamField(label: "Jc", value: $warpManager.amneziaParams.jc); ParamField(label: "Jmin", value: $warpManager.amneziaParams.jmin); ParamField(label: "Jmax", value: $warpManager.amneziaParams.jmax) }
                         Divider()
                         HStack { ParamField(label: "S1", value: $warpManager.amneziaParams.s1); ParamField(label: "S2", value: $warpManager.amneziaParams.s2); Spacer() }
                     }
-                    
+
                     // Routing
                     SectionCard(title: settings.t(.warpRouting), icon: "arrow.triangle.branch") {
                         VStack(alignment: .leading, spacing: 10) {
@@ -40,7 +40,10 @@ struct WarpSettingsSheet: View {
                     }
                 }.padding()
             }
-        }.frame(width: 380, height: 600)
+            .frame(maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 420, idealHeight: 600, maxHeight: 720)
     }
     
     private func binding(for rule: RoutingRule) -> Binding<Bool> { Binding(get: { warpManager.selectedRoutingRules.contains(rule) }, set: { if $0 { warpManager.selectedRoutingRules.insert(rule) } else { warpManager.selectedRoutingRules.remove(rule) } }) }

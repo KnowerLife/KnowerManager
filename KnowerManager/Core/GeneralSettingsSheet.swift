@@ -130,8 +130,10 @@ struct GeneralSettingsSheet: View {
                 }
                 .padding()
             }
+            .frame(maxHeight: .infinity)
         }
-        .frame(width: 380, height: 650)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 420, idealHeight: 650, maxHeight: 720)
     }
 }
 

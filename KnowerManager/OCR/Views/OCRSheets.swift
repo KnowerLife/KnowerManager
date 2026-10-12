@@ -181,6 +181,7 @@ struct OCRAdvancedSettingsSheet: View {
                 }
                 .padding(16)
             }
+            .frame(maxHeight: .infinity)
 
             HStack {
                 Button(settings.t(.ocrReset)) {
@@ -198,7 +199,8 @@ struct OCRAdvancedSettingsSheet: View {
             .padding(16)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(width: 440, height: 620)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 440, idealHeight: 620, maxHeight: 720)
     }
 
     private func toggle(_ language: OCRLanguage) {
@@ -326,6 +328,7 @@ struct OCREnhanceSheet: View {
                 }
                 .padding(16)
             }
+            .frame(maxHeight: .infinity)
 
             HStack {
                 Button(settings.t(.ocrReset)) {
@@ -343,7 +346,8 @@ struct OCREnhanceSheet: View {
             .padding(16)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(width: 440, height: 640)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 440, idealHeight: 640, maxHeight: 720)
         .onAppear(perform: buildThumbnail)
         .onChange(of: ocrManager.preprocessingOptions) { _ in updatePreview() }
     }
@@ -402,7 +406,7 @@ struct OCRTTSSheet: View {
                     }
                 }
                 .labelsHidden()
-                .frame(maxHeight: .infinity)
+                .frame(maxHeight: 160)
 
                 OCRSliderRow(title: settings.t(.ocrTTSRate),
                              valueText: String(format: "%.2f", speech.config.rate),
@@ -429,7 +433,8 @@ struct OCRTTSSheet: View {
 
             Spacer()
         }
-        .frame(width: 420, height: 360)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 420, idealHeight: 360, maxHeight: 480)
         .onAppear {
             let code = ocrManager.detectedLanguage?.code ?? ocrManager.ocrOptions.languages.first
             speech.refreshVoices(languageCode: code)

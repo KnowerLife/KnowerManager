@@ -9,7 +9,7 @@ struct ProfileSpeedTestView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
             HStack {
                 Text(settings.t(.proxyTestTitle))
                     .font(.headline)
@@ -18,73 +18,81 @@ struct ProfileSpeedTestView: View {
                     .buttonStyle(.plain)
                     .foregroundColor(.secondary)
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
 
-            // Профиль
-            HStack(spacing: 6) {
-                Text(profile.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .lineLimit(1)
-                ProtocolBadge(text: profile.protocolType.rawValue.uppercased(), color: .blue)
-            }
-
-            // Результаты
-            HStack(spacing: 12) {
-                resultCard(
-                    title: settings.t(.proxyTestLatency),
-                    value: tester.latencyMs.map { "\($0) ms" } ?? "—",
-                    icon: "bolt.fill",
-                    color: latencyColor
-                )
-                resultCard(
-                    title: settings.t(.proxyTestSpeed),
-                    value: tester.downloadMbps.map { String(format: "%.1f Мбит/с", $0) } ?? "—",
-                    icon: "arrow.down.circle.fill",
-                    color: .blue
-                )
-            }
-
-            // Статус
-            Group {
-                if let error = tester.errorText {
-                    Label(error, systemImage: "exclamationmark.triangle.fill")
-                        .font(.callout)
-                        .foregroundColor(.red)
-                } else if let status = tester.statusText {
-                    HStack(spacing: 8) {
-                        ProgressView().controlSize(.small)
-                        Text(status)
-                            .font(.callout)
-                            .foregroundColor(.secondary)
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Профиль
+                    HStack(spacing: 6) {
+                        Text(profile.name)
+                            .font(.system(size: 13, weight: .semibold))
+                            .lineLimit(1)
+                        ProtocolBadge(text: profile.protocolType.rawValue.uppercased(), color: .blue)
                     }
-                } else if tester.latencyMs != nil || tester.downloadMbps != nil {
-                    Text("✓")
-                        .font(.title2)
-                        .foregroundColor(.green)
-                }
-            }
 
-            HStack(spacing: 10) {
-                Button {
-                    tester.runTest(profile: profile)
-                } label: {
-                    Label(settings.t(.proxyTestRun), systemImage: "play.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(tester.isTesting)
-
-                if tester.isTesting {
-                    Button {
-                        tester.cancel()
-                    } label: {
-                        Label(settings.t(.btnStop), systemImage: "stop.fill")
+                    // Результаты
+                    HStack(spacing: 12) {
+                        resultCard(
+                            title: settings.t(.proxyTestLatency),
+                            value: tester.latencyMs.map { "\($0) ms" } ?? "—",
+                            icon: "bolt.fill",
+                            color: latencyColor
+                        )
+                        resultCard(
+                            title: settings.t(.proxyTestSpeed),
+                            value: tester.downloadMbps.map { String(format: "%.1f Мбит/с", $0) } ?? "—",
+                            icon: "arrow.down.circle.fill",
+                            color: .blue
+                        )
                     }
-                    .buttonStyle(.bordered)
+
+                    // Статус
+                    Group {
+                        if let error = tester.errorText {
+                            Label(error, systemImage: "exclamationmark.triangle.fill")
+                                .font(.callout)
+                                .foregroundColor(.red)
+                        } else if let status = tester.statusText {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text(status)
+                                    .font(.callout)
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if tester.latencyMs != nil || tester.downloadMbps != nil {
+                            Text("✓")
+                                .font(.title2)
+                                .foregroundColor(.green)
+                        }
+                    }
+
+                    HStack(spacing: 10) {
+                        Button {
+                            tester.runTest(profile: profile)
+                        } label: {
+                            Label(settings.t(.proxyTestRun), systemImage: "play.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(tester.isTesting)
+
+                        if tester.isTesting {
+                            Button {
+                                tester.cancel()
+                            } label: {
+                                Label(settings.t(.btnStop), systemImage: "stop.fill")
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
                 }
+                .padding(20)
             }
+            .frame(maxHeight: .infinity)
         }
-        .padding(20)
-        .frame(width: 340, height: 320)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: 340, idealHeight: 320, maxHeight: 480)
         .onDisappear { tester.cancel() }
     }
 
