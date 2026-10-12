@@ -237,6 +237,40 @@ enum StringKey {
     case ocrSaveImageTitle
     case aiEnable, aiProvider, aiApiKey, aiModel
     
+    // --- OCR: тонкая настройка распознавания ---
+    case ocrAdvanced, ocrRecognition
+    case ocrLevelAccurate, ocrLevelFast
+    case ocrLanguageCorrection, ocrAutoDetect, ocrMinTextHeight
+    case ocrCustomWords, ocrCustomWordsPlaceholder
+    case ocrDetectBarcodes, ocrLanguages, ocrImageOrientation
+    case ocrOrientationUp, ocrOrientationDown, ocrOrientationLeft, ocrOrientationRight
+    
+    // --- OCR: предобработка изображения ---
+    case ocrEnhance, ocrEnhanceEnabled, ocrGrayscale, ocrContrast, ocrBrightness
+    case ocrSharpness, ocrInvert, ocrBinarize, ocrBinarizeThreshold, ocrUpscale, ocrReset
+    
+    // --- OCR: импорт ---
+    case ocrImport, ocrImportFiles, ocrImportPDF, ocrImportScannerTitle, ocrScannerHint
+    case ocrScannerScan, ocrScannerOverview, ocrScannerClose
+    case ocrImporting, ocrImportEmpty, ocrImportDone, ocrImportScanner
+    case ocrImportHint, ocrCopyAllHint
+    
+    // --- OCR: экспорт ---
+    case ocrExport, ocrExportTxt, ocrExportMarkdown, ocrExportJSON, ocrExportSearchablePDF
+    case ocrExportDone, ocrExportError
+    case ocrPreferEmbeddedPDF
+    
+    // --- OCR: озвучка ---
+    case ocrSpeak, ocrStopSpeak, ocrPauseSpeak, ocrResumeSpeak, ocrTTSVoice, ocrTTSRate, ocrTTSSettings
+    
+    // --- OCR: штрих-коды и рамки ---
+    case ocrBarcodes, ocrNoBarcodes, ocrShowBoxes, ocrDetectedLanguage, ocrConfidence
+    
+    // --- OCR: страницы ---
+    case ocrPage, ocrPages, ocrRemovePage, ocrReRecognize, ocrRecognizeAll
+    
+    case ocrErrImage
+    
     // --- OCR Statuses & Errors ---
     case ocrStatusReady, ocrCapturing, ocrCancel, ocrRecognizing, ocrDone
     case ocrAIDisabled, ocrAIProcessing, ocrAIDone, ocrAIErrorPrefix
@@ -256,6 +290,9 @@ enum StringKey {
     
     // --- OCR Languages ---
     case langRu, langEn, langDe, langFr, langEs
+    case langIt, langPt, langUk, langPl, langTr, langNl, langSv, langDa
+    case langNo, langFi, langCs, langZhHans, langZhHant, langJa, langKo
+    case langAr, langHe, langTh, langVi
     
     // --- AI Operations ---
     case aiOpRewrite, aiOpImprove, aiOpSummarize, aiOpTranslate, aiOpGrammar
@@ -664,6 +701,88 @@ enum StringKey {
             case .aiApiKey: return "API Ключ"
             case .aiModel: return "Модель"
                 
+            // --- OCR: тонкая настройка распознавания ---
+            case .ocrAdvanced: return "Тонкая настройка"
+            case .ocrRecognition: return "Распознавание"
+            case .ocrLevelAccurate: return "Точная"
+            case .ocrLevelFast: return "Быстрая"
+            case .ocrLanguageCorrection: return "Автокоррекция языка"
+            case .ocrAutoDetect: return "Автоопределение языка"
+            case .ocrMinTextHeight: return "Минимальная высота текста"
+            case .ocrCustomWords: return "Пользовательский словарь"
+            case .ocrCustomWordsPlaceholder: return "Слова через запятую…"
+            case .ocrDetectBarcodes: return "Распознавать QR и штрих-коды"
+            case .ocrLanguages: return "Языки распознавания"
+            case .ocrImageOrientation: return "Ориентация изображения"
+            case .ocrOrientationUp: return "Обычная"
+            case .ocrOrientationDown: return "Перевёрнутая"
+            case .ocrOrientationLeft: return "Влево"
+            case .ocrOrientationRight: return "Вправо"
+                
+            // --- OCR: предобработка изображения ---
+            case .ocrEnhance: return "Улучшение изображения"
+            case .ocrEnhanceEnabled: return "Предобработка перед OCR"
+            case .ocrGrayscale: return "Оттенки серого"
+            case .ocrContrast: return "Контраст"
+            case .ocrBrightness: return "Яркость"
+            case .ocrSharpness: return "Резкость"
+            case .ocrInvert: return "Инвертировать цвета"
+            case .ocrBinarize: return "Бинаризация (ч/б порог)"
+            case .ocrBinarizeThreshold: return "Порог"
+            case .ocrUpscale: return "Увеличение"
+            case .ocrReset: return "Сбросить"
+                
+            // --- OCR: импорт ---
+            case .ocrImport: return "Импорт"
+            case .ocrImportFiles: return "Из файлов…"
+            case .ocrImportPDF: return "PDF документ…"
+            case .ocrImportScannerTitle: return "Сканировать со сканера"
+            case .ocrScannerHint: return "Подключите сканер и нажмите «Сканировать»"
+            case .ocrScannerScan: return "Сканировать"
+            case .ocrScannerOverview: return "Предпросмотр"
+            case .ocrScannerClose: return "Закрыть"
+            case .ocrImporting: return "Импорт…"
+            case .ocrImportEmpty: return "Не удалось загрузить страницы"
+            case .ocrImportDone: return "Импортировано страниц:"
+            case .ocrImportScanner: return "Сканер"
+            case .ocrImportHint: return "Перетащите файлы или PDF сюда"
+            case .ocrCopyAllHint: return "Копировать всё"
+                
+            // --- OCR: экспорт ---
+            case .ocrExport: return "Экспорт"
+            case .ocrExportTxt: return "Текст (.txt)"
+            case .ocrExportMarkdown: return "Markdown (.md)"
+            case .ocrExportJSON: return "JSON (.json)"
+            case .ocrExportSearchablePDF: return "PDF с текстовым слоем"
+            case .ocrExportDone: return "Экспорт завершён"
+            case .ocrExportError: return "Ошибка экспорта:"
+            case .ocrPreferEmbeddedPDF: return "Брать текст из PDF"
+                
+            // --- OCR: озвучка ---
+            case .ocrSpeak: return "Озвучить"
+            case .ocrStopSpeak: return "Остановить озвучку"
+            case .ocrPauseSpeak: return "Пауза"
+            case .ocrResumeSpeak: return "Продолжить"
+            case .ocrTTSVoice: return "Голос"
+            case .ocrTTSRate: return "Скорость"
+            case .ocrTTSSettings: return "Настройки озвучки"
+                
+            // --- OCR: штрих-коды и рамки ---
+            case .ocrBarcodes: return "Штрих-коды"
+            case .ocrNoBarcodes: return "Коды не найдены"
+            case .ocrShowBoxes: return "Рамки текста"
+            case .ocrDetectedLanguage: return "Определён язык"
+            case .ocrConfidence: return "Уверенность"
+                
+            // --- OCR: страницы ---
+            case .ocrPage: return "Страница"
+            case .ocrPages: return "Страницы"
+            case .ocrRemovePage: return "Удалить страницу"
+            case .ocrReRecognize: return "Распознать заново"
+            case .ocrRecognizeAll: return "Распознать все"
+                
+            case .ocrErrImage: return "Не удалось обработать изображение"
+                
             // --- OCR Statuses ---
             case .ocrStatusReady: return "Готов к работе"
             case .ocrCapturing: return "Захват..."
@@ -695,6 +814,25 @@ enum StringKey {
             case .langDe: return "Deutsch"
             case .langFr: return "Français"
             case .langEs: return "Español"
+            case .langIt: return "Italiano"
+            case .langPt: return "Português"
+            case .langUk: return "Українська"
+            case .langPl: return "Polski"
+            case .langTr: return "Türkçe"
+            case .langNl: return "Nederlands"
+            case .langSv: return "Svenska"
+            case .langDa: return "Dansk"
+            case .langNo: return "Norsk"
+            case .langFi: return "Suomi"
+            case .langCs: return "Čeština"
+            case .langZhHans: return "中文 (简体)"
+            case .langZhHant: return "中文 (繁體)"
+            case .langJa: return "日本語"
+            case .langKo: return "한국어"
+            case .langAr: return "العربية"
+            case .langHe: return "עברית"
+            case .langTh: return "ไทย"
+            case .langVi: return "Tiếng Việt"
             
             // --- AI Operations ---
             case .aiOpRewrite: return "Переписать"
@@ -1135,6 +1273,88 @@ enum StringKey {
             case .aiApiKey: return "API Key"
             case .aiModel: return "Model"
                 
+            // --- OCR: recognition fine-tuning ---
+            case .ocrAdvanced: return "Fine-tuning"
+            case .ocrRecognition: return "Recognition"
+            case .ocrLevelAccurate: return "Accurate"
+            case .ocrLevelFast: return "Fast"
+            case .ocrLanguageCorrection: return "Language correction"
+            case .ocrAutoDetect: return "Auto-detect language"
+            case .ocrMinTextHeight: return "Minimum text height"
+            case .ocrCustomWords: return "Custom dictionary"
+            case .ocrCustomWordsPlaceholder: return "Words, comma separated…"
+            case .ocrDetectBarcodes: return "Detect QR & barcodes"
+            case .ocrLanguages: return "Recognition languages"
+            case .ocrImageOrientation: return "Image orientation"
+            case .ocrOrientationUp: return "Normal"
+            case .ocrOrientationDown: return "Upside down"
+            case .ocrOrientationLeft: return "Left"
+            case .ocrOrientationRight: return "Right"
+                
+            // --- OCR: image preprocessing ---
+            case .ocrEnhance: return "Image enhancement"
+            case .ocrEnhanceEnabled: return "Preprocess before OCR"
+            case .ocrGrayscale: return "Grayscale"
+            case .ocrContrast: return "Contrast"
+            case .ocrBrightness: return "Brightness"
+            case .ocrSharpness: return "Sharpness"
+            case .ocrInvert: return "Invert colors"
+            case .ocrBinarize: return "Binarize (B/W threshold)"
+            case .ocrBinarizeThreshold: return "Threshold"
+            case .ocrUpscale: return "Upscale"
+            case .ocrReset: return "Reset"
+                
+            // --- OCR: import ---
+            case .ocrImport: return "Import"
+            case .ocrImportFiles: return "From files…"
+            case .ocrImportPDF: return "PDF document…"
+            case .ocrImportScannerTitle: return "Scan from scanner"
+            case .ocrScannerHint: return "Connect a scanner and press “Scan”"
+            case .ocrScannerScan: return "Scan"
+            case .ocrScannerOverview: return "Overview"
+            case .ocrScannerClose: return "Close"
+            case .ocrImporting: return "Importing…"
+            case .ocrImportEmpty: return "Failed to load pages"
+            case .ocrImportDone: return "Pages imported:"
+            case .ocrImportScanner: return "Scanner"
+            case .ocrImportHint: return "Drop files or PDF here"
+            case .ocrCopyAllHint: return "Copy all"
+                
+            // --- OCR: export ---
+            case .ocrExport: return "Export"
+            case .ocrExportTxt: return "Text (.txt)"
+            case .ocrExportMarkdown: return "Markdown (.md)"
+            case .ocrExportJSON: return "JSON (.json)"
+            case .ocrExportSearchablePDF: return "Searchable PDF"
+            case .ocrExportDone: return "Export completed"
+            case .ocrExportError: return "Export error:"
+            case .ocrPreferEmbeddedPDF: return "Use embedded PDF text"
+                
+            // --- OCR: speech ---
+            case .ocrSpeak: return "Speak"
+            case .ocrStopSpeak: return "Stop speaking"
+            case .ocrPauseSpeak: return "Pause"
+            case .ocrResumeSpeak: return "Resume"
+            case .ocrTTSVoice: return "Voice"
+            case .ocrTTSRate: return "Rate"
+            case .ocrTTSSettings: return "Speech settings"
+                
+            // --- OCR: barcodes & boxes ---
+            case .ocrBarcodes: return "Barcodes"
+            case .ocrNoBarcodes: return "No codes found"
+            case .ocrShowBoxes: return "Text boxes"
+            case .ocrDetectedLanguage: return "Detected language"
+            case .ocrConfidence: return "Confidence"
+                
+            // --- OCR: pages ---
+            case .ocrPage: return "Page"
+            case .ocrPages: return "Pages"
+            case .ocrRemovePage: return "Remove page"
+            case .ocrReRecognize: return "Recognize again"
+            case .ocrRecognizeAll: return "Recognize all"
+                
+            case .ocrErrImage: return "Failed to process image"
+                
             // --- OCR Statuses ---
             case .ocrStatusReady: return "Ready"
             case .ocrCapturing: return "Capturing..."
@@ -1166,6 +1386,25 @@ enum StringKey {
             case .langDe: return "German"
             case .langFr: return "French"
             case .langEs: return "Spanish"
+            case .langIt: return "Italian"
+            case .langPt: return "Portuguese"
+            case .langUk: return "Ukrainian"
+            case .langPl: return "Polish"
+            case .langTr: return "Turkish"
+            case .langNl: return "Dutch"
+            case .langSv: return "Swedish"
+            case .langDa: return "Danish"
+            case .langNo: return "Norwegian"
+            case .langFi: return "Finnish"
+            case .langCs: return "Czech"
+            case .langZhHans: return "Chinese (Simplified)"
+            case .langZhHant: return "Chinese (Traditional)"
+            case .langJa: return "Japanese"
+            case .langKo: return "Korean"
+            case .langAr: return "Arabic"
+            case .langHe: return "Hebrew"
+            case .langTh: return "Thai"
+            case .langVi: return "Vietnamese"
             
             // --- AI Operations ---
             case .aiOpRewrite: return "Rewrite"

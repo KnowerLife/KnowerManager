@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Combine
 
-// MARK: - DESIGN SYSTEM
+// MARK: - DESIGN SYSTEM (Legacy compatibility)
 enum DesignSystem {
     static let cornerRadius: CGFloat = 16
     static let innerPadding: CGFloat = 20
@@ -10,13 +10,13 @@ enum DesignSystem {
     static let heightCollapsed: CGFloat = 780
     static let heightExpanded: CGFloat = 880
     
-    static let cardColor = Color(NSColor.controlBackgroundColor).opacity(0.7)
-    static let strokeColor = Color(NSColor.separatorColor).opacity(0.5)
-    static let cardStroke = strokeColor
+    static let cardColor = AppThemeTokens.Surface.elevated
+    static let strokeColor = AppThemeTokens.Border.normal
+    static let cardStroke = AppThemeTokens.Border.normal
     
-    static let activeGradient = LinearGradient(colors: [Color(NSColor.systemGreen), Color(NSColor.systemTeal)], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let stopGradient = LinearGradient(colors: [Color(NSColor.systemRed), Color(NSColor.systemOrange)], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let primaryGradient = LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let activeGradient = AppThemeTokens.Accent.success
+    static let stopGradient = AppThemeTokens.Accent.danger
+    static let primaryGradient = AppThemeTokens.Accent.primary
 }
 
 struct ContentView: View {
@@ -33,13 +33,14 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            VisualEffectView(material: .underWindowBackground, blendingMode: .behindWindow)
+            Rectangle()
+                .fill(Color(NSColor.windowBackgroundColor))
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // 1. Верхний бар
-                CustomTopBar(settings: settings, selectedTab: $selectedTab, showSettings: $showSettings)
-                    .padding(.top, 16).padding(.horizontal, 20).padding(.bottom, 12)
+                ModernTopBar(settings: settings, selectedTab: $selectedTab, showSettings: $showSettings)
+                    .padding(.top, 18).padding(.horizontal, 18).padding(.bottom, 14)
                 
                 // 2. Контент вкладок
                 ZStack {
@@ -50,26 +51,26 @@ struct ContentView: View {
                     } else if selectedTab == 1 {
                         // --- ТАБ 1: VPN (Xray) ---
                         SSConnectionView()
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 18)
                             .transition(.opacity)
                     } else if selectedTab == 2 {
                         // --- ТАБ 2: WARP ---
                         WarpGeneratorView(warpManager: warpManager, settings: settings)
-                            .padding(.horizontal, 20).transition(.opacity)
+                            .padding(.horizontal, 18).transition(.opacity)
                     } else if selectedTab == 3 {
                         // --- ТАБ 3: СКАНЕР ---
                         ScannerView(ocrManager: ocrManager, settings: settings)
-                            .padding(.horizontal, 20).transition(.opacity)
+                            .padding(.horizontal, 18).transition(.opacity)
                     } else {
                         // --- ТАБ 4: ИНСТРУМЕНТЫ ---
                         ToolsView(tools: tools, settings: settings)
-                            .padding(.horizontal, 20).transition(.opacity)
+                            .padding(.horizontal, 18).transition(.opacity)
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: selectedTab)
                 Spacer(minLength: 0)
             }
-            .padding(.bottom, isLogExpanded ? 150 : 20)
+            .padding(.bottom, isLogExpanded ? 150 : 22)
             
             // Лог (Показываем на вкладке "Обход", так как там логи Zapret)
             // Если вы хотите видеть логи Xray, можно добавить || selectedTab == 1
@@ -102,356 +103,57 @@ struct ContentView: View {
     }
 }
 
-struct CustomTopBar: View {
+struct ModernTopBar: View {
     @ObservedObject var settings: SettingsManager
     @Binding var selectedTab: Int
     @Binding var showSettings: Bool
-    
-    // Объявляем Namespace
     @Namespace private var animation
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Заголовок и кнопка настроек
-            HStack {
-                HStack(spacing: 6) {
+        VStack(spacing: 14) {
+            HStack(spacing: 10) {
+                HStack(spacing: 10) {
                     Image(nsImage: NSApp.applicationIconImage)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 64, height: 64)
-                    
-                    Text(settings.t(.appTitle))
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .tracking(1)
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(AppThemeTokens.Border.subtle, lineWidth: 1)
+                        )
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(settings.t(.appTitle))
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        Text("Network Control Suite")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                            .tracking(1.2)
+                    }
                 }
                 Spacer()
                 Button(action: { showSettings = true }) {
-                    Image(systemName: "gearshape.fill")
+                    Image(systemName: "sliders.horizontal.3")
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.secondary)
-                        .padding(8)
-                        .background(Color.black.opacity(0.05))
-                        .clipShape(Circle())
+                        .frame(width: 30, height: 30)
+                        .background(Circle().fill(Color.primary.opacity(0.05)))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(ScaleButtonStyle())
                 .sheet(isPresented: $showSettings) { GeneralSettingsSheet() }
+                .help("Настройки")
             }
-            
-            // Табы
-            HStack(spacing: 4) {
-                // 0. Bypass (Сеть)
-                tabButton(title: settings.t(.tabBypass), icon: "network", tag: 0)
-                
-                // 1. VPN (Щит) - НОВЫЙ ТАБ
-                // Используем .vpnTitle ("VPN") для названия
-                tabButton(title: settings.t(.vpnTitle), icon: "lock.shield", tag: 1)
-                
-                // 2. Warp (Ключ)
-                tabButton(title: settings.t(.tabWarp), icon: "key.fill", tag: 2)
-                
-                // 3. Scanner (Глаз/Текст)
-                tabButton(title: settings.t(.tabScanner), icon: "text.viewfinder", tag: 3)
-                
-                // 4. Tools (Инструменты)
-                tabButton(title: settings.t(.tabTools), icon: "wrench.and.screwdriver.fill", tag: 4)
-            }
-            .padding(4)
-            .background(Color.black.opacity(0.05))
-            .cornerRadius(12)
+            let tabs = [
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabBypass), icon: "network", badge: nil),
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.vpnTitle), icon: "lock.shield", badge: nil),
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabWarp), icon: "key.fill", badge: nil),
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabScanner), icon: "text.viewfinder", badge: nil),
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabTools), icon: "wrench.and.screwdriver.fill", badge: nil)
+            ]
+            UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)
         }
-    }
-    
-    @ViewBuilder
-    private func tabButton(title: String, icon: String, tag: Int) -> some View {
-        Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                selectedTab = tag
-            }
-        }) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                if selectedTab == tag {
-                    Text(title)
-                        .lineLimit(1)
-                        .fixedSize()
-                }
-            }
-            .font(.system(size: 11, weight: .bold))
-            .foregroundColor(selectedTab == tag ? .white : .secondary)
-            .frame(maxWidth: .infinity)
-            .frame(height: 28)
-            .background(
-                ZStack {
-                    if selectedTab == tag {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.blue)
-                            .matchedGeometryEffect(id: "TAB_BG", in: animation)
-                    }
-                }
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - 3. SCANNER VIEW (OCR)
-struct ScannerView: View {
-    @ObservedObject var ocrManager: OCRManager
-    @ObservedObject var settings: SettingsManager
-    @State private var showAISettings = false
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            
-            // 1. ПАНЕЛЬ УПРАВЛЕНИЯ
-            VStack(spacing: 10) {
-                HStack {
-                    Image(systemName: "viewfinder.circle.fill").font(.title3).foregroundColor(.blue)
-                    Text(settings.t(.ocrTitle)).font(.system(size: 14, weight: .bold, design: .rounded))
-                    Spacer()
-                    if ocrManager.isProcessing || ocrManager.isAIProcessing { ProgressView().scaleEffect(0.5) }
-                    else { Text(ocrManager.statusMessage).font(.system(size: 9)).foregroundColor(.secondary).lineLimit(1) }
-                }
-                Divider().background(Color.secondary.opacity(0.1))
-                
-                // Кнопки захвата
-                HStack(spacing: 8) {
-                    Button(action: { ocrManager.captureArea() }) { Label(settings.t(.ocrArea), systemImage: "crop") }
-                        .buttonStyle(ModernButtonStyle(color: .blue)).disabled(ocrManager.isProcessing)
-                    Button(action: { ocrManager.captureScreen() }) { Image(systemName: "macwindow") }
-                        .buttonStyle(ModernButtonStyle(color: .secondary)).frame(width: 40).help(settings.t(.ocrScreen))
-                    Button(action: { ocrManager.pasteFromClipboard() }) { Image(systemName: "doc.on.clipboard") }
-                        .buttonStyle(ModernButtonStyle(color: .secondary)).frame(width: 40).help(settings.t(.ocrClipboard))
-                }.disabled(ocrManager.isProcessing)
-                
-                // Выбор языка и AI
-                HStack {
-                    Menu {
-                        ForEach(OCRLanguage.allCases) { lang in Button(lang.displayName) { ocrManager.selectedLanguage = lang } }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(ocrManager.selectedLanguage.displayName).font(.system(size: 11))
-                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 9))
-                        }.padding(.horizontal, 8).padding(.vertical, 4).background(Color.black.opacity(0.05)).cornerRadius(6)
-                    }.menuStyle(BorderlessButtonMenuStyle()).frame(width: 100, alignment: .leading)
-                    
-                    Spacer()
-                    
-                    Button(action: { showAISettings = true }) {
-                        HStack(spacing: 4) { Image(systemName: "brain.head.profile"); Text("AI") }
-                            .font(.system(size: 11)).foregroundColor(ocrManager.aiService.config.enabled ? .purple : .secondary)
-                    }.buttonStyle(PlainButtonStyle())
-                }
-            }
-            .padding(10).background(DesignSystem.cardColor).cornerRadius(DesignSystem.cornerRadius)
-            .overlay(RoundedRectangle(cornerRadius: DesignSystem.cornerRadius).stroke(DesignSystem.strokeColor, lineWidth: 1))
-            
-            // 2. ИСТОРИЯ (Лента)
-            if !ocrManager.recognitionHistory.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(ocrManager.recognitionHistory) { item in
-                            HistoryThumbnail(item: item) {
-                                if let index = ocrManager.recognitionHistory.firstIndex(where: {$0.id == item.id}) { ocrManager.recognitionHistory.remove(at: index) }
-                            }.onTapGesture { ocrManager.selectFromHistory(item) }
-                        }
-                    }.padding(4)
-                }.frame(height: 60)
-            }
-            
-            // 3. БЛОК ПРЕДПРОСМОТРА КАРТИНКИ (С ТУЛБАРОМ)
-            if let image = ocrManager.currentImage {
-                VStack(spacing: 0) {
-                    // Сама картинка
-                    ZStack {
-                        Color.black.opacity(0.05)
-                        Image(nsImage: image)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .padding(12)
-                    }
-                    .frame(height: 200) // Фиксированная высота для превью
-                    .clipped()
-                    
-                    Divider()
-                    
-                    // Тулбар картинки (ВОССТАНОВЛЕН)
-                    HStack {
-                        Label(settings.t(.previewLabel), systemImage: "photo")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        // Группа кнопок (Копировать фото / Сохранить фото)
-                        HStack(spacing: 0) {
-                            Button(action: {
-                                let pb = NSPasteboard.general; pb.clearContents(); pb.writeObjects([image])
-                            }) {
-                                Image(systemName: "doc.on.doc").font(.system(size: 12))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10).padding(.vertical, 6)
-                            .help(settings.t(.btnCopyImage))
-                            
-                            Divider().frame(height: 14)
-                            
-                            Button(action: { saveImageToDisk(image: image) }) {
-                                Image(systemName: "square.and.arrow.down").font(.system(size: 12))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10).padding(.vertical, 6)
-                            .help(settings.t(.btnSaveImage))
-                            
-                            Divider().frame(height: 16)
-                            
-                            // Share (Исправленная логика)
-                            Button(action: { shareImageNative(image: image) }) {
-                                Image(systemName: "square.and.arrow.up").font(.system(size: 12))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10).padding(.vertical, 6)
-                            .help(settings.t(.btnShare))
-                        }
-                        .background(Color(NSColor.controlBackgroundColor))
-                        .cornerRadius(6)
-                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.gray.opacity(0.2), lineWidth: 1))
-                        
-                        Spacer()
-                        
-                        // Кнопка закрыть
-                        Button(action: { withAnimation { ocrManager.currentImage = nil } }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.secondary)
-                                .padding(6)
-                                .background(Color.black.opacity(0.05))
-                                .clipShape(Circle())
-                        }.buttonStyle(PlainButtonStyle()).help(settings.t(.previewClose))
-                    }
-                    .padding(8)
-                    .background(Color(NSColor.windowBackgroundColor))
-                    .overlay(Rectangle().frame(height: 1).foregroundColor(Color(NSColor.separatorColor).opacity(0.3)), alignment: .top)
-                }
-                .background(DesignSystem.cardColor)
-                .cornerRadius(DesignSystem.cornerRadius)
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.cornerRadius).stroke(DesignSystem.strokeColor, lineWidth: 1))
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
-            
-            // 4. ТЕКСТОВОЙ РЕДАКТОР (С AI и кнопками)
-            VStack(spacing: 0) {
-                // Header редактора
-                HStack {
-                    Text(settings.t(.ocrResult)).font(.system(size: 10, weight: .bold)).foregroundColor(.secondary)
-                    Spacer()
-                    if !ocrManager.recognizedText.isEmpty {
-                        Text("\(ocrManager.recognizedText.count) \(settings.t(.ocrCharsCount))")
-                                .font(.system(size: 9, design: .monospaced))
-                                .foregroundColor(.secondary)
-                                .padding(.trailing, 6)
-                        Menu {
-                            ForEach(AIOperation.allCases) { op in Button { ocrManager.processWithAI(operation: op) } label: { Label(op.title, systemImage: op.icon) } }
-                        } label: {
-                            HStack(spacing: 4) { Image(systemName: "sparkles"); Text(settings.t(.ocrAI)) }
-                                .font(.system(size: 10, weight: .semibold)).foregroundColor(.white)
-                                .padding(.horizontal, 8).padding(.vertical, 3)
-                                .background(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)).cornerRadius(4)
-                        }.menuStyle(BorderlessButtonMenuStyle())
-                    }
-                }
-                .padding(.horizontal, 8).padding(.top, 8)
-                
-                TextEditor(text: $ocrManager.recognizedText)
-                    .font(.system(.body, design: .monospaced))
-                    .padding(4)
-                    .background(Color.clear)
-                    .frame(maxHeight: .infinity)
-                
-                Divider()
-                
-                // Нижний тулбар (Текст)
-                HStack(spacing: 12) {
-                    ActionButton(title: settings.t(.ocrCopy), icon: "text.alignleft") { ocrManager.copyText() }.disabled(ocrManager.recognizedText.isEmpty)
-                    ActionButton(title: settings.t(.btnSave), icon: "doc.text") { ocrManager.saveToFile() }.disabled(ocrManager.recognizedText.isEmpty)
-                    Spacer()
-                    Button(action: { ocrManager.clear() }) { Image(systemName: "trash").foregroundColor(.secondary) }.buttonStyle(PlainButtonStyle()).help(settings.t(.ocrClear))
-                }
-                .padding(8)
-                .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
-            }
-            .background(DesignSystem.cardColor).cornerRadius(DesignSystem.cornerRadius)
-            .overlay(RoundedRectangle(cornerRadius: DesignSystem.cornerRadius).stroke(DesignSystem.strokeColor, lineWidth: 1))
-            
-        }
-        .sheet(isPresented: $showAISettings) { AIConfigSheet(ocrManager: ocrManager) }
-    }
-    
-    // Вспомогательная функция сохранения (должна быть внутри ScannerView)
-    func saveImageToDisk(image: NSImage) {
-        let savePanel = NSSavePanel()
-        savePanel.allowedContentTypes = [.png]
-        savePanel.nameFieldStringValue = "Scan_\(Int(Date().timeIntervalSince1970)).png"
-        savePanel.begin { response in
-            if response == .OK, let url = savePanel.url,
-               let tiff = image.tiffRepresentation,
-               let bitmap = NSBitmapImageRep(data: tiff),
-               let png = bitmap.representation(using: .png, properties: [:]) {
-                try? png.write(to: url)
-            }
-        }
-    }
-    
-    // Функция шаринга (безопасная)
-    func shareImageNative(image: NSImage) {
-        let picker = NSSharingServicePicker(items: [image])
-        DispatchQueue.main.async {
-            if let window = NSApp.keyWindow, let contentView = window.contentView {
-                picker.show(relativeTo: .zero, of: contentView, preferredEdge: .minY)
-            }
-        }
-    }
-}
-
-struct ActionButton: View {
-    let title: String
-    let icon: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 12))
-        }
-        .buttonStyle(ActionButtonStyle())
-        .help(title)
-    }
-}
-
-struct ImageToolbarButtonStyle: ButtonStyle {
-    @State private var isHovered = false
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 14))
-            .foregroundColor(.primary)
-            .frame(width: 32, height: 28)
-            .background(isHovered ? Color.black.opacity(0.05) : Color.clear)
-            .onHover { isHovered = $0 }
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-    }
-}
-
-// MARK: - COMPONENT STYLES
-struct ActionButtonStyle: ButtonStyle {
-    var color: Color = .secondary
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundColor(color == .secondary ? .primary : .white)
-            .frame(width: 32, height: 32)
-            .background(color == .secondary ? Color.black.opacity(0.05) : color)
-            .cornerRadius(8)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }
 
@@ -477,7 +179,7 @@ struct BypassDashboardView: View {
                 }
                 Spacer().frame(height: 60)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 18)
         }
     }
 }
@@ -488,40 +190,7 @@ struct WarpGeneratorView: View {
     var body: some View { VStack(spacing: 12) { VStack(alignment: .leading, spacing: 8) { HStack { Image(systemName: "key.icloud.fill").font(.system(size: 20)).foregroundColor(.purple); Text(settings.t(.warpTitle)).font(.system(size: 16, weight: .bold, design: .rounded)); Spacer(); Button(action: { showSettingsSheet = true }) { Image(systemName: "slider.horizontal.3").font(.system(size: 14)).foregroundColor(.secondary) }.buttonStyle(PlainButtonStyle()).frame(width: 36, height: 30).background(Color.black.opacity(0.05)).cornerRadius(8) }; Divider().background(Color.secondary.opacity(0.2)); HStack { Image(systemName: "network").font(.caption).foregroundColor(.secondary); Text(warpManager.proxyStatus).font(.system(size: 10, design: .monospaced)).foregroundColor(.secondary); Spacer(); Button(action: { warpManager.detectProxy() }) { if warpManager.isScanningProxy { ProgressView().scaleEffect(0.5).frame(width: 24, height: 24) } else { Image(systemName: "wand.and.stars").font(.system(size: 14)).foregroundColor(.blue).frame(width: 24, height: 24).background(Color.blue.opacity(0.1)).cornerRadius(6) } }.buttonStyle(PlainButtonStyle()).disabled(warpManager.isScanningProxy).help(settings.t(.btnScan)) } }.padding(12).background(DesignSystem.cardColor).cornerRadius(12).overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignSystem.strokeColor, lineWidth: 1)); VStack(spacing: 8) { HStack { Text(settings.t(.warpFormat)).font(.caption).foregroundColor(.secondary); Spacer(); Picker("", selection: $warpManager.selectedFormat) { ForEach(ExportFormat.allCases) { format in Text(format.rawValue).tag(format) } }.labelsHidden().frame(width: 140) }; HStack { TextField(settings.t(.endpointAuto), text: $warpManager.customEndpoint).textFieldStyle(RoundedBorderTextFieldStyle()).font(.system(size: 11, design: .monospaced)); Button(action: { showScannerSheet = true }) { Image(systemName: "dot.radiowaves.left.and.right").foregroundColor(.blue) }.buttonStyle(PlainButtonStyle()).frame(width: 28, height: 28).background(Color.blue.opacity(0.1)).cornerRadius(6).help(settings.t(.endpointScanHelp)) } }.padding(8).background(DesignSystem.cardColor).cornerRadius(10); Button(action: { warpManager.generateConfig() }) { if warpManager.isGenerating { ProgressView().scaleEffect(0.5).frame(maxWidth: .infinity) } else { HStack { Image(systemName: "sparkles"); Text(settings.t(.btnGenerate)) }.font(.system(size: 13, weight: .bold, design: .rounded)).foregroundColor(.white).frame(maxWidth: .infinity) } }.frame(height: 44).background(Color.purple).cornerRadius(12).shadow(color: Color.purple.opacity(0.3), radius: 6, x: 0, y: 3).buttonStyle(PlainButtonStyle()).disabled(warpManager.isGenerating); TextEditor(text: .constant(warpManager.generatedConfig)).font(.system(size: 10, design: .monospaced)).padding(6).background(Color(NSColor.textBackgroundColor).opacity(0.5)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(DesignSystem.strokeColor, lineWidth: 1)).frame(maxHeight: .infinity); if !warpManager.generatedConfig.isEmpty { HStack(spacing: 12) { Button(action: { showQRCodeSheet = true }) { Label("QR", systemImage: "qrcode") }.buttonStyle(ModernButtonStyle(color: .gray)).disabled(warpManager.isConfigTooLargeForQR); if #available(macOS 13.0, *) { ShareLink(item: warpManager.generatedConfig) { Label(settings.t(.btnShare), systemImage: "square.and.arrow.up").font(.system(size: 11, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 8).background(Color.blue).foregroundColor(.white).cornerRadius(8) }.buttonStyle(PlainButtonStyle()) } else { Button(action: { warpManager.copyToClipboard() }) { Label(settings.t(.btnCopy), systemImage: "doc.on.doc") }.buttonStyle(ModernButtonStyle(color: .blue)) }; Button(action: { warpManager.saveToFile() }) { Label(settings.t(.btnSaveFile), systemImage: "square.and.arrow.down") }.buttonStyle(ModernButtonStyle(color: .green)) }.frame(height: 32) }; if !warpManager.statusMessage.isEmpty { Text(warpManager.statusMessage).font(.caption).foregroundColor(.secondary) } }.onAppear { warpManager.detectProxy() }.sheet(isPresented: $showSettingsSheet) { WarpSettingsSheet(warpManager: warpManager) }.sheet(isPresented: $showQRCodeSheet) { QRCodeSheet(image: warpManager.qrCodeImage, configName: warpManager.selectedFormat.rawValue) }.sheet(isPresented: $showScannerSheet) { ScannerSheet() } }
 }
 
-struct ModernTabButton: View {
-    let title: String
-    let icon: String
-    let tag: Int
-    @Binding var selectedTab: Int
-    
-    // 3. Принимаем Namespace
-    var animation: Namespace.ID
-    
-    var body: some View {
-        Button(action: { withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = tag } }) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                if selectedTab == tag { Text(title).lineLimit(1).fixedSize() }
-            }
-            .font(.system(size: 11, weight: .bold))
-            .foregroundColor(selectedTab == tag ? .white : .secondary)
-            .frame(maxWidth: .infinity)
-            .frame(height: 28)
-            .background(
-                ZStack {
-                    if selectedTab == tag {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.blue)
-                            // 4. Используем переданный animation
-                            .matchedGeometryEffect(id: "TAB_BG", in: animation)
-                    }
-                }
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
+// ModernTabButton deprecated - use UXUIKit.ModernTabBar
 
 struct StatusHeaderCard: View {
     @ObservedObject var manager: KnowerManager
@@ -1058,11 +727,9 @@ struct ScannerSheet: View {
 }
 struct AIConfigSheet: View { @ObservedObject var ocrManager: OCRManager; @Environment(\.presentationMode) var presentationMode; @ObservedObject var settings = SettingsManager.shared; var body: some View { VStack(spacing: 20) { Text(settings.t(.ocrAISettings)).font(.headline); Form { Toggle(settings.t(.aiEnable), isOn: $ocrManager.aiService.config.enabled); Picker(settings.t(.aiProvider), selection: $ocrManager.aiService.config.provider) { ForEach(AIServiceProvider.allCases) { provider in Text(provider.rawValue).tag(provider) } }; if ocrManager.aiService.config.provider != .local { SecureField(settings.t(.aiApiKey), text: $ocrManager.aiService.config.apiKey) }; Picker(settings.t(.aiModel), selection: $ocrManager.aiService.config.model) { ForEach(ocrManager.aiService.config.provider.availableModels, id: \.self) { model in Text(model).tag(model) } } }.padding(); HStack { Button(settings.t(.btnCancel)) { presentationMode.wrappedValue.dismiss() }; Button(settings.t(.btnSave)) { ocrManager.aiService.saveConfig(); presentationMode.wrappedValue.dismiss() }.buttonStyle(ModernButtonStyle(color: .blue)) } }.frame(width: 380, height: 300).padding() } }
 
-struct ScaleButtonStyle: ButtonStyle { func makeBody(configuration: Configuration) -> some View { configuration.label.scaleEffect(configuration.isPressed ? 0.98 : 1.0).animation(.easeInOut(duration: 0.1), value: configuration.isPressed) } }
-struct ModernButtonStyle: ButtonStyle { let color: Color; func makeBody(configuration: Configuration) -> some View { configuration.label.font(.system(size: 11, weight: .semibold)).padding(.vertical, 8).padding(.horizontal, 12).frame(maxWidth: .infinity).background(color.opacity(configuration.isPressed ? 0.8 : 1.0)).foregroundColor(.white).cornerRadius(8) } }
+// Legacy button styles removed - use Design components
 struct VisualEffectView: NSViewRepresentable { let material: NSVisualEffectView.Material; let blendingMode: NSVisualEffectView.BlendingMode; func makeNSView(context: Context) -> NSVisualEffectView { let v = NSVisualEffectView(); v.material = material; v.blendingMode = blendingMode; v.state = .active; return v }; func updateNSView(_ nsView: NSVisualEffectView, context: Context) { nsView.material = material; nsView.blendingMode = blendingMode } }
 struct WindowAccessor: NSViewRepresentable { var callback: (NSWindow) -> Void; func makeNSView(context: Context) -> NSView { let view = NSView(); DispatchQueue.main.async { [weak view] in if let w = view?.window { self.callback(w) } }; return view }; func updateNSView(_ nsView: NSView, context: Context) {} }
 struct RoundedCorner: Shape { var radius: CGFloat = .infinity; var corners: RectCorner = .allCorners; func path(in rect: CGRect) -> Path { var path = Path(); let r = min(min(radius, rect.height/2), rect.width/2); let p1 = CGPoint(x: rect.minX, y: rect.minY); let p2 = CGPoint(x: rect.maxX, y: rect.minY); let p3 = CGPoint(x: rect.maxX, y: rect.maxY); let p4 = CGPoint(x: rect.minX, y: rect.maxY); if corners.contains(.topLeft) { path.move(to: CGPoint(x: p1.x, y: p1.y + r)); path.addArc(center: CGPoint(x: p1.x + r, y: p1.y + r), radius: r, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false) } else { path.move(to: p1) }; if corners.contains(.topRight) { path.addLine(to: CGPoint(x: p2.x - r, y: p2.y)); path.addArc(center: CGPoint(x: p2.x - r, y: p2.y + r), radius: r, startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false) } else { path.addLine(to: p2) }; if corners.contains(.bottomRight) { path.addLine(to: CGPoint(x: p3.x, y: p3.y - r)); path.addArc(center: CGPoint(x: p3.x - r, y: p3.y - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false) } else { path.addLine(to: p3) }; if corners.contains(.bottomLeft) { path.addLine(to: CGPoint(x: p4.x + r, y: p4.y)); path.addArc(center: CGPoint(x: p4.x + r, y: p4.y - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false) } else { path.addLine(to: p4) }; path.closeSubpath(); return path } }
 struct RectCorner: Sendable, ExpressibleByArrayLiteral, Equatable { let rawValue: Int; init(rawValue: Int) { self.rawValue = rawValue }; init(arrayLiteral elements: RectCorner...) { var raw = 0; for element in elements { raw |= element.rawValue }; self.rawValue = raw }; func contains(_ member: RectCorner) -> Bool { return (rawValue & member.rawValue) != 0 }; static let topLeft = RectCorner(rawValue: 1 << 0); static let topRight = RectCorner(rawValue: 1 << 1); static let bottomLeft = RectCorner(rawValue: 1 << 2); static let bottomRight = RectCorner(rawValue: 1 << 3); static let allCorners = RectCorner(rawValue: 15) }
 struct BuilderToggle: View { let title: String; @Binding var current: String; var isActive: Bool { current.contains(title) }; var body: some View { Button(action: { if isActive { current = current.replacingOccurrences(of: title, with: "").trimmingCharacters(in: .whitespaces) } else { current = (current + " " + title).trimmingCharacters(in: .whitespaces) } }) { Text(title).font(.system(size: 10, weight: .medium)).padding(.horizontal, 8).padding(.vertical, 4).background(isActive ? Color.blue : Color.secondary.opacity(0.1)).foregroundColor(isActive ? .white : .primary).cornerRadius(6) }.buttonStyle(PlainButtonStyle()) } }
-struct HistoryThumbnail: View { let item: RecognitionResult; let onDelete: () -> Void; @State private var isHovered = false; var body: some View { ZStack(alignment: .topTrailing) { VStack(spacing: 0) { if let image = item.previewImage { Image(nsImage: image).resizable().aspectRatio(contentMode: .fill).frame(width: 48, height: 48).clipped() } else { ZStack { Color.gray.opacity(0.2); Image(systemName: "text.alignleft").font(.caption).foregroundColor(.secondary) }.frame(width: 48, height: 48) } }.cornerRadius(8).overlay(RoundedRectangle(cornerRadius: 8).stroke(isHovered ? Color.blue.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)).shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1); if isHovered { Button(action: onDelete) { Image(systemName: "xmark.circle.fill").font(.system(size: 14)).symbolRenderingMode(.palette).foregroundStyle(.white, .red).shadow(radius: 2) }.buttonStyle(PlainButtonStyle()).offset(x: 6, y: -6) } }.padding(4).onHover { h in withAnimation(.easeInOut(duration: 0.1)) { isHovered = h } } } }
