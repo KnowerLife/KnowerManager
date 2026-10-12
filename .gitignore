@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Xcode
+## Пользовательские состояния и настройки схем — не должны версионироваться
+**/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.moved-aside
+DerivedData/
+build/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+
+# Крупные бинарные ресурсы (не хранятся в git)
+KnowerManager/xray-core
+KnowerManager/geoip.dat
+KnowerManager/geosite.dat
+
+# Прочее
+*.orig
+*.rej
+*.log
