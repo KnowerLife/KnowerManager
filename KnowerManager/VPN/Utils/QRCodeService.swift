@@ -1,7 +1,7 @@
 import AppKit
 import CoreImage.CIFilterBuiltins
 import UniformTypeIdentifiers
-import Vision
+@preconcurrency import Vision
 
 // MARK: - Генерация и распознавание QR-кодов
 

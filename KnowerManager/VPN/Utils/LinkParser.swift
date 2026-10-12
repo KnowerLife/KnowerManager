@@ -7,7 +7,7 @@ enum LinkParser {
     /// Разбирает текст со ссылками (подписка/список/буфер обмена) в массив профилей.
     /// Поддерживает: ss://, vmess://, vless://, trojan:// (+ Base64-кодированное тело целиком).
     static func parseLinks(from text: String) -> [ShadowsocksProfile] {
-        var cleanText = text
+        let cleanText = text
             .replacingOccurrences(of: "<br>", with: "\n")
             .replacingOccurrences(of: "<BR>", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
