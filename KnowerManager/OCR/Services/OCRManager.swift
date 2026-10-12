@@ -266,7 +266,7 @@ class OCRManager: ObservableObject {
         currentImage = page.image
         textBlocks = page.blocks
         barcodes = page.barcodes
-        if let embedded = page.embeddedText {
+        if page.embeddedText != nil {
             detectedLanguage = DetectedLanguage(code: recognizeLanguageCode(ocrOptions.languages.first), confidence: 1.0)
         } else {
             detectedLanguage = detectLanguage(of: page.text)

@@ -147,10 +147,10 @@ class OCRService {
     // MARK: - Поддерживаемые языки
 
     static func supportedLanguages(for level: OCRRecognitionLevel, revision: Int) -> [String] {
-        var languages = (try? VNRecognizeTextRequest.supportedRecognitionLanguages(
-            for: level == .accurate ? .accurate : .fast,
-            revision: revision
-        )) ?? []
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = level == .accurate ? .accurate : .fast
+        request.revision = revision
+        var languages = (try? request.supportedRecognitionLanguages()) ?? []
         if languages.isEmpty {
             languages = ["en-US"]
         }
