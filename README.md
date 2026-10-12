@@ -14,9 +14,18 @@ macOS-приложение в строке меню для обхода блок
 ## Требования
 
 - macOS 13.5 (Ventura) или новее
-- Xcode 15+ (проект `KnowerManager.xcodeproj`, схема `KnowerManager`)
+- Xcode 16 или новее (проект `KnowerManager.xcodeproj`, схема `KnowerManager`)
 
 ## Сборка
+
+Крупные ресурсы проекта хранятся в Git LFS, поэтому сначала установите LFS:
+
+```bash
+brew install git-lfs
+git lfs install
+```
+
+Затем:
 
 ```bash
 git clone <repo-url>
@@ -24,22 +33,25 @@ cd KnowerManager
 xcodebuild -project KnowerManager.xcodeproj -scheme KnowerManager -configuration Debug build
 ```
 
+Если репозиторий уже склонирован без LFS — подтяните ресурсы командой `git lfs pull`.
+
 Либо откройте `KnowerManager.xcodeproj` в Xcode и запустите схему `KnowerManager`.
 
-## ⚠️ Крупные бинарные ресурсы не хранятся в git
+## Крупные бинарные ресурсы (Git LFS)
 
-Три файла исключены из репозитория (см. `.gitignore`) и **должны быть добавлены в папку `KnowerManager/` вручную**, иначе приложение не сможет запустить Xray и разрешать `geoip:`/`geosite:`:
+Три файла хранятся в репозитории через **Git LFS** (см. `.gitattributes`):
 
 | Файл | Назначение | Откуда взять |
 |------|-----------|--------------|
-| `KnowerManager/xray-core` | исполняемый файл Xray (arm64/x86_64) | [XTLS/Xray-core releases](https://github.com/XTLS/Xray-core/releases) |
-| `KnowerManager/geoip.dat` | база GeoIP для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
-| `KnowerManager/geosite.dat` | база доменов для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
+| `KnowerManager/Resources/Binaries/xray-core` | исполняемый файл Xray (arm64/x86_64) | [XTLS/Xray-core releases](https://github.com/XTLS/Xray-core/releases) |
+| `KnowerManager/Resources/Data/geoip.dat` | база GeoIP для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
+| `KnowerManager/Resources/Data/geosite.dat` | база доменов для правил маршрутизации | [Loyalsoldier/v2ray-rules-dat releases](https://github.com/Loyalsoldier/v2ray-rules-dat/releases) |
 
-После копирования выдайте права на выполнение бинарнику:
+Склонируйте с установленным Git LFS, и файлы подтянутся автоматически. Если LFS недоступен —
+скачайте файлы вручную по путям из таблицы и выдайте права на выполнение бинарнику:
 
 ```bash
-chmod +x KnowerManager/xray-core
+chmod +x KnowerManager/Resources/Binaries/xray-core
 ```
 
 > Файл `tpws` для режима обхода скачивается и собирается приложением самостоятельно
@@ -51,12 +63,12 @@ chmod +x KnowerManager/xray-core
 KnowerManager/
 ├── App/            # Точка входа и главные View (KnowerApp, ContentView, MiniMenu, AboutView)
 ├── Core/           # Ядро: KnowerManager, SettingsManager, MenuBarManager, Routing/General sheets
-├── VPN/            # Xray-клиент: сервис, генератор конфигов, парсеры, модели, UI
+├── VPN/            # Xray-клиент: Models / Parsers / Routing / Services / Utils / Views
 ├── WARP/           # Генератор WARP-конфигов (Models / Services / Views)
-├── OCR/            # Захват экрана и OCR
-├── Services/       # AI, PAC-сервер, Watch, Diagnostics
-├── Tools/          # Пинг, тест скорости, сканер IP, hostlist, лог трафика
-└── Assets.xcassets/
+├── OCR/            # Захват экрана и OCR (Models / Services / Utils)
+├── Services/       # AI, Keychain, PAC-сервер, Watch, Diagnostics
+├── Tools/          # Пинг, тест скорости, сканер IP, hostlist, лог трафика (Core / Views)
+└── Resources/      # Assets.xcassets, Binaries и Data (в Git LFS)
 ```
 
 ## Конфиденциальность

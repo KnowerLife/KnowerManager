@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (macOS)
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Крупные ресурсы (xray-core, geoip.dat, geosite.dat) хранятся в Git LFS.
+          lfs: true
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          xcode-select -p
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project KnowerManager.xcodeproj \
+            -scheme KnowerManager \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

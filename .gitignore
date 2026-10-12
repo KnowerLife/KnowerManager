@@ -23,10 +23,10 @@ build/
 Packages/
 Package.resolved
 
-# Крупные бинарные ресурсы (не хранятся в git)
-KnowerManager/xray-core
-KnowerManager/geoip.dat
-KnowerManager/geosite.dat
+# Крупные бинарные ресурсы хранятся в Git LFS (см. .gitattributes):
+# KnowerManager/Resources/Binaries/xray-core
+# KnowerManager/Resources/Data/geoip.dat
+# KnowerManager/Resources/Data/geosite.dat
 
 # Прочее
 *.orig

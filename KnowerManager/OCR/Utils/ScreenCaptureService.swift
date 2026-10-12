@@ -11,7 +11,8 @@ class ScreenCaptureService {
     // и от вечного ожидания, если процесс не завершится).
     private final class ContinuationState: @unchecked Sendable {
         private let lock = NSLock()
-        private var resumed = false
+        // Состояние защищено NSLock, поэтому изоляция актора не нужна.
+        nonisolated(unsafe) private var resumed = false
         nonisolated func claim() -> Bool {
             lock.lock(); defer { lock.unlock() }
             if resumed { return false }
