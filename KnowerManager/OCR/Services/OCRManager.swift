@@ -38,6 +38,8 @@ class OCRManager: ObservableObject {
     @Published var textBlocks: [OCRTextBlock] = []
     @Published var barcodes: [BarcodeResult] = []
     @Published var detectedLanguage: DetectedLanguage?
+    /// Язык текста, заданный вручную (nil — автоопределение).
+    @Published var textLanguageOverride: String?
     @Published var pages: [OCRPage] = []
     @Published var activePageIndex: Int = 0
     @Published var showTextBoxes: Bool = true
@@ -266,6 +268,7 @@ class OCRManager: ObservableObject {
         currentImage = page.image
         textBlocks = page.blocks
         barcodes = page.barcodes
+        textLanguageOverride = nil
         if page.embeddedText != nil {
             detectedLanguage = DetectedLanguage(code: recognizeLanguageCode(ocrOptions.languages.first), confidence: 1.0)
         } else {
@@ -281,6 +284,7 @@ class OCRManager: ObservableObject {
         textBlocks = []
         barcodes = []
         detectedLanguage = nil
+        textLanguageOverride = nil
     }
 
     private func appendToHistory(_ page: OCRPage) {
@@ -315,6 +319,28 @@ class OCRManager: ObservableObject {
     private func recognizeLanguageCode(_ code: String?) -> String {
         guard let code = code else { return Locale.current.language.languageCode?.identifier ?? "en" }
         return code
+    }
+
+    /// Язык текста задан вручную (а не автоопределён).
+    var isTextLanguageManual: Bool { textLanguageOverride != nil }
+
+    /// Вручную задаёт язык распознанного текста (влияет на бейдж и озвучку).
+    /// `nil` — вернуть автоопределение.
+    func setTextLanguage(_ code: String?) {
+        textLanguageOverride = code
+        if let code {
+            detectedLanguage = DetectedLanguage(code: code, confidence: 1.0)
+        } else {
+            detectedLanguage = detectLanguage(of: recognizedText)
+        }
+    }
+
+    /// Перераспознаёт активную страницу в выбранном языке.
+    func reRecognizeActivePage(in language: OCRLanguage) {
+        guard !isProcessing, pages.indices.contains(activePageIndex) else { return }
+        ocrOptions.languages = [language.rawValue]
+        textLanguageOverride = nil
+        reRecognizeActivePage()
     }
 
     // MARK: - AI

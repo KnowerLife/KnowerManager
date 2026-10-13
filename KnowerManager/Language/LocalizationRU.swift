@@ -372,6 +372,10 @@ enum LocalizationRU {
         case .ocrTTSVoice: return "Голос"
         case .ocrTTSRate: return "Скорость"
         case .ocrTTSSettings: return "Настройки озвучки"
+        case .ocrSpeechLanguage: return "Язык озвучки"
+        case .ocrSpeechLangAuto: return "Как в тексте"
+        case .ocrTextLanguage: return "Язык текста"
+        case .ocrRecognitionLanguage: return "Язык распознавания"
             
         // --- OCR: штрих-коды и рамки ---
         case .ocrBarcodes: return "Штрих-коды"

@@ -394,6 +394,19 @@ struct OCRTTSSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 16) {
+                Text(settings.t(.ocrSpeechLanguage)).font(.system(size: 12, weight: .semibold))
+
+                Picker("", selection: Binding(
+                    get: { speech.config.languageCode ?? "" },
+                    set: { speech.setLanguage($0.isEmpty ? nil : $0) }
+                )) {
+                    Text(settings.t(.ocrSpeechLangAuto)).tag("")
+                    ForEach(speech.availableLanguages) { lang in
+                        Text(lang.name).tag(lang.code)
+                    }
+                }
+                .labelsHidden()
+
                 Text(settings.t(.ocrTTSVoice)).font(.system(size: 12, weight: .semibold))
 
                 Picker("", selection: Binding(
@@ -436,7 +449,10 @@ struct OCRTTSSheet: View {
         .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear {
-            let code = ocrManager.detectedLanguage?.code ?? ocrManager.ocrOptions.languages.first
+            speech.refreshLanguages()
+            let code = speech.config.languageCode
+                ?? ocrManager.detectedLanguage?.code
+                ?? ocrManager.ocrOptions.languages.first
             speech.refreshVoices(languageCode: code)
         }
     }

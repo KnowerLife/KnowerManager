@@ -372,6 +372,10 @@ enum LocalizationEN {
         case .ocrTTSVoice: return "Voice"
         case .ocrTTSRate: return "Rate"
         case .ocrTTSSettings: return "Speech settings"
+        case .ocrSpeechLanguage: return "Speech language"
+        case .ocrSpeechLangAuto: return "Match text language"
+        case .ocrTextLanguage: return "Text language"
+        case .ocrRecognitionLanguage: return "Recognition language"
             
         // --- OCR: barcodes & boxes ---
         case .ocrBarcodes: return "Barcodes"

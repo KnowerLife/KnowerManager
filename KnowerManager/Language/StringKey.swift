@@ -150,6 +150,8 @@ enum StringKey {
     
     // --- OCR: озвучка ---
     case ocrSpeak, ocrStopSpeak, ocrPauseSpeak, ocrResumeSpeak, ocrTTSVoice, ocrTTSRate, ocrTTSSettings
+    case ocrSpeechLanguage, ocrSpeechLangAuto
+    case ocrTextLanguage, ocrRecognitionLanguage
     
     // --- OCR: штрих-коды и рамки ---
     case ocrBarcodes, ocrNoBarcodes, ocrShowBoxes, ocrDetectedLanguage, ocrConfidence

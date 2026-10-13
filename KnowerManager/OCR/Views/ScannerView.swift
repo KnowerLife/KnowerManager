@@ -186,6 +186,49 @@ struct ScannerView: View {
         ocrManager.ocrOptions.languages = list
     }
 
+    // MARK: - Язык текста у результата
+
+    /// Бейдж языка распознанного текста. По нажатию — меню, где можно вручную
+    /// задать язык текста (влияет на бейдж и озвучку) или вернуть автоопределение.
+    private var languageBadge: some View {
+        let current = ocrManager.detectedLanguage?.code
+        return Menu {
+            Button {
+                ocrManager.setTextLanguage(nil)
+            } label: {
+                HStack {
+                    Text(settings.t(.ocrAutoDetect))
+                    if !ocrManager.isTextLanguageManual { Image(systemName: "checkmark") }
+                }
+            }
+            Divider()
+            ForEach(availableLanguages) { lang in
+                Button {
+                    ocrManager.setTextLanguage(lang.rawValue)
+                } label: {
+                    HStack {
+                        Text("\(lang.flag) \(lang.displayName)")
+                        if ocrManager.isTextLanguageManual && current == lang.rawValue {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 3) {
+                Text(ocrManager.detectedLanguage?.displayName ?? settings.t(.ocrLang))
+                Image(systemName: "chevron.down").font(.system(size: 7, weight: .bold))
+            }
+            .font(.system(size: 8, weight: .bold))
+            .padding(.horizontal, 5).padding(.vertical, 2)
+            .background(Color.blue.opacity(0.12)).foregroundColor(.blue)
+            .cornerRadius(4)
+        }
+        .menuStyle(BorderlessButtonMenuStyle())
+        .fixedSize()
+        .disabled(ocrManager.recognizedText.isEmpty)
+    }
+
     // MARK: - Страницы
 
     @ViewBuilder
@@ -371,12 +414,8 @@ struct ScannerView: View {
             HStack(spacing: 6) {
                 Text(settings.t(.ocrResult)).font(.system(size: 10, weight: .bold)).foregroundColor(.secondary)
 
-                if let language = ocrManager.detectedLanguage {
-                    Text("\(language.displayName)")
-                        .font(.system(size: 8, weight: .bold))
-                        .padding(.horizontal, 5).padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.12)).foregroundColor(.blue)
-                        .cornerRadius(4)
+                if !ocrManager.recognizedText.isEmpty || ocrManager.detectedLanguage != nil {
+                    languageBadge
                 }
 
                 Spacer()
@@ -436,10 +475,27 @@ struct ScannerView: View {
     private var bottomBar: some View {
         if !ocrManager.pages.isEmpty {
             HStack(spacing: 10) {
-                Button { ocrManager.reRecognizeActivePage() } label: {
+                Menu {
+                    Button {
+                        ocrManager.reRecognizeActivePage()
+                    } label: {
+                        Label(settings.t(.ocrReRecognize), systemImage: "arrow.clockwise")
+                    }
+                    Divider()
+                    Menu {
+                        ForEach(availableLanguages) { lang in
+                            Button("\(lang.flag) \(lang.displayName)") {
+                                ocrManager.reRecognizeActivePage(in: lang)
+                            }
+                        }
+                    } label: {
+                        Label(settings.t(.ocrRecognitionLanguage), systemImage: "character.book.closed")
+                    }
+                } label: {
                     Label(settings.t(.ocrReRecognize), systemImage: "arrow.clockwise")
                 }
-                .buttonStyle(ModernButtonStyle(color: .blue, variant: .ghost))
+                .menuStyle(BorderlessButtonMenuStyle())
+                .foregroundColor(.blue)
                 .disabled(isBusy)
 
                 Menu {

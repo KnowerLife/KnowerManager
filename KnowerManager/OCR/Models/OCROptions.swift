@@ -248,6 +248,8 @@ enum OCRExportFormat: String, CaseIterable, Identifiable {
 
 struct OCRTTSConfig: Codable, Equatable {
     var voiceIdentifier: String?
+    /// Язык озвучки (базовый код, например "ru"). nil — брать язык из текста.
+    var languageCode: String?
     /// Значение AVSpeechUtteranceDefaultSpeechRate = 0.5
     var rate: Float = 0.5
     var pitch: Float = 1.0
