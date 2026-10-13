@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Редактор одного правила маршрутизации (поля соответствуют Xray routing rule).
-/// Встраивается прямо в окно маршрутизации (без вложенных sheet).
+/// Встраивается прямо в окно маршрутизации. Компактная вёрстка: помещается
+/// в невысокое окно, при нехватке места прокручивается.
 struct RoutingRuleEditor: View {
     @ObservedObject var settings = SettingsManager.shared
 
@@ -42,11 +43,11 @@ struct RoutingRuleEditor: View {
             Divider()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     basicSection
                     conditionsSection
                 }
-                .padding(14)
+                .padding(12)
             }
 
             Divider()
@@ -68,18 +69,25 @@ struct RoutingRuleEditor: View {
 
             Text(isNew ? settings.t(.routingRuleNew) : settings.t(.routingRuleEdit))
                 .font(.headline)
+                .lineLimit(1)
 
             Spacer()
+
+            Toggle("", isOn: $draft.enabled)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .help(settings.t(.routingEnabled))
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .background(Color(NSColor.controlBackgroundColor))
     }
 
     // MARK: - Basic
 
     private var basicSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             sectionTitle(settings.t(.sectionGeneral))
 
             labeled(settings.t(.labelName)) {
@@ -96,21 +104,15 @@ struct RoutingRuleEditor: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
             }
-
-            Toggle(isOn: $draft.enabled) {
-                Text(settings.t(.routingEnabled)).font(.system(size: 12))
-            }
-            .toggleStyle(.switch)
-            .controlSize(.small)
         }
-        .padding(12)
+        .padding(10)
         .background(card)
     }
 
     // MARK: - Conditions
 
     private var conditionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 9) {
             sectionTitle(settings.t(.routingConditions))
 
             labeled(settings.t(.routingFieldNetwork)) {
@@ -125,28 +127,22 @@ struct RoutingRuleEditor: View {
             }
 
             labeled(settings.t(.routingFieldDomains)) {
-                editorBox(text: $domainText, height: 52)
-                Text(settings.t(.routingHintDomains))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                editorBox(text: $domainText, height: 40,
+                          placeholder: "geosite:google, domain:example.com")
+                    .help(settings.t(.routingHintDomains))
             }
 
             labeled(settings.t(.routingFieldIPs)) {
-                editorBox(text: $ipText, height: 44)
-                Text(settings.t(.routingHintIPs))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                editorBox(text: $ipText, height: 36,
+                          placeholder: "geoip:private, 192.168.0.0/16")
+                    .help(settings.t(.routingHintIPs))
             }
 
             labeled(settings.t(.routingFieldPorts)) {
-                TextField("80,443", text: $portText)
+                TextField("80,443 или 1000-2000", text: $portText)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12, design: .monospaced))
-                Text(settings.t(.routingHintPorts))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .help(settings.t(.routingHintPorts))
             }
 
             labeled(settings.t(.routingFieldProtocols)) {
@@ -158,7 +154,7 @@ struct RoutingRuleEditor: View {
                 }
             }
         }
-        .padding(12)
+        .padding(10)
         .background(card)
     }
 
@@ -172,8 +168,8 @@ struct RoutingRuleEditor: View {
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
     }
 
@@ -196,7 +192,7 @@ struct RoutingRuleEditor: View {
 
     private func labeled<Content: View>(_ title: String,
                                         @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.secondary)
@@ -204,17 +200,32 @@ struct RoutingRuleEditor: View {
         }
     }
 
-    private func editorBox(text: Binding<String>, height: CGFloat = 64) -> some View {
-        TextEditor(text: text)
-            .font(.system(size: 11, design: .monospaced))
-            .frame(height: height)
-            .padding(4)
-            .background(Color(NSColor.textBackgroundColor))
-            .cornerRadius(6)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
-            )
+    /// Текстовое поле для списка (домены/IP) с плейсхолдером.
+    private func editorBox(text: Binding<String>,
+                           height: CGFloat,
+                           placeholder: String) -> some View {
+        ZStack(alignment: .topLeading) {
+            TextEditor(text: text)
+                .font(.system(size: 11, design: .monospaced))
+                .frame(height: height)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .background(Color(NSColor.textBackgroundColor))
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                )
+
+            if text.wrappedValue.isEmpty {
+                Text(placeholder)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(.secondary.opacity(0.6))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 6)
+                    .allowsHitTesting(false)
+            }
+        }
     }
 
     private func protocolChip(_ option: String) -> some View {

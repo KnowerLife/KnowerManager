@@ -27,7 +27,8 @@ struct RoutingView: View {
                 listContent
             }
         }
-        .frame(width: 380, height: 720)
+        .frame(width: 380)
+        .frame(minHeight: 460, idealHeight: 600, maxHeight: 660)
     }
 
     // MARK: - List
