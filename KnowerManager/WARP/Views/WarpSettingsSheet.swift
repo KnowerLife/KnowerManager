@@ -32,7 +32,7 @@ struct WarpSettingsSheet: View {
 
                     // Routing
                     SectionCard(title: settings.t(.warpRouting), icon: "arrow.triangle.branch") {
-                        VStack(alignment: .leading, spacing: 10) {
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 16, alignment: .leading), GridItem(.flexible(), spacing: 16, alignment: .leading)], alignment: .leading, spacing: 10) {
                             ForEach(RoutingRule.allCases) { rule in
                                 ToggleRow(title: rule.rawValue, isOn: binding(for: rule))
                             }
@@ -42,8 +42,8 @@ struct WarpSettingsSheet: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 420, idealHeight: 600, maxHeight: 720)
+        .frame(width: 420)
+        .fixedSize(horizontal: false, vertical: true)
     }
     
     private func binding(for rule: RoutingRule) -> Binding<Bool> { Binding(get: { warpManager.selectedRoutingRules.contains(rule) }, set: { if $0 { warpManager.selectedRoutingRules.insert(rule) } else { warpManager.selectedRoutingRules.remove(rule) } }) }
