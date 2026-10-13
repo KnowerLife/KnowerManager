@@ -13,6 +13,10 @@ class XrayService: ObservableObject {
     @Published var selectedProfileId: UUID?
     @Published var isPinging = false
     @Published var isImporting = false
+    /// UUID профиля, который реально стартовал (для трея/настроек). nil — нет соединения.
+    @Published var activeProfileId: UUID?
+    /// Последняя ошибка запуска/соединения (для показа в UI). nil — ошибок нет.
+    @Published var lastError: String?
     
     // --- УМНАЯ ПРОВЕРКА (DEEP SCAN) ---
         
@@ -225,6 +229,8 @@ class XrayService: ObservableObject {
     
     private var process: Process?
     private let localPort = 10808
+    /// Момент установки соединения (для «тихих» уведомлений при быстрых переключениях).
+    private var connectedAt: Date?
     
     // --- ЛОГ XRAY ---
     @Published var xrayLog: String = ""
@@ -345,11 +351,13 @@ class XrayService: ObservableObject {
     func removeProfile(id: UUID) {
         DispatchQueue.main.async {
             if let index = self.profiles.firstIndex(where: { $0.id == id }) {
-                print("🗑 Auto-deleting dead profile: \(self.profiles[index].name)")
                 self.profiles.remove(at: index)
                 if self.selectedProfileId == id {
                     self.selectedProfileId = nil
                 }
+                // Если удаляем профиль, через который сейчас установлено
+                // соединение — гасим его, чтобы Xray не остался с чужим конфигом.
+                if self.activeProfileId == id { self.stop() }
             }
         }
     }
@@ -592,7 +600,9 @@ class XrayService: ObservableObject {
     
     func removeDeadProfiles() {
         DispatchQueue.main.async {
-            self.profiles.removeAll { $0.latency == nil || ($0.latency ?? 0) < 0 }
+            // Удаляем ТОЛЬКО подтверждённо мёртвые (latency < 0).
+            // Профили без пинга (latency == nil) не трогаем.
+            self.profiles.removeAll { ($0.latency ?? 0) < 0 }
             if let id = self.selectedProfileId, !self.profiles.contains(where: { $0.id == id }) { self.selectedProfileId = nil }
             self.saveProfiles()
         }
@@ -612,6 +622,7 @@ class XrayService: ObservableObject {
     
     func start(profile: ShadowsocksProfile) {
         stop()
+        lastError = nil
         let jsonConfig = XrayConfigGenerator.shared.createConfig(for: profile, localPort: localPort)
         try? jsonConfig.write(to: configPath, atomically: true, encoding: .utf8)
         
@@ -638,19 +649,38 @@ class XrayService: ObservableObject {
                     self?.appendXrayLog(text)
                 }
             }
-            task.terminationHandler = { [weak self] _ in
+            task.terminationHandler = { [weak self] proc in
                 guard let self = self else { return }
                 let duration = Date().timeIntervalSince(startTime)
                 DispatchQueue.main.async {
+                    // Если процесс уже не текущий (переключение профиля/остановка),
+                    // не трогаем состояние нового соединения.
+                    guard self.process === proc else { return }
+                    self.process = nil
                     if self.isRunning && duration < 1.5 {
-                        print("💀 Instant crash. Removing profile...")
-                        self.removeProfile(id: profile.id)
+                        // Больше НЕ удаляем профиль автоматически: это мог быть
+                        // сбой сети/сервера, а не проблема конфига. Показываем ошибку.
+                        let message = SettingsManager.shared.t(.vpnInstantCrash)
+                        self.lastError = message
+                        self.appendXrayLog(message)
+                        SettingsManager.shared.sendNotification(
+                            title: SettingsManager.shared.t(.vpnTitle),
+                            body: message)
                     }
+                    self.connectedAt = nil
+                    self.activeProfileId = nil
                     self.isRunning = false
                     self.setSystemProxy(enabled: false)
                 }
             }
-            DispatchQueue.main.async { self.isRunning = true }
+            DispatchQueue.main.async {
+                self.activeProfileId = profile.id
+                self.connectedAt = Date()
+                self.isRunning = true
+                SettingsManager.shared.sendNotification(
+                    title: SettingsManager.shared.t(.vpnTitle),
+                    body: SettingsManager.shared.t(.vpnNotifyConnected))
+            }
             print("✅ Xray started on \(localPort)")
             setSystemProxy(enabled: true)
         } catch { print("❌ Start failed: \(error)") }
@@ -681,8 +711,26 @@ class XrayService: ObservableObject {
     func stop() {
         process?.terminate()
         process = nil
-        DispatchQueue.main.async { self.isRunning = false }
+        DispatchQueue.main.async {
+            self.isRunning = false
+            self.activeProfileId = nil
+            // Уведомляем об отключении, только если соединение жило достаточно долго
+            // (иначе при переключении профилей получится двойное уведомление).
+            if let start = self.connectedAt, Date().timeIntervalSince(start) > 2 {
+                SettingsManager.shared.sendNotification(
+                    title: SettingsManager.shared.t(.vpnTitle),
+                    body: SettingsManager.shared.t(.vpnNotifyDisconnected))
+            }
+            self.connectedAt = nil
+        }
         setSystemProxy(enabled: false)
+    }
+    
+    /// Открывает в Finder папку с данными приложения (профили, подписки, история).
+    func openDataFolder() {
+        let folder = storageURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        NSWorkspace.shared.open(folder)
     }
     
     private func setSystemProxy(enabled: Bool) {

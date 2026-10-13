@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct SSConnectionView: View {
     @StateObject var xray = XrayService.shared
@@ -244,10 +245,8 @@ struct SSConnectionView: View {
                             Button { deleteSelected() } label: { Label("\(settings.t(.contextDelete)) \(selectedIds.count)", systemImage: "trash.fill") }
                             Divider()
                         }
-                        Button { xray.removeDeadProfiles() } label: { Label(settings.t(.vpnRemoveDead), systemImage: "wifi.slash") }
-                        Button {
-                            xray.profiles.removeAll(); xray.selectedProfileId = nil; selectedIds.removeAll()
-                        } label: { Label(settings.t(.vpnDeleteAll), systemImage: "trash") }
+                        Button { confirmRemoveDead() } label: { Label(settings.t(.vpnRemoveDead), systemImage: "wifi.slash") }
+                        Button { confirmDeleteAll() } label: { Label(settings.t(.vpnDeleteAll), systemImage: "trash") }
                     } label: {
                         IconBtn(icon: "trash", color: !selectedIds.isEmpty ? .red : .primary)
                     }
@@ -296,9 +295,9 @@ struct SSConnectionView: View {
                                                    onShare: { qrExportProfile = $0 },
                                                    onTest: { testProfile = $0 },
                                                    onFavorite: { xray.toggleFavorite(id: $0) },
-                                                   onDelete: {
-                                    if selectedIds.contains($0) { deleteSelected() }
-                                    else { xray.removeProfile(id: $0) }
+                                                   onDelete: { _ in
+                                    if selectedIds.contains(profile.id) { deleteSelected() }
+                                    else { confirmDeleteSingle(profile) }
                                 })
                             }
                             .onTapGesture {
@@ -307,7 +306,7 @@ struct SSConnectionView: View {
                     }
                 }
                 .listStyle(.inset)
-                .onDeleteCommand { deleteSelected() }
+                .onDeleteCommand { if !selectedIds.isEmpty { deleteSelected() } }
             }
             
             Divider()
@@ -413,12 +412,56 @@ struct SSConnectionView: View {
     // --- ACTIONS ---
     func deleteSelected() {
         guard !selectedIds.isEmpty else { return }
+        let count = selectedIds.count
+        let title = String(format: settings.t(.confirmDeleteSelected), "\(count)")
+        guard confirmDestructive(title) else { return }
+        performDeleteSelected()
+    }
+    
+    private func performDeleteSelected() {
+        // Если удаляем профиль активного соединения — сначала корректно отключаемся.
+        if let active = xray.activeProfileId, selectedIds.contains(active) { xray.stop() }
         xray.profiles.removeAll { selectedIds.contains($0.id) }
         if let current = xray.selectedProfileId, selectedIds.contains(current) {
-            xray.selectedProfileId = nil; if xray.isRunning { xray.stop() }
+            xray.selectedProfileId = nil
         }
         selectedIds.removeAll()
         performSearch()
+    }
+    
+    /// Удаление одного профиля из контекстного меню — с подтверждением.
+    func confirmDeleteSingle(_ profile: ShadowsocksProfile) {
+        let title = String(format: settings.t(.confirmDeleteProfile), profile.name)
+        guard confirmDestructive(title) else { return }
+        xray.removeProfile(id: profile.id)
+        performSearch()
+    }
+    
+    /// Удаление подтверждённо недоступных профилей — с подтверждением.
+    func confirmRemoveDead() {
+        guard confirmDestructive(settings.t(.confirmRemoveDeadProfiles)) else { return }
+        xray.removeDeadProfiles()
+        performSearch()
+    }
+    
+    /// Полное удаление всех профилей — с подтверждением.
+    func confirmDeleteAll() {
+        guard confirmDestructive(settings.t(.confirmDeleteAllProfiles)) else { return }
+        xray.stop()
+        xray.profiles.removeAll()
+        xray.selectedProfileId = nil
+        selectedIds.removeAll()
+        performSearch()
+    }
+    
+    /// Нативный macOS-диалог подтверждения. Возвращает true, если пользователь подтвердил.
+    private func confirmDestructive(_ title: String) -> Bool {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: settings.t(.btnDelete))
+        alert.addButton(withTitle: settings.t(.btnCancel))
+        return alert.runModal() == .alertFirstButtonReturn
     }
     
     func performSearch() {

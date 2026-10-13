@@ -19,6 +19,9 @@ enum LocalizationEN {
         case .vpnImportClipboard: return "From Clipboard"
         case .vpnImportFile: return "From File (.txt)"
         case .vpnDeleteAll: return "Delete All Profiles"
+        case .confirmDeleteProfile: return "Delete profile \"%@\"?"
+        case .confirmDeleteSelected: return "Delete selected profiles (%@)?"
+        case .confirmDeleteAllProfiles: return "Delete ALL profiles?"
         case .vpnPingAll: return "Ping All"
         case .vpnSearchPlaceholder: return "Search (e.g. vless, reality, us)..."
         case .vpnNoProfiles: return "No profiles"
@@ -26,6 +29,7 @@ enum LocalizationEN {
         case .btnDisconnect: return "Disconnect"
         case .vpnImportUrl: return "From URL (Subscription)"
         case .vpnRemoveDead: return "Remove Unreachable"
+        case .confirmRemoveDeadProfiles: return "Delete profiles marked as unreachable? Untested profiles will be kept."
         case .vpnEnterUrlTitle: return "Enter Subscription URL"
         case .vpnEnterUrlPlaceholder: return "https://example.com/sub..."
         case .vpnSortByPing: return "Sort by Ping"
@@ -168,6 +172,11 @@ enum LocalizationEN {
         case .proxyTestLatency: return "Latency"
         case .proxyTestSpeed: return "Download Speed"
         case .proxyTestRun: return "Run Test"
+
+        // --- VPN: notifications & connection errors (EN) ---
+        case .vpnNotifyConnected: return "VPN Connected"
+        case .vpnNotifyDisconnected: return "VPN Disconnected"
+        case .vpnInstantCrash: return "Connection interrupted due to a network error. Check the profile and try again. The profile was not deleted."
 
         // 3. Tools
         case .faqToolsQ: return "What Tools are available?"

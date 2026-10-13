@@ -18,6 +18,9 @@ enum LocalizationRU {
         case .vpnImportClipboard: return "Из буфера обмена"
         case .vpnImportFile: return "Из файла (.txt)"
         case .vpnDeleteAll: return "Удалить все профили"
+        case .confirmDeleteProfile: return "Удалить профиль «%@»?"
+        case .confirmDeleteSelected: return "Удалить выбранные профили (%@)?"
+        case .confirmDeleteAllProfiles: return "Удалить ВСЕ профили?"
         case .vpnPingAll: return "Пинг всех"
         case .vpnSearchPlaceholder: return "Поиск (vless, reality, us)..."
         case .vpnNoProfiles: return "Нет профилей"
@@ -25,6 +28,7 @@ enum LocalizationRU {
         case .btnDisconnect: return "Отключить"
         case .vpnImportUrl: return "Из ссылки (Subscription)"
         case .vpnRemoveDead: return "Удалить недоступные"
+        case .confirmRemoveDeadProfiles: return "Удалить профили, помеченные как недоступные? Профили без проверки останутся."
         case .vpnEnterUrlTitle: return "Введите ссылку подписки"
         case .vpnEnterUrlPlaceholder: return "https://example.com/sub..."
         case .vpnSortByPing: return "Сортировать по пингу"
@@ -167,6 +171,11 @@ enum LocalizationRU {
         case .proxyTestLatency: return "Задержка"
         case .proxyTestSpeed: return "Скорость загрузки"
         case .proxyTestRun: return "Запустить тест"
+
+        // --- VPN: уведомления и ошибки соединения (RU) ---
+        case .vpnNotifyConnected: return "VPN подключен"
+        case .vpnNotifyDisconnected: return "VPN отключен"
+        case .vpnInstantCrash: return "Соединение прервано из-за ошибки сети. Проверьте профиль и попробуйте ещё раз. Профиль не был удалён."
 
         // 3. Инструменты
         case .faqToolsQ: return "Какие есть Инструменты?"

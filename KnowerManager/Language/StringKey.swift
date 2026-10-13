@@ -230,6 +230,10 @@ enum StringKey {
     case vpnImportClipboard
     case vpnImportFile
     case vpnDeleteAll
+    case confirmDeleteProfile
+    case confirmDeleteSelected
+    case confirmDeleteAllProfiles
+    case confirmRemoveDeadProfiles
     case vpnPingAll
     case vpnSearchPlaceholder
     case vpnNoProfiles
@@ -322,6 +326,11 @@ enum StringKey {
     case proxyTestLatency
     case proxyTestSpeed
     case proxyTestRun
+
+    // --- VPN: уведомления и ошибки соединения ---
+    case vpnNotifyConnected
+    case vpnNotifyDisconnected
+    case vpnInstantCrash
     
     // --- Routing (Маршрутизация) ---
         case routingMode
