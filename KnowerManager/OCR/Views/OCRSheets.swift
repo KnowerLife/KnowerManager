@@ -106,7 +106,7 @@ struct OCRAdvancedSettingsSheet: View {
             }
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 12) {
 
                     OCRSectionTitle(text: settings.t(.ocrRecognition))
 
@@ -170,7 +170,7 @@ struct OCRAdvancedSettingsSheet: View {
                     Divider()
 
                     OCRSectionTitle(text: settings.t(.ocrLanguages))
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 128), spacing: 8)], alignment: .leading, spacing: 8) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 6)], alignment: .leading, spacing: 6) {
                         ForEach(availableLanguages) { lang in
                             LanguageChip(language: lang,
                                          isSelected: ocrManager.ocrOptions.languages.contains(lang.rawValue)) {
@@ -199,8 +199,8 @@ struct OCRAdvancedSettingsSheet: View {
             .padding(16)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 440, idealHeight: 620, maxHeight: 720)
+        .frame(width: 440)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func toggle(_ language: OCRLanguage) {
@@ -346,8 +346,8 @@ struct OCREnhanceSheet: View {
             .padding(16)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 440, idealHeight: 640, maxHeight: 720)
+        .frame(width: 440)
+        .fixedSize(horizontal: false, vertical: true)
         .onAppear(perform: buildThumbnail)
         .onChange(of: ocrManager.preprocessingOptions) { _ in updatePreview() }
     }
@@ -433,8 +433,8 @@ struct OCRTTSSheet: View {
 
             Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 420, idealHeight: 360, maxHeight: 480)
+        .frame(width: 420)
+        .fixedSize(horizontal: false, vertical: true)
         .onAppear {
             let code = ocrManager.detectedLanguage?.code ?? ocrManager.ocrOptions.languages.first
             speech.refreshVoices(languageCode: code)

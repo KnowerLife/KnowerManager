@@ -97,8 +97,8 @@ struct ProfileQRExportView: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 330, idealHeight: 480, maxHeight: 600)
+        .frame(width: 330)
+        .fixedSize(horizontal: false, vertical: true)
         .onAppear(perform: generate)
     }
 

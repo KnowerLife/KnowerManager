@@ -133,7 +133,7 @@ struct GeneralSettingsSheet: View {
             .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 420, idealHeight: 650, maxHeight: 720)
+        .frame(maxWidth: 420, idealHeight: 700, maxHeight: 720)
     }
 }
 
