@@ -2,6 +2,10 @@
 
 **Русский** · [English](README.en.md)
 
+[![Build](https://github.com/KnowerLife/KnowerManager/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/KnowerLife/KnowerManager/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![macOS 13.5+](https://img.shields.io/badge/macOS-13.5%2B-blue.svg)](#требования)
+
 **Компактное приложение для macOS в строке меню:** OCR-сканер с озвучкой и AI‑обработкой, VPN‑клиент на **Xray** и генератор конфигураций **WARP / AmneziaWG** — три модуля в одном окне шириной 380 pt плюс быстрый доступ из трея.
 
 > Модули «Обход» (Zapret/tpws) и «Инструменты» из приложения удалены. Сейчас поддерживаются **OCR · VPN · WARP**.

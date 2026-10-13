@@ -2,6 +2,10 @@
 
 [Русский](README.md) · **English**
 
+[![Build](https://github.com/KnowerLife/KnowerManager/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/KnowerLife/KnowerManager/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![macOS 13.5+](https://img.shields.io/badge/macOS-13.5%2B-blue.svg)](#requirements)
+
 **A compact macOS menu-bar app:** an OCR scanner with speech and AI post-processing, an **Xray**-based VPN client, and a **WARP / AmneziaWG** config generator — three modules in a single 380 pt window, plus quick access from the menu bar.
 
 > The former "Bypass" (Zapret/tpws) and "Tools" modules have been removed. The app now ships **OCR · VPN · WARP**.
