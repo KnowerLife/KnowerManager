@@ -4,6 +4,12 @@ struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
     @Environment(\.dismiss) private var dismiss
     
+    // Проверка обновлений
+    @State private var isCheckingUpdates = false
+    @State private var updateMessage: String?
+    @State private var updateDownloadURL: URL?
+    @State private var updateFailed = false
+    
     var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.2"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -41,6 +47,11 @@ struct GeneralSettingsSheet: View {
                                 
                                 // Hide Dock
                                 SettingsRow(icon: "dock.rectangle", color: .blue, title: settings.t(.hideDockTitle), desc: settings.t(.hideDockDesc), toggle: $settings.hideDockIcon)
+                                
+                                Divider()
+                                
+                                // Open window on launch
+                                SettingsRow(icon: "macwindow", color: .teal, title: settings.t(.openWindowOnLaunchTitle), desc: settings.t(.openWindowOnLaunchDesc), toggle: $settings.showWindowOnLaunch)
                                 
                                 Divider()
                                 
@@ -129,11 +140,41 @@ struct GeneralSettingsSheet: View {
                         }
                     }
                     
-                    // Footer
-                    VStack(spacing: 4) {
+                    // Footer: версия + проверка обновлений
+                    VStack(spacing: 6) {
                         Text("Knower Manager \(appVersion)")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                        
+                        Button(action: { checkForUpdates() }) {
+                            HStack(spacing: 4) {
+                                if isCheckingUpdates {
+                                    ProgressView().controlSize(.mini).scaleEffect(0.7)
+                                }
+                                Text(isCheckingUpdates ? settings.t(.updateChecking) : settings.t(.btnCheckUpdates))
+                                    .font(.caption)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isCheckingUpdates)
+                        
+                        if let message = updateMessage {
+                            HStack(spacing: 6) {
+                                Text(message)
+                                    .font(.caption2)
+                                    .foregroundColor(updateFailed ? .red : .secondary)
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                
+                                if let url = updateDownloadURL {
+                                    Button(settings.t(.btnDownload)) {
+                                        NSWorkspace.shared.open(url)
+                                    }
+                                    .font(.caption2)
+                                }
+                            }
+                        }
+                        
                         Text("© 2025 KnowerLife")
                             .font(.caption2)
                             .foregroundColor(Color(NSColor.tertiaryLabelColor))
@@ -146,6 +187,37 @@ struct GeneralSettingsSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .frame(maxWidth: 420, idealHeight: 700, maxHeight: 720)
+    }
+    
+    // MARK: - Проверка обновлений
+    
+    private func checkForUpdates() {
+        guard !isCheckingUpdates else { return }
+        isCheckingUpdates = true
+        updateMessage = nil
+        updateDownloadURL = nil
+        updateFailed = false
+        
+        Task {
+            do {
+                let result = try await UpdateChecker.checkForUpdates()
+                await MainActor.run {
+                    isCheckingUpdates = false
+                    if result.isNewer {
+                        updateMessage = String(format: settings.t(.updateAvailable), result.latestTag)
+                        updateDownloadURL = result.url
+                    } else {
+                        updateMessage = settings.t(.updateUpToDate)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isCheckingUpdates = false
+                    updateFailed = true
+                    updateMessage = settings.t(.updateCheckFailed)
+                }
+            }
+        }
     }
 }
 

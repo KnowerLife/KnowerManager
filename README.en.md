@@ -69,7 +69,7 @@ On-device text recognition powered by **Apple Vision**.
 A client built on **Xray-core** with its own config generator.
 
 - **Protocols:** VLESS (Reality, Vision, gRPC, WS, HTTPUpgrade, SplitHTTP, H2, KCP, QUIC), VMess, Trojan, Shadowsocks (SIP002 and legacy), Hysteria2, TUIC, SOCKS5, HTTP(S).
-- **Import:** link from clipboard, file, URL, **QR code** (image or camera via Vision). Export a profile as a QR code.
+- **Import:** link from clipboard, file, URL, **QR code** from an image (Vision). Export a profile as a QR code.
 - **Subscriptions:** add by URL, auto-update (checked every 5 minutes), traffic and expiry (`subscription-userinfo`), custom User-Agent, stable profile IDs across updates.
 - **Connectivity checks:** TCP ping, sort by ping, "deep" scan (parallel workers, each starts Xray on its own port and probes connectivity via curl).
 - **Real proxy test:** latency (HEAD 204 over SOCKS) and download speed (8 MB, speed.cloudflare.com).

@@ -30,6 +30,8 @@ class SettingsManager: ObservableObject {
     
     // Automation
     @AppStorage("showNotifications") var showNotifications: Bool = true
+    /// Показывать главное окно сразу после запуска приложения.
+    @AppStorage("openWindowOnLaunch") var showWindowOnLaunch: Bool = true
     
     // OCR
     /// Глобальная горячая клавиша ⌘⇧Space для захвата области.

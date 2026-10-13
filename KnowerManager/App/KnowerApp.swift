@@ -39,9 +39,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Включаем глобальный хоткей захвата области, если он разрешён в настройках.
         settingsManager.applyGlobalHotkeyState()
         
-        // 3. ЯВНО открываем главное окно при старте приложения
-        // Так как WindowGroup убрана, без этого вызова приложение запустится без окна
-        MenuBarManager.shared.openMainWindow()
+        // 3. Открываем главное окно при старте, если так настроено.
+        // Так как WindowGroup убрана, без этого вызова приложение запустится только в трее.
+        if settingsManager.showWindowOnLaunch {
+            MenuBarManager.shared.openMainWindow()
+        }
     }
     
     // Приложение НЕ закрывается полностью, когда закрыто окно (остается в трее)

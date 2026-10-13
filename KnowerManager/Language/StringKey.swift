@@ -89,6 +89,8 @@ enum StringKey {
     
     // --- General Settings Extra ---
     case hideDockTitle, hideDockDesc
+    case openWindowOnLaunchTitle, openWindowOnLaunchDesc
+    case btnCheckUpdates, updateChecking, updateUpToDate, updateAvailable, updateCheckFailed
     
     // --- Automation Settings ---
     case automationTitle

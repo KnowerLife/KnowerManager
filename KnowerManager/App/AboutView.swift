@@ -3,6 +3,12 @@ import SwiftUI
 struct AboutView: View {
     @ObservedObject var settings = SettingsManager.shared
     
+    private var bundleVersion: String {
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        return b.isEmpty ? v : "\(v) (\(b))"
+    }
+    
     var body: some View {
         ZStack {
             // 1. Единый фон (Адаптируется под тему)
@@ -26,7 +32,7 @@ struct AboutView: View {
                             .tracking(1.5)
 
                         
-                        Text(settings.t(.aboutVersion))
+                        Text("\(settings.t(.aboutVersion)) \(bundleVersion)")
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
