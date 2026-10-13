@@ -243,8 +243,6 @@ enum LocalizationRU {
         case .builderTtl: return "TTL (Время жизни)"
         case .menuQuitShort: return "Выход"
         case .menuOpenShort: return "Открыть"
-        case .killSwitchTitle: return "Kill Switch"
-        case .killSwitchDesc: return "Блокировать интернет, если защита отключена."
             
         // --- KnowerWatch (RU) ---
         case .kwTitle: return "KnowerWatch (Авто-лечение)"
@@ -254,10 +252,8 @@ enum LocalizationRU {
         case .kwSearchingStatus: return "KnowerWatch: Поиск решения..."
             
         // --- Tabs ---
-        case .tabBypass: return "Обход"
-        case .tabScanner: return "Сканер"
         case .tabOcr: return "OCR"
-        case .toolsTitle, .tabTools: return "Инструменты" // Reusing toolsTitle logic or explicit
+        case .toolsTitle: return "Инструменты"
                         
         // --- Mini Menu ---
         case .mmOn: return "ВКЛ"

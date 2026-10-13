@@ -244,8 +244,6 @@ enum LocalizationEN {
         case .builderTtl: return "TTL"
         case .menuQuitShort: return "Quit"
         case .menuOpenShort: return "Open"
-        case .killSwitchTitle: return "Kill Switch"
-        case .killSwitchDesc: return "Block internet if protection is disabled."
             
         // --- KnowerWatch (EN) ---
         case .kwTitle: return "KnowerWatch (Auto-Heal)"
@@ -255,10 +253,8 @@ enum LocalizationEN {
         case .kwSearchingStatus: return "KnowerWatch: Finding solution..."
             
         // --- Tabs ---
-        case .tabBypass: return "Bypass"
-        case .tabScanner: return "Scanner"
         case .tabOcr: return "OCR"
-        case .toolsTitle, .tabTools: return "Tools"
+        case .toolsTitle: return "Tools"
                         
         // --- Mini Menu ---
         case .mmOn: return "ON"

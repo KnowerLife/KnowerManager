@@ -27,7 +27,7 @@ enum StringKey {
     case errorPrefix
     
     // --- Tabs (TopBar) ---
-    case tabBypass, tabScanner, tabTools, tabOcr
+    case tabOcr
 
         
     // --- Mini Menu ---
@@ -166,7 +166,6 @@ enum StringKey {
     case presetsTitle, presetSocials, presetMedia, presetNews
     case builderTitle, builderSplit, builderDisorder, builderFake, builderTtl
     case menuQuitShort, menuOpenShort
-    case killSwitchTitle, killSwitchDesc
     
     // --- OCR Languages ---
     case langRu, langEn, langDe, langFr, langEs

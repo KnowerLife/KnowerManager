@@ -21,15 +21,20 @@ class XrayService: ObservableObject {
     // --- УМНАЯ ПРОВЕРКА (DEEP SCAN) ---
         
     @Published var isDeepScanning = false
-    @Published var scanProgress = (current: 0, total: 0)
+    @Published var scanProgress = ScanProgress(current: 0, total: 0)
     
     // Очередь сканирования
     private var deepScanQueue: [ShadowsocksProfile] = []
     
+    struct ScanProgress: Equatable {
+        var current: Int
+        var total: Int
+    }
+    
     func stopDeepScan() {
         isDeepScanning = false
         deepScanQueue.removeAll()
-        scanProgress = (0, 0)
+        scanProgress = ScanProgress(current: 0, total: 0)
         // Намеренно НЕ вызываем stop(): воркеры сканирования работают на своих
         // портах и завершаются сами, а stop() оборвал бы активное VPN-соединение.
         print("🛑 Deep scan stopped.")
@@ -56,7 +61,7 @@ class XrayService: ObservableObject {
         // Инициализация
         isDeepScanning = true
         deepScanQueue = candidates
-        scanProgress = (current: 0, total: candidates.count)
+        scanProgress = ScanProgress(current: 0, total: candidates.count)
         
         print("🧐 Starting TURBO Deep Scan for \(candidates.count) profiles...")
         
