@@ -6,9 +6,28 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![macOS 13.5+](https://img.shields.io/badge/macOS-13.5%2B-blue.svg)](#requirements)
 
-**A compact macOS menu-bar app:** an OCR scanner with speech and AI post-processing, an **Xray**-based VPN client, and a **WARP / AmneziaWG** config generator — three modules in a single 380 pt window, plus quick access from the menu bar.
+**Knower Manager** is a compact macOS menu-bar app that combines three tools in a single 380 pt window:
 
-> The former "Bypass" (Zapret/tpws) and "Tools" modules have been removed. The app now ships **OCR · VPN · WARP**.
+- 🖥 **OCR scanner** — on-device text recognition powered by **Apple Vision**, with speech and AI post-processing;
+- 🔒 **VPN client** — connectivity through **Xray**: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC and more;
+- 🌐 **WARP / AmneziaWG** — config generator for Cloudflare WARP in Clash Meta, AmneziaWG, Sing-box and WireGuard formats.
+
+Everything is a click away from the menu bar: tabs, screen-area capture, toggles, language and theme. See [CHANGELOG.md](CHANGELOG.md) for the release history.
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/main-vpn.png" alt="VPN module — Xray client" width="210"/>
+  <img src="docs/screenshots/main-warp.png" alt="WARP module — config generator" width="210"/>
+  <img src="docs/screenshots/main-ocr.png" alt="OCR module — text recognition" width="210"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/tray-menu.png" alt="Menu-bar app menu" width="250"/>
+</p>
+
+*From left to right: VPN (Xray), WARP / AmneziaWG, the OCR scanner, and the menu-bar menu. Screenshots taken on macOS 15.*
 
 ---
 
@@ -26,6 +45,7 @@
 - [Localization & themes](#localization--themes)
 - [Privacy](#privacy)
 - [License](#license)
+- [Disclaimer](#disclaimer)
 
 ---
 
@@ -33,11 +53,11 @@
 
 ### OCR & Scanner
 
-Text recognition powered by **Apple Vision**.
+On-device text recognition powered by **Apple Vision**.
 
 - **Capture:** screen area, full screen, clipboard.
 - **Import:** image files, PDFs, scanning from a connected scanner (ImageCaptureCore).
-- **Multi-page mode** with history and per-page re-recognition.
+- **Multi-page mode** with page history and per-page re-recognition.
 - **Languages:** 24 recognition languages — RU, EN, DE, FR, ES, IT, PT, UK, PL, TR, NL, SV, DA, NO, FI, CS, ZH‑Hans, ZH‑Hant, JA, KO, AR, HE, TH, VI. Automatic language detection.
 - **Fine-grained options:** accurate/fast recognition level, language correction, custom words, minimum text height, image orientation, show text boxes, barcode detection.
 - **Image preprocessing:** grayscale, contrast, brightness, sharpness, invert, threshold binarization, upscale.
@@ -49,9 +69,11 @@ Text recognition powered by **Apple Vision**.
 
 ### VPN (Xray)
 
+A client built on **Xray-core** with its own config generator.
+
 - **Protocols:** VLESS (Reality, Vision, gRPC, WS, HTTPUpgrade, SplitHTTP, H2, KCP, QUIC), VMess, Trojan, Shadowsocks (SIP002 and legacy), Hysteria2, TUIC, SOCKS5, HTTP(S).
-- **Import:** link from clipboard, file, URL, **QR code** (image or camera — Vision). Export a profile as a QR code.
-- **Subscriptions:** add by URL, auto-update (checked every 5 minutes), traffic and expiry (`subscription-userinfo`), User-Agent, stable profile IDs across updates.
+- **Import:** link from clipboard, file, URL, **QR code** (image or camera via Vision). Export a profile as a QR code.
+- **Subscriptions:** add by URL, auto-update (checked every 5 minutes), traffic and expiry (`subscription-userinfo`), custom User-Agent, stable profile IDs across updates.
 - **Connectivity checks:** TCP ping, sort by ping, "deep" scan (parallel workers, each starts Xray on its own port and probes connectivity via curl).
 - **Real proxy test:** latency (HEAD 204 over SOCKS) and download speed (8 MB, speed.cloudflare.com).
 - **Live Xray log:** stdout/stderr captured into a ring buffer, collapsible panel.
@@ -60,17 +82,19 @@ Text recognition powered by **Apple Vision**.
 
 ### WARP / AmneziaWG
 
+A config generator for Cloudflare WARP.
+
 - WARP account registration via the official Cloudflare API.
 - **Export formats:** Clash Meta (YAML), AmneziaWG (CONF), Sing‑box (JSON), WireGuard (CONF).
 - **AmneziaWG parameters:** Jc, Jmin, Jmax, S1, S2 (plus H1–H4).
 - **Routing categories** (for Clash / rule-providers): Porn, Discord, YouTube, Social networks, Torrents, Tools, Music.
-- **Endpoint selection:** the IP scanner finds the best node by latency; an endpoint can also be set manually.
-- System proxy detection; generation runs locally.
+- **Endpoint selection:** the built-in IP scanner finds the best node by latency; an endpoint can also be set manually.
+- System proxy detection; generation runs locally. The config can be saved, shared, or shown as a QR code.
 
 ### App & UI
 
 - **Menu-bar icon (tray)** with a popover: open tabs (VPN / WARP / OCR), capture screen area, toggles for "notifications", "hide Dock icon", "launch at login", language and theme selection, the "About" window, and Quit.
-- **Three tabs:** VPN (Xray), WARP, OCR — in a 380 pt window with height adapts to content.
+- **Three tabs:** VPN (Xray), WARP, OCR — in a 380 pt window with height adapting to content.
 - **Themes:** system / light / dark.
 - **UI languages:** Russian and English.
 - "Forget saved administrator password" in settings.
@@ -96,7 +120,7 @@ git lfs install
 Then:
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:KnowerLife/KnowerManager.git
 cd KnowerManager
 xcodebuild -project KnowerManager.xcodeproj -scheme KnowerManager -configuration Debug build
 ```
