@@ -75,7 +75,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
         
         // 2. Popover
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 280, height: 200)
+        popover.contentSize = NSSize(width: 320, height: 560)
         popover.behavior = .transient
         popover.animates = true
         popover.delegate = self
@@ -155,7 +155,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
             
             if self.settingsWindow == nil {
                 let window = NSWindow(
-                    contentRect: NSRect(x: 0, y: 0, width: 360, height: 600),
+                    contentRect: NSRect(x: 0, y: 0, width: 420, height: 700),
                     styleMask: [.titled, .closable, .miniaturizable],
                     backing: .buffered, defer: false)
                 
@@ -228,7 +228,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
             
             if self.aboutWindow == nil {
                 let window = NSWindow(
-                    contentRect: NSRect(x: 0, y: 0, width: 360, height: 400),
+                    contentRect: NSRect(x: 0, y: 0, width: 460, height: 700),
                     styleMask: [.titled, .closable, .fullSizeContentView],
                     backing: .buffered, defer: false)
                 window.center()
