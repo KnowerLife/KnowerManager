@@ -342,6 +342,8 @@ enum LocalizationRU {
         case .ocrImportScanner: return "Сканер"
         case .ocrImportHint: return "Перетащите файлы или PDF сюда"
         case .ocrCopyAllHint: return "Копировать всё"
+        case .ocrTextEdited: return "Изменено"
+        case .ocrResetText: return "Сбросить"
             
         // --- OCR: экспорт ---
         case .ocrExport: return "Экспорт"

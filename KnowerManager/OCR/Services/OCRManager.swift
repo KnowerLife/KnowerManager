@@ -34,6 +34,14 @@ class OCRManager: ObservableObject {
             pages[activePageIndex].text = recognizedText
         }
     }
+    /// Оригинальный распознанный текст (до ручного редактирования).
+    @Published var originalRecognizedText: String = ""
+    /// Был ли текст отредактирован вручную.
+    var isTextEdited: Bool { recognizedText != originalRecognizedText }
+    /// Возвращает текст к оригинальному распознанному варианту.
+    func resetTextToOriginal() {
+        recognizedText = originalRecognizedText
+    }
     @Published var currentImage: NSImage?
     @Published var textBlocks: [OCRTextBlock] = []
     @Published var barcodes: [BarcodeResult] = []
@@ -299,6 +307,7 @@ class OCRManager: ObservableObject {
         let page = pages[activePageIndex]
         isSyncingText = true
         recognizedText = page.text
+        originalRecognizedText = page.text
         isSyncingText = false
         currentImage = page.image
         textBlocks = page.blocks
@@ -314,6 +323,7 @@ class OCRManager: ObservableObject {
     private func clearSessionState() {
         isSyncingText = true
         recognizedText = ""
+        originalRecognizedText = ""
         isSyncingText = false
         currentImage = nil
         textBlocks = []
@@ -411,6 +421,7 @@ class OCRManager: ObservableObject {
                 let result = try await aiService.processText(sourceText, operation: operation)
                 await MainActor.run {
                     self.recognizedText = result
+                    self.originalRecognizedText = result
                     self.statusMessage = self.settings.t(.ocrAIDone)
                     self.isAIProcessing = false
                 }

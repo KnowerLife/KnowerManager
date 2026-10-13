@@ -464,6 +464,12 @@ struct ScannerView: View {
                     languageBadge
                 }
 
+                if ocrManager.isTextEdited {
+                    Label(settings.t(.ocrTextEdited), systemImage: "pencil")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                }
+
                 Spacer()
 
                 if !ocrManager.recognizedText.isEmpty {
@@ -471,6 +477,14 @@ struct ScannerView: View {
                         .font(.system(size: 9, design: .monospaced)).foregroundColor(.secondary)
 
                     SpeechControls(speech: speech, settings: settings, ocrManager: ocrManager, showTTS: $showTTS)
+
+                    if ocrManager.isTextEdited {
+                        Button(settings.t(.ocrResetText)) {
+                            ocrManager.resetTextToOriginal()
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                    }
 
                     Menu {
                         ForEach(AIOperation.allCases) { op in

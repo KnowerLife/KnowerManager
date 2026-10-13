@@ -136,6 +136,7 @@ enum StringKey {
     case ocrScannerScan, ocrScannerOverview, ocrScannerClose
     case ocrImporting, ocrImportEmpty, ocrImportDone, ocrImportScanner
     case ocrImportHint, ocrCopyAllHint
+    case ocrTextEdited, ocrResetText
     
     // --- OCR: экспорт ---
     case ocrExport, ocrExportTxt, ocrExportMarkdown, ocrExportJSON, ocrExportSearchablePDF

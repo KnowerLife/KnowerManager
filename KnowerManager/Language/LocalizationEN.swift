@@ -342,6 +342,8 @@ enum LocalizationEN {
         case .ocrImportScanner: return "Scanner"
         case .ocrImportHint: return "Drop files or PDF here"
         case .ocrCopyAllHint: return "Copy all"
+        case .ocrTextEdited: return "Edited"
+        case .ocrResetText: return "Reset"
             
         // --- OCR: export ---
         case .ocrExport: return "Export"
