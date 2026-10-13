@@ -67,7 +67,8 @@ struct ContentView: View {
             w.standardWindowButton(.zoomButton)?.isHidden = false
             w.standardWindowButton(.zoomButton)?.isEnabled = true
             w.minSize = CGSize(width: DesignSystem.width, height: DesignSystem.heightCollapsed)
-            w.maxSize = CGSize(width: DesignSystem.width, height: 2000)
+            let screenH = NSScreen.main?.visibleFrame.height ?? 1200
+            w.maxSize = CGSize(width: DesignSystem.width, height: max(DesignSystem.heightCollapsed, screenH))
             if w.frame.height < DesignSystem.heightCollapsed {
                 var f = w.frame; f.origin.y -= (DesignSystem.heightCollapsed - f.height); f.size.height = DesignSystem.heightCollapsed
                 w.setFrame(f, display: true, animate: true)

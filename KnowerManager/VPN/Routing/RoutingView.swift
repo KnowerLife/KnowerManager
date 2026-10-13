@@ -29,15 +29,23 @@ struct RoutingView: View {
             }
         }
         .frame(width: 380)
-        .frame(height: sheetHeight)
+        .frame(minHeight: 340, idealHeight: sheetIdealHeight, maxHeight: sheetMaxHeight)
     }
 
-    /// Высота окна: подстраивается под доступную высоту экрана, чтобы окно
-    /// гарантированно помещалось и ничего не обрезалось (при нехватке места
-    /// содержимое редактора прокручивается).
-    private var sheetHeight: CGFloat {
-        let visible = NSScreen.main?.visibleFrame.height ?? 800
-        return min(620, max(400, visible - 180))
+    /// Доступная высота экрана (в точках).
+    private var screenHeight: CGFloat {
+        NSScreen.main?.visibleFrame.height ?? 800
+    }
+
+    /// Предпочтительная высота окна: помещаем содержимое, но не выше экрана.
+    private var sheetIdealHeight: CGFloat {
+        min(600, max(360, screenHeight - 220))
+    }
+
+    /// Максимальная высота окна: гарантированно влезает на экран. Если система
+    /// всё же сожмёт окно, содержимое редактора прокрутится (высота гибкая).
+    private var sheetMaxHeight: CGFloat {
+        min(640, max(400, screenHeight - 160))
     }
 
     // MARK: - List
