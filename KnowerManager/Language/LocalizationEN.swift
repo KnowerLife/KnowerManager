@@ -16,6 +16,7 @@ enum LocalizationEN {
         case .vpnTitle: return "VPN"
         case .vpnProfilesLoaded: return "profiles loaded"
         case .vpnConnected: return "Connected"
+        case .vpnNotConnected: return "Not connected"
         case .vpnImportClipboard: return "From Clipboard"
         case .vpnImportFile: return "From File (.txt)"
         case .vpnDeleteAll: return "Delete All Profiles"

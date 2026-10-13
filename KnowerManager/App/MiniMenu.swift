@@ -3,6 +3,7 @@ import SwiftUI
 struct MiniMenu: View {
     @ObservedObject var settings = SettingsManager.shared
     @ObservedObject var ocrManager = OCRManager.shared
+    @ObservedObject var xray = XrayService.shared
     
     let columns = [
         GridItem(.flexible(), spacing: 8),
@@ -24,6 +25,7 @@ struct MiniMenu: View {
             Divider()
             
             VStack(spacing: 12) {
+                vpnStatusSection
                 quickLaunchSection
                 appTogglesSection
             }
@@ -67,6 +69,67 @@ struct MiniMenu: View {
         }
         .padding(12)
         .background(AppThemeTokens.Surface.elevated)
+    }
+    
+    private var vpnStatusSection: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(xray.isRunning ? Color.green.opacity(0.18) : Color.gray.opacity(0.12))
+                    .frame(width: 28, height: 28)
+                Image(systemName: xray.isRunning ? "shield.fill" : "shield")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(xray.isRunning ? .green : .secondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 1) {
+                Text(settings.t(.vpnTitle))
+                    .font(.system(size: 10, weight: .bold))
+                Text(vpnStatusText)
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            
+            Spacer(minLength: 0)
+            
+            Button(action: { xray.toggleConnection() }) {
+                Image(systemName: "power")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(canToggleConnection ? (xray.isRunning ? Color.red : Color.blue) : Color.gray.opacity(0.4))
+                    .cornerRadius(8)
+            }
+            .buttonStyle(ScaleButtonStyle())
+            .disabled(!canToggleConnection)
+            .help(xray.isRunning ? settings.t(.btnDisconnect) : settings.t(.btnConnect))
+        }
+        .padding(8)
+        .background(DesignSystem.cardColor)
+        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10)
+            .stroke(xray.isRunning ? Color.green.opacity(0.35) : DesignSystem.strokeColor, lineWidth: 1))
+    }
+    
+    /// Можно ли переключить соединение: либо уже подключены, либо выбран профиль.
+    private var canToggleConnection: Bool {
+        xray.isRunning || xray.selectedProfileId != nil
+    }
+    
+    /// Текст статуса: «Подключено · имя», имя выбранного профиля или «Не подключено».
+    private var vpnStatusText: String {
+        if xray.isRunning {
+            if let id = xray.activeProfileId, let profile = xray.profiles.first(where: { $0.id == id }) {
+                return "\(settings.t(.vpnConnected)) · \(profile.name)"
+            }
+            return settings.t(.vpnConnected)
+        }
+        if let id = xray.selectedProfileId, let profile = xray.profiles.first(where: { $0.id == id }) {
+            return profile.name
+        }
+        return settings.t(.vpnNotConnected)
     }
     
     private var quickLaunchSection: some View {

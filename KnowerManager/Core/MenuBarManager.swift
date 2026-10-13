@@ -47,6 +47,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var eventMonitor: EventMonitor?
+    private var cancellables = Set<AnyCancellable>()
     
     var settingsManager: SettingsManager?
     
@@ -62,12 +63,19 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem.button {
-            // Используем системную иконку или свою из Assets
+            // Иконка отражает состояние VPN (щит/щит с заливкой).
             button.image = NSImage(systemSymbolName: "shield", accessibilityDescription: "Knower Manager")
             button.action = #selector(togglePopover)
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+        
+        // Подписка на состояние VPN: меняем иконку трея при подключении/отключении.
+        updateTrayIcon(running: XrayService.shared.isRunning)
+        XrayService.shared.$isRunning
+            .receive(on: RunLoop.main)
+            .sink { [weak self] running in self?.updateTrayIcon(running: running) }
+            .store(in: &cancellables)
         
         // 2. Popover
         popover = NSPopover()
@@ -98,6 +106,16 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
                 self.closePopover(sender: event)
             }
         }
+    }
+    
+    // MARK: - Tray Icon
+    /// Обновляет иконку в строке меню в зависимости от состояния VPN.
+    /// Подключено — залитый щит с зелёным оттенком; иначе — обычный щит.
+    private func updateTrayIcon(running: Bool) {
+        guard let button = statusItem?.button else { return }
+        let symbol = running ? "shield.fill" : "shield"
+        button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Knower Manager")
+        button.contentTintColor = running ? .systemGreen : nil
     }
     
     // MARK: - Popover Logic

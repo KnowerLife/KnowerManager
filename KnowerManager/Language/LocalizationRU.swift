@@ -15,6 +15,7 @@ enum LocalizationRU {
         case .vpnTitle: return "VPN"
         case .vpnProfilesLoaded: return "профилей загружено"
         case .vpnConnected: return "Подключено"
+        case .vpnNotConnected: return "Не подключено"
         case .vpnImportClipboard: return "Из буфера обмена"
         case .vpnImportFile: return "Из файла (.txt)"
         case .vpnDeleteAll: return "Удалить все профили"

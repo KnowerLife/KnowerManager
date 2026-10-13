@@ -227,6 +227,7 @@ enum StringKey {
     case vpnTitle
     case vpnProfilesLoaded
     case vpnConnected
+    case vpnNotConnected
     case vpnImportClipboard
     case vpnImportFile
     case vpnDeleteAll
