@@ -42,44 +42,46 @@ struct AboutView: View {
                 Divider()
                     .background(DesignSystem.strokeColor)
                 
-                // --- SCROLLABLE CONTENT (FAQ) ---
+                // --- SCROLLABLE CONTENT (ОПИСАНИЕ + ВОЗМОЖНОСТИ) ---
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 16) {
                         
-                        // Список FAQ (Полный функционал)
+                        // Описание программы
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(settings.t(.aboutTagline))
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                            Text(settings.t(.aboutIntro))
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                                .lineSpacing(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(DesignSystem.cardColor)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(DesignSystem.strokeColor, lineWidth: 1)
+                        )
+                        
+                        // Возможности по модулям
                         VStack(spacing: 12) {
-                            
-                            // 1. VPN & Deep Scan (НОВОЕ - Самое важное)
+                            // 1. VPN & Deep Scan
                             FAQRow(icon: "lock.shield.fill", color: .purple, question: settings.t(.faqVpnQ), answer: settings.t(.faqVpnA))
                             FAQRow(icon: "bolt.horizontal.fill", color: .orange, question: settings.t(.faqDeepScanQ), answer: settings.t(.faqDeepScanA))
                             
-                            // 2. Стратегии и Авто-подбор
-                            FAQRow(icon: "wand.and.stars", color: .blue, question: settings.t(.faqWandQ), answer: settings.t(.faqWandA))
-                            
-                            // 3. WARP
+                            // 2. WARP
                             FAQRow(icon: "key.fill", color: .cyan, question: settings.t(.faqWarpQ), answer: settings.t(.faqWarpA))
                             
-                            // 4. Инструменты
-                            FAQRow(icon: "wrench.and.screwdriver.fill", color: .gray, question: settings.t(.faqToolsQ), answer: settings.t(.faqToolsA))
-                            
-                            // 5. OCR & AI
+                            // 3. OCR & AI
                             FAQRow(icon: "text.viewfinder", color: .pink, question: settings.t(.faqOcrQ), answer: settings.t(.faqOcrA))
                             FAQRow(icon: "brain.head.profile", color: .indigo, question: settings.t(.faqAiQ), answer: settings.t(.faqAiA))
-                            
-                            // 6. Маршрутизация
-                            FAQRow(icon: "globe", color: .green, question: settings.t(.faqRouteQ), answer: settings.t(.faqRouteA))
-                            
-                            // 7. Фиксы
-                            FAQRow(icon: "hammer.fill", color: .red, question: settings.t(.faqFixQ), answer: settings.t(.faqFixA))
-                            
-                            // 8. Gateway & Watch
-                            FAQRow(icon: "wifi", color: .mint, question: settings.t(.faqGatewayQ), answer: settings.t(.faqGatewayA))
-                            FAQRow(icon: "eye.fill", color: .teal, question: settings.t(.faqKwQ), answer: settings.t(.faqKwA))
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
-                        .padding(.top, 20)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 20)
                 }
                 
                 // --- FOOTER ---
@@ -100,7 +102,7 @@ struct AboutView: View {
                 .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
             }
         }
-        .frame(width: 460, height: 700) // Увеличил размер окна для комфортного чтения
+        .frame(width: 460, height: 700)
         .preferredColorScheme(settings.currentTheme == .dark ? .dark : (settings.currentTheme == .light ? .light : nil))
     }
 }

@@ -30,12 +30,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSWindow.allowsAutomaticWindowTabbing = false
         
         // 1. Получаем ссылки на синглтоны
-        let knowerManager = KnowerManager.shared
         let settingsManager = SettingsManager.shared
         
         // 2. Настраиваем Трей (MenuBarManager)
         // Он инициализирует MiniMenu и монитор событий
-        MenuBarManager.shared.setup(knower: knowerManager, settings: settingsManager)
+        MenuBarManager.shared.setup(settings: settingsManager)
         
         // 3. ЯВНО открываем главное окно при старте приложения
         // Так как WindowGroup убрана, без этого вызова приложение запустится без окна

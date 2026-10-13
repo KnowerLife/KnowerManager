@@ -48,7 +48,6 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private var popover: NSPopover!
     private var eventMonitor: EventMonitor?
     
-    var knowerManager: KnowerManager?
     var settingsManager: SettingsManager?
     
     // Храним ссылки на окна явно
@@ -56,10 +55,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
     private var aboutWindow: NSWindow?
     private var settingsWindow: NSWindow?
     
-    private var cancellables = Set<AnyCancellable>()
-    
-    func setup(knower: KnowerManager, settings: SettingsManager) {
-        self.knowerManager = knower
+    func setup(settings: SettingsManager) {
         self.settingsManager = settings
         
         // 1. Status Item
@@ -102,14 +98,6 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
                 self.closePopover(sender: event)
             }
         }
-        
-        // 4. Подписки
-        knower.$isRunning
-            .receive(on: RunLoop.main)
-            .sink { [weak self] isRunning in self?.updateIconState(isRunning: isRunning) }
-            .store(in: &cancellables)
-        
-        updateIconState(isRunning: knower.isRunning)
     }
     
     // MARK: - Popover Logic
@@ -142,10 +130,6 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
     }
     
     // MARK: - Window Management (FIXED)
-    
-    @objc func toggleService() {
-        knowerManager?.toggleService()
-    }
     
     @objc func openSettings() {
         closePopover(sender: nil)
@@ -247,12 +231,7 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
     }
     
     @objc func quitApp() {
-        if let manager = knowerManager, manager.isRunning {
-            manager.toggleService()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { NSApp.terminate(nil) }
-        } else {
-            NSApp.terminate(nil)
-        }
+        NSApp.terminate(nil)
     }
     
     // MARK: - NSWindowDelegate
@@ -269,31 +248,6 @@ class MenuBarManager: NSObject, NSPopoverDelegate, NSWindowDelegate {
             settingsWindow = nil
         } else if window == aboutWindow {
             aboutWindow = nil
-        }
-    }
-    
-    // MARK: - Icon Logic
-    
-    private func updateIconState(isRunning: Bool) {
-        guard let button = statusItem.button else { return }
-        button.contentTintColor = nil
-        
-        if isRunning {
-            let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .heavy)
-                .applying(.init(hierarchicalColor: .systemGreen))
-            
-            if let icon = NSImage(systemSymbolName: "shield.fill", accessibilityDescription: "Active") {
-                let coloredIcon = icon.withSymbolConfiguration(config)
-                coloredIcon?.isTemplate = false
-                button.image = coloredIcon
-            }
-        } else {
-            let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .heavy)
-            if let icon = NSImage(systemSymbolName: "shield", accessibilityDescription: "Inactive") {
-                let boldIcon = icon.withSymbolConfiguration(config)
-                boldIcon?.isTemplate = true
-                button.image = boldIcon
-            }
         }
     }
 }

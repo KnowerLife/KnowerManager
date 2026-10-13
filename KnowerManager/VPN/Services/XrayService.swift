@@ -686,11 +686,10 @@ class XrayService: ObservableObject {
     }
     
     private func setSystemProxy(enabled: Bool) {
-        if enabled && KnowerManager.shared.isRunning { DispatchQueue.main.async { KnowerManager.shared.stopKnower() } }
         let script = enabled ?
             "networksetup -listallnetworkservices | grep -v 'An asterisk' | while read s; do if networksetup -getinfo \"$s\" | grep -q \"IP address\"; then networksetup -setsocksfirewallproxy \"$s\" 127.0.0.1 \(localPort); networksetup -setsocksfirewallproxystate \"$s\" on; fi; done" :
             "networksetup -listallnetworkservices | grep -v 'An asterisk' | while read s; do networksetup -setsocksfirewallproxystate \"$s\" off; done"
         
-        KnowerManager.shared.runAsAdmin(script: script) { _, _ in }
+        PrivilegedRunner.shared.runAsAdmin(script: script) { _, _ in }
     }
 }

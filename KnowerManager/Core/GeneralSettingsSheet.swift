@@ -2,7 +2,6 @@ import SwiftUI
 
 struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
-    @StateObject var knowerWatch = KnowerWatchService.shared
     @Environment(\.dismiss) private var dismiss
     
     var appVersion: String {
@@ -54,8 +53,8 @@ struct GeneralSettingsSheet: View {
                                     }
                                     Spacer()
                                     Button(action: {
-                                        // Вызываем метод сброса из KnowerManager
-                                        KnowerManager.shared.forgetPassword()
+                                        // Сбрасываем сохранённый пароль администратора
+                                        PrivilegedRunner.shared.forgetPassword()
                                     }) {
                                         Image(systemName: "trash")
                                             .font(.system(size: 14))
@@ -79,8 +78,6 @@ struct GeneralSettingsSheet: View {
                         GroupBox {
                             VStack(spacing: 12) {
                                 SettingsRow(icon: "bell.badge.fill", color: .red, title: settings.t(.notificationsTitle), desc: settings.t(.notificationsDesc), toggle: $settings.showNotifications)
-                                Divider()
-                                SettingsRow(icon: "eye.fill", color: .green, title: settings.t(.kwTitle), desc: settings.t(.kwDesc), toggle: $knowerWatch.isEnabled)
                             }
                             .padding(4)
                         }

@@ -33,23 +33,6 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
-enum DNSServer: String, CaseIterable, Identifiable {
-    case system = "System"
-    case cloudflare = "Cloudflare"
-    case google = "Google"
-    case adguard = "AdGuard"
-    var id: String { rawValue }
-    
-    var servers: String {
-        switch self {
-        case .system: return "Empty"
-        case .cloudflare: return "1.1.1.1 1.0.0.1"
-        case .google: return "8.8.8.8 8.8.4.4"
-        case .adguard: return "94.140.14.14 94.140.15.15"
-        }
-    }
-}
-
 // MARK: - Settings Manager
 
 class SettingsManager: ObservableObject {
@@ -57,12 +40,6 @@ class SettingsManager: ObservableObject {
     
     @AppStorage("appTheme") var currentTheme: AppTheme = .system
     @AppStorage("appLanguage") var currentLanguage: AppLanguage = .russian
-    @AppStorage("dnsServer") var dnsServer: DNSServer = .system
-    @AppStorage("killSwitchEnabled") var killSwitchEnabled: Bool = false
-    
-    // Fixes
-    @AppStorage("fixYoutube") var fixYoutube: Bool = true
-    @AppStorage("fixDiscord") var fixDiscord: Bool = true
     
     // Automation
     @AppStorage("showNotifications") var showNotifications: Bool = true
@@ -148,7 +125,7 @@ enum StringKey {
     case errorPrefix
     
     // --- Tabs (TopBar) ---
-    case tabBypass, tabWarp, tabScanner, tabTools
+    case tabBypass, tabWarp, tabScanner, tabTools, tabOcr
 
         
     // --- Mini Menu ---
@@ -208,6 +185,7 @@ enum StringKey {
     
     // --- About Window ---
     case aboutPowered, aboutVersion, aboutCopyright
+    case aboutTagline, aboutIntro
     
     // --- Menu Bar ---
     case menuStatusLabel, menuLanguage, menuTheme, menuAbout, menuOpen, menuQuit
@@ -736,6 +714,7 @@ enum StringKey {
             case .tabBypass: return "Обход"
             case .tabWarp: return "Warp"
             case .tabScanner: return "Сканер"
+            case .tabOcr: return "OCR"
             case .toolsTitle, .tabTools: return "Инструменты" // Reusing toolsTitle logic or explicit
                             
             // --- Mini Menu ---
@@ -1086,9 +1065,11 @@ enum StringKey {
             case .qrNotGenerated: return "QR код не сгенерирован"
             case .qrScanHint: return "Отсканируйте для импорта"
             
-            case .aboutPowered: return "Ядро: zapret (bol-van) | Сеть: Cloudflare & Google"
+            case .aboutPowered: return "VPN: Xray • WARP: Cloudflare • OCR: Apple Vision"
             case .aboutVersion: return "Версия 3.0 Ultimate"
             case .aboutCopyright: return "© 2025 KnowerLife. Open Source."
+            case .aboutTagline: return "Сетевые инструменты в одном приложении"
+            case .aboutIntro: return "KnowerManager объединяет три независимых модуля: VPN на базе Xray для защищённого соединения, WARP-генератор персональных конфигов Cloudflare и OCR-сканер на движке Apple Vision. Приложение помогает работать с сетью и текстом без лишних утилит."
             
             case .menuStatusLabel: return "Статус:"
             case .menuLanguage: return "Язык"
@@ -1350,6 +1331,7 @@ enum StringKey {
             case .tabBypass: return "Bypass"
             case .tabWarp: return "Warp"
             case .tabScanner: return "Scanner"
+            case .tabOcr: return "OCR"
             case .toolsTitle, .tabTools: return "Tools"
                             
             // --- Mini Menu ---
@@ -1699,9 +1681,11 @@ enum StringKey {
             case .qrNotGenerated: return "QR Code not generated"
             case .qrScanHint: return "Scan to import config"
             
-            case .aboutPowered: return "Core: zapret (bol-van) | Network: Cloudflare & Google"
+            case .aboutPowered: return "VPN: Xray • WARP: Cloudflare • OCR: Apple Vision"
             case .aboutVersion: return "Version 3.0 Ultimate"
             case .aboutCopyright: return "© 2025 KnowerLife. Open Source."
+            case .aboutTagline: return "Network tools in a single app"
+            case .aboutIntro: return "KnowerManager brings together three independent modules: an Xray-based VPN for secure connections, a WARP generator for personal Cloudflare configs, and an OCR scanner powered by Apple Vision. It handles networking and text without extra utilities."
             
             case .menuStatusLabel: return "Status:"
             case .menuLanguage: return "Language"
