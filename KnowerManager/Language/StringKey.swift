@@ -22,13 +22,12 @@ enum StringKey {
     case statusProtectionActive, checking
     case autoFound, notFound
     
-    // --- Statuses (WARP) ---
-    case proxyScan, proxyDirect, proxyFound
-    case statusGenerating, statusSuccess, statusSaved, statusCopied
+    // --- Statuses ---
+    case statusCopied
     case errorPrefix
     
     // --- Tabs (TopBar) ---
-    case tabBypass, tabWarp, tabScanner, tabTools, tabOcr
+    case tabBypass, tabScanner, tabTools, tabOcr
 
         
     // --- Mini Menu ---
@@ -36,9 +35,6 @@ enum StringKey {
     case mmScanShort, mmDnsShort, mmSettingsShort
     case mmCopied
         
-    // --- Warp Routing Rules (Models) ---
-    case rulePorno, ruleDiscord, ruleYoutube, ruleSocials
-    case ruleTorrent, ruleTools, ruleMusic
         
     // --- Tools UI ---
     case toolsNoMonitors, toolsAddTargetPlh
@@ -47,13 +43,11 @@ enum StringKey {
     // --- Scanner UI Extra ---
     case ocrLabelImage, ocrCharsCount, ocrHelpClearAll, ocrHelpCloseImage
         
-    // --- Warp Status Extra ---
-    case warpProxyAuto, warpProxyDirect
     
     // --- Buttons ---
     case btnAutoInstall, btnManualInstall, btnAutoCheck
     case btnStart, btnStop
-    case btnCopy, btnScan, btnGenerate, btnSaveFile, btnDone, btnCancel, btnSave
+    case btnDone, btnCancel, btnSave
     
     // --- Main UI Headers & Labels ---
     case titleStrategy, titleLog, titleDNS
@@ -72,19 +66,10 @@ enum StringKey {
     case logScanStarted, logTargets, logTest, logResult, logWinner, logAccessApplied, logNoStrategy
     case logProxyStarted, logInstallSuccess, logBuildError
     
-    // --- WARP Generator UI ---
-    case warpTitle, warpFormat
-    case warpGenSettings
     
-    // --- WARP Settings Sheet ---
-    case warpMethod
-    case methodLocal, methodSSH
-    case sshHost, sshUser, sshPort, sshPass
-    case warpParams
-    case warpRouting
     
     // --- QR Code ---
-    case qrTitle, qrNotGenerated, qrScanHint
+    case qrNotGenerated
     
     // --- About Window ---
     case aboutPowered, aboutVersion, aboutCopyright
@@ -93,11 +78,8 @@ enum StringKey {
     // --- Menu Bar ---
     case menuStatusLabel, menuLanguage, menuTheme, menuAbout, menuOpen, menuQuit
     
-    // --- IP Scanner (Renamed to avoid conflict) ---
-    case ipScanTitle, ipScanBestIP, ipScanStart, ipScanButton
-    case endpointAuto, endpointScanHelp
-    case qrFailedTitle, qrFailedDesc, qrScanImport
-    case btnShare, btnSaved
+    case qrScanImport
+    case btnShare
     
     // --- Tools ---
     case toolsTitle, toolsSpeedTest, toolsHostlist, toolsTraffic
@@ -198,7 +180,6 @@ enum StringKey {
     case previewLabel, previewClose
     case btnRefresh
     case btnCopyImage, btnSaveImage
-    case warpFieldEndpoint, warpFieldLicense, sshPassPlaceholder
     
     case statusProtected, statusDisconnected
     
@@ -207,7 +188,6 @@ enum StringKey {
     case gatewayWaiting, gatewayEnableHint
     case btnOpenSettings
     
-    case scanResults, btnUse
     
     case faqWandQ, faqWandA
     case faqRouteQ, faqRouteA
@@ -215,7 +195,6 @@ enum StringKey {
     case faqGatewayQ, faqGatewayA
     case faqKwQ, faqKwA
     case faqOcrQ, faqOcrA
-    case faqWarpQ, faqWarpA
     case faqToolsQ, faqToolsA
     case faqAiQ, faqAiA
     
@@ -391,12 +370,7 @@ enum StringKey {
         case ruleBlockAds, ruleBypassLan, ruleBypassApple
         case ruleBypassTorrent, ruleProxyTelegram, ruleProxyGoogle
 
-        // WARP: категории маршрутизации
-        case routePorno, routeDiscord, routeYoutube, routeSocials
-        case routeTorrents, routeTools, routeMusic
 
-        // WARP: ошибки
-        case warpErrKeyGen, warpErrNetwork, warpErrResponse
 
         // OCR
         case ocrDefaultVoice

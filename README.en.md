@@ -6,11 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![macOS 13.5+](https://img.shields.io/badge/macOS-13.5%2B-blue.svg)](#requirements)
 
-**Knower Manager** is a compact macOS menu-bar app that combines three tools in a single 380 pt window:
+**Knower Manager** is a compact macOS menu-bar app that combines two tools in a single 380 pt window:
 
 - 🖥 **OCR scanner** — on-device text recognition powered by **Apple Vision**, with speech and AI post-processing;
-- 🔒 **VPN client** — connectivity through **Xray**: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC and more;
-- 🌐 **WARP / AmneziaWG** — config generator for Cloudflare WARP in Clash Meta, AmneziaWG, Sing-box and WireGuard formats.
+- 🔒 **VPN client** — connectivity through **Xray**: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC and more.
 
 Everything is a click away from the menu bar: tabs, screen-area capture, toggles, language and theme. See [CHANGELOG.md](CHANGELOG.md) for the release history.
 
@@ -20,14 +19,13 @@ Everything is a click away from the menu bar: tabs, screen-area capture, toggles
 
 <p align="center">
   <img src="docs/screenshots/main-vpn.png" alt="VPN module — Xray client" width="210"/>
-  <img src="docs/screenshots/main-warp.png" alt="WARP module — config generator" width="210"/>
   <img src="docs/screenshots/main-ocr.png" alt="OCR module — text recognition" width="210"/>
 </p>
 <p align="center">
   <img src="docs/screenshots/tray-menu.png" alt="Menu-bar app menu" width="250"/>
 </p>
 
-*From left to right: VPN (Xray), WARP / AmneziaWG, the OCR scanner, and the menu-bar menu. Screenshots taken on macOS 27.*
+*From left to right: VPN (Xray), the OCR scanner, and the menu-bar menu. Screenshots taken on macOS 27.*
 
 ---
 
@@ -36,7 +34,6 @@ Everything is a click away from the menu bar: tabs, screen-area capture, toggles
 - [Features](#features)
   - [OCR & Scanner](#ocr--scanner)
   - [VPN (Xray)](#vpn-xray)
-  - [WARP / AmneziaWG](#warp--amneziawg)
   - [App & UI](#app--ui)
 - [Requirements](#requirements)
 - [Build](#build)
@@ -80,21 +77,10 @@ A client built on **Xray-core** with its own config generator.
 - **Routing rules** in the Xray style: domains, IPs, ports, protocols (http/tls/quic/bittorrent), action (proxy / direct / block), network (tcp/udp/tcp+udp). Add, edit, duplicate, reorder; rules without conditions are skipped during generation.
 - **Profile management:** search, filter by source (all / manual / a specific subscription), multi-select, manual add and edit.
 
-### WARP / AmneziaWG
-
-A config generator for Cloudflare WARP.
-
-- WARP account registration via the official Cloudflare API.
-- **Export formats:** Clash Meta (YAML), AmneziaWG (CONF), Sing‑box (JSON), WireGuard (CONF).
-- **AmneziaWG parameters:** Jc, Jmin, Jmax, S1, S2 (plus H1–H4).
-- **Routing categories** (for Clash / rule-providers): Porn, Discord, YouTube, Social networks, Torrents, Tools, Music.
-- **Endpoint selection:** the built-in IP scanner finds the best node by latency; an endpoint can also be set manually.
-- System proxy detection; generation runs locally. The config can be saved, shared, or shown as a QR code.
-
 ### App & UI
 
-- **Menu-bar icon (tray)** with a popover: open tabs (VPN / WARP / OCR), capture screen area, toggles for "notifications", "hide Dock icon", "launch at login", language and theme selection, the "About" window, and Quit.
-- **Three tabs:** VPN (Xray), WARP, OCR — in a 380 pt window with height adapting to content.
+- **Menu-bar icon (tray)** with a popover: open tabs (VPN / OCR), capture screen area, toggles for "notifications", "hide Dock icon", "launch at login", language and theme selection, the "About" window, and Quit.
+- **Two tabs:** VPN (Xray) and OCR — in a 380 pt window with height adapting to content.
 - **Themes:** system / light / dark.
 - **UI languages:** Russian and English.
 - "Forget saved administrator password" in settings.
@@ -170,7 +156,6 @@ KnowerManager/
 │   ├── Services/    # XrayService, XrayConfigGenerator, SubscriptionManager, ProfileProxyTester
 │   ├── Utils/       # LinkParser, LinkExporter, QRCodeService, TCPPing
 │   └── Views/       # SSConnectionView, SubscriptionsView, ProfileEditView, QRExport, SpeedTest
-├── WARP/           # WARP / AmneziaWG generator (Models / Services / Views)
 ├── OCR/            # Screen capture, recognition, speech, export
 │   ├── Models/      # OCR models and options (languages, preprocessing, TTS, export formats)
 │   ├── Services/    # OCRManager, OCRService, SpeechService, DocumentImportService…
@@ -195,7 +180,7 @@ KnowerManager/
 
 - AI provider API keys and the administrator (`sudo`) password are stored in the **Keychain**, not in `UserDefaults`.
 - VPN profiles, routing rules and subscriptions are stored locally (`UserDefaults` / Application Support).
-- The app does **not** send your data to third parties, except for direct requests to the services you choose (AI provider, Cloudflare WARP API, subscription and connectivity-check servers).
+- The app does **not** send your data to third parties, except for direct requests to the services you choose (AI provider, subscription and connectivity-check servers).
 
 ---
 

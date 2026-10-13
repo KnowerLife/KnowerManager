@@ -121,9 +121,6 @@ enum LocalizationRU {
         case .passRemember: return "Запомнить пароль"
         case .passForget: return "Забыть сохраненный пароль"
             
-        // 1. WARP
-        case .faqWarpQ: return "Что умеет WARP Генератор?"
-        case .faqWarpA: return "Создает личные конфиги (WireGuard/Amnezia) через Cloudflare. Сканер ищет «чистые» IP с низким пингом для стабильного соединения."
                                     
         // 2. VPN (Xray) — НОВОЕ
         case .faqVpnQ: return "Какие протоколы поддерживает VPN?"
@@ -202,8 +199,6 @@ enum LocalizationRU {
         case .statusProtected: return "ЗАЩИЩЕНО"
         case .statusDisconnected: return "ОТКЛЮЧЕНО"
             
-        case .scanResults: return "Результаты"
-        case .btnUse: return "Выбрать"
             
         case .gatewayActive: return "ШЛЮЗ АКТИВЕН"
         case .gatewayWaiting: return "Ожидание сети..."
@@ -215,9 +210,6 @@ enum LocalizationRU {
         case .btnRefresh: return "Обновить всё"
         case .btnCopyImage: return "Копировать изображение"
         case .btnSaveImage: return "Сохранить изображение"
-        case .warpFieldEndpoint: return "Кастомный эндпоинт (IP:Port)"
-        case .warpFieldLicense: return "Лицензионный ключ"
-        case .sshPassPlaceholder: return "Пароль"
         
         // --- NEW TRANSLATIONS ---
         case .diagTitle: return "Диагностика соединения"
@@ -250,7 +242,6 @@ enum LocalizationRU {
             
         // --- Tabs ---
         case .tabBypass: return "Обход"
-        case .tabWarp: return "Warp"
         case .tabScanner: return "Сканер"
         case .tabOcr: return "OCR"
         case .toolsTitle, .tabTools: return "Инструменты" // Reusing toolsTitle logic or explicit
@@ -264,14 +255,6 @@ enum LocalizationRU {
         case .mmSettingsShort: return "Настр."
         case .mmCopied: return "Лог скопирован"
                         
-        // --- Warp Rules ---
-        case .rulePorno: return "Порно (XXX)"
-        case .ruleDiscord: return "Discord"
-        case .ruleYoutube: return "YouTube"
-        case .ruleSocials: return "Соцсети"
-        case .ruleTorrent: return "Торренты"
-        case .ruleTools: return "Инструменты (Dev)"
-        case .ruleMusic: return "Музыка"
                         
         // --- Tools UI ---
         case .toolsNoMonitors: return "Нет активных мониторов"
@@ -285,9 +268,6 @@ enum LocalizationRU {
         case .ocrHelpClearAll: return "Удалить все"
         case .ocrHelpCloseImage: return "Закрыть изображение"
                         
-        // --- Warp Status ---
-        case .warpProxyAuto: return "Прокси: Авто"
-        case .warpProxyDirect: return "Напрямую (Без прокси)"
           
         // --- OCR UI ---
         case .ocrTitle: return "OCR И СКАНЕР"
@@ -517,12 +497,6 @@ enum LocalizationRU {
         case .logDomain: return "Домен"
         case .logStatus: return "Статус"
         
-        case .proxyScan: return "Сканирование..."
-        case .proxyDirect: return "Напрямую (Без прокси)"
-        case .proxyFound: return "Прокси:"
-        case .statusGenerating: return "Генерация..."
-        case .statusSuccess: return "Успешно!"
-        case .statusSaved: return "Сохранено в файл"
         case .statusCopied: return "Скопировано!"
         case .errorPrefix: return "Ошибка: "
         
@@ -531,10 +505,6 @@ enum LocalizationRU {
         case .btnAutoCheck: return "Авто-подбор (Auto Check)"
         case .btnStart: return "Запустить"
         case .btnStop: return "Остановить"
-        case .btnCopy: return "Копировать"
-        case .btnScan: return "Сканировать"
-        case .btnGenerate: return "СГЕНЕРИРОВАТЬ КЛЮЧ"
-        case .btnSaveFile: return "Сохранить"
         case .btnDone: return "Готово"
         case .btnCancel: return "Отмена"
         case .btnSave: return "Сохранить"
@@ -577,41 +547,14 @@ enum LocalizationRU {
         case .logInstallSuccess: return "Установка завершена успешно."
         case .logBuildError: return "Ошибка сборки/установки:"
         
-        case .warpTitle: return "Генератор WARP"
-        case .warpFormat: return "Формат:"
-        case .warpGenSettings: return "Настройки генерации"
-        
-        case .warpMethod: return "Метод генерации"
-        case .methodLocal: return "Локально"
-        case .methodSSH: return "Через удаленный сервер (SSH)"
-        case .sshHost: return "Хост (IP)"
-        case .sshUser: return "Пользователь"
-        case .sshPort: return "Порт"
-        case .sshPass: return "Пароль / Путь к ключу"
-        case .warpParams: return "Параметры AmneziaWG"
-        case .warpRouting: return "Правила маршрутизации"
-        
-        case .ipScanTitle: return "Сканер IP Cloudflare"
-        case .ipScanBestIP: return "Лучший найденный IP:"
-        case .ipScanStart: return "Начать сканирование"
-        case .ipScanButton: return "Сканер"
-        case .endpointAuto: return "Эндпоинт (Авто)"
-        case .endpointScanHelp: return "Найти быстрые IP Cloudflare"
-        case .qrFailedTitle: return "Ошибка QR кода"
-        case .qrFailedDesc: return "Конфиг слишком большой или некорректный."
         case .qrScanImport: return "Сканируйте для импорта"
         case .btnShare: return "Поделиться"
-        case .btnSaved: return "Сохранено"
-        
-        case .qrTitle: return "QR Код Конфига"
         case .qrNotGenerated: return "QR код не сгенерирован"
-        case .qrScanHint: return "Отсканируйте для импорта"
-        
-        case .aboutPowered: return "VPN: Xray • WARP: Cloudflare • OCR: Apple Vision"
+        case .aboutPowered: return "VPN: Xray • OCR: Apple Vision"
         case .aboutVersion: return "Версия 3.0 Ultimate"
         case .aboutCopyright: return "© 2025 KnowerLife. Open Source."
         case .aboutTagline: return "Сетевые инструменты в одном приложении"
-        case .aboutIntro: return "KnowerManager объединяет три независимых модуля: VPN на базе Xray для защищённого соединения, WARP-генератор персональных конфигов Cloudflare и OCR-сканер на движке Apple Vision. Приложение помогает работать с сетью и текстом без лишних утилит."
+        case .aboutIntro: return "KnowerManager объединяет два независимых модуля в одной утилите: VPN на базе Xray для защищённого соединения и OCR-сканер на движке Apple Vision. Приложение помогает работать с сетью и текстом без лишних утилит."
         
         case .menuStatusLabel: return "Статус:"
         case .menuLanguage: return "Язык"
@@ -670,19 +613,7 @@ enum LocalizationRU {
         case .ruleProxyTelegram: return "Прокси Telegram"
         case .ruleProxyGoogle: return "Прокси Google"
 
-        // WARP: категории маршрутизации
-        case .routePorno: return "Porno (XXX)"
-        case .routeDiscord: return "Discord"
-        case .routeYoutube: return "YouTube"
-        case .routeSocials: return "Соцсети"
-        case .routeTorrents: return "Торренты"
-        case .routeTools: return "Инструменты"
-        case .routeMusic: return "Музыка"
 
-        // WARP: ошибки
-        case .warpErrKeyGen: return "Ошибка генерации ключей."
-        case .warpErrNetwork: return "Ошибка сети:"
-        case .warpErrResponse: return "Некорректный ответ сервера."
 
         // OCR
         case .ocrDefaultVoice: return "По умолчанию"

@@ -72,10 +72,7 @@ struct AboutView: View {
                             FAQRow(icon: "lock.shield.fill", color: .purple, question: settings.t(.faqVpnQ), answer: settings.t(.faqVpnA))
                             FAQRow(icon: "bolt.horizontal.fill", color: .orange, question: settings.t(.faqDeepScanQ), answer: settings.t(.faqDeepScanA))
                             
-                            // 2. WARP
-                            FAQRow(icon: "key.fill", color: .cyan, question: settings.t(.faqWarpQ), answer: settings.t(.faqWarpA))
-                            
-                            // 3. OCR & AI
+                            // 2. OCR & AI
                             FAQRow(icon: "text.viewfinder", color: .pink, question: settings.t(.faqOcrQ), answer: settings.t(.faqOcrA))
                             FAQRow(icon: "brain.head.profile", color: .indigo, question: settings.t(.faqAiQ), answer: settings.t(.faqAiA))
                         }

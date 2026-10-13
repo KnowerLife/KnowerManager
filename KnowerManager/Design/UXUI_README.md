@@ -15,11 +15,8 @@
 ```swift
 @Namespace private var animation
 var tabs = [
-  UXUIKit.ModernTabBar.TabItem(title: "Обход", icon: "network", badge: nil),
   UXUIKit.ModernTabBar.TabItem(title: "VPN", icon: "lock.shield", badge: nil),
-  UXUIKit.ModernTabBar.TabItem(title: "WARP", icon: "key.fill", badge: nil),
-  UXUIKit.ModernTabBar.TabItem(title: "Сканер", icon: "text.viewfinder", badge: nil),
-  UXUIKit.ModernTabBar.TabItem(title: "Инструменты", icon: "wrench.and.screwdriver.fill", badge: nil),
+  UXUIKit.ModernTabBar.TabItem(title: "OCR", icon: "text.viewfinder", badge: nil),
 ]
 
 UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)

@@ -122,9 +122,6 @@ enum LocalizationEN {
         case .passRemember: return "Remember password"
         case .passForget: return "Forget saved password"
             
-        // 1. WARP
-        case .faqWarpQ: return "What can WARP Generator do?"
-        case .faqWarpA: return "Creates personal VPN configs (WireGuard/Amnezia) via Cloudflare. The scanner finds 'clean' IPs with low ping for a stable connection."
                                     
         // 2. VPN (Xray) — NEW
         case .faqVpnQ: return "Which protocols are supported?"
@@ -203,8 +200,6 @@ enum LocalizationEN {
         case .statusProtected: return "PROTECTED"
         case .statusDisconnected: return "DISCONNECTED"
             
-        case .scanResults: return "Results"
-        case .btnUse: return "Use"
             
         case .gatewayActive: return "GATEWAY ACTIVE"
         case .gatewayWaiting: return "Waiting for network..."
@@ -216,9 +211,6 @@ enum LocalizationEN {
         case .btnRefresh: return "Refresh All"
         case .btnCopyImage: return "Copy Image"
         case .btnSaveImage: return "Save Image"
-        case .warpFieldEndpoint: return "Custom Endpoint"
-        case .warpFieldLicense: return "License Key"
-        case .sshPassPlaceholder: return "Password"
         
         // --- NEW TRANSLATIONS (EN) ---
         case .diagTitle: return "Connection Diagnostics"
@@ -251,7 +243,6 @@ enum LocalizationEN {
             
         // --- Tabs ---
         case .tabBypass: return "Bypass"
-        case .tabWarp: return "Warp"
         case .tabScanner: return "Scanner"
         case .tabOcr: return "OCR"
         case .toolsTitle, .tabTools: return "Tools"
@@ -265,14 +256,6 @@ enum LocalizationEN {
         case .mmSettingsShort: return "Settings"
         case .mmCopied: return "Log Copied"
                         
-        // --- Warp Rules ---
-        case .rulePorno: return "Porno (XXX)"
-        case .ruleDiscord: return "Discord"
-        case .ruleYoutube: return "YouTube"
-        case .ruleSocials: return "Social Networks"
-        case .ruleTorrent: return "Torrents"
-        case .ruleTools: return "Tools"
-        case .ruleMusic: return "Music"
                         
         // --- Tools UI ---
         case .toolsNoMonitors: return "No active monitors"
@@ -286,9 +269,6 @@ enum LocalizationEN {
         case .ocrHelpClearAll: return "Clear All"
         case .ocrHelpCloseImage: return "Close Image"
                         
-        // --- Warp Status ---
-        case .warpProxyAuto: return "Proxy: Auto"
-        case .warpProxyDirect: return "Direct (No Proxy)"
           
         case .ocrTitle: return "OCR & SCANNER"
         case .ocrStart: return "Start"
@@ -517,12 +497,6 @@ enum LocalizationEN {
         case .logDomain: return "Domain"
         case .logStatus: return "Status"
         
-        case .proxyScan: return "Scanning..."
-        case .proxyDirect: return "Direct (No Proxy)"
-        case .proxyFound: return "Proxy:"
-        case .statusGenerating: return "Generating..."
-        case .statusSuccess: return "Success!"
-        case .statusSaved: return "Saved to file"
         case .statusCopied: return "Copied!"
         case .errorPrefix: return "Error: "
         
@@ -531,10 +505,6 @@ enum LocalizationEN {
         case .btnAutoCheck: return "Auto Check Strategy"
         case .btnStart: return "ACTIVATE"
         case .btnStop: return "STOP SERVICE"
-        case .btnCopy: return "Copy"
-        case .btnScan: return "Scan Proxy"
-        case .btnGenerate: return "GENERATE KEY"
-        case .btnSaveFile: return "Save File"
         case .btnDone: return "Done"
         case .btnCancel: return "Cancel"
         case .btnSave: return "Save"
@@ -577,41 +547,14 @@ enum LocalizationEN {
         case .logInstallSuccess: return "Installation completed successfully."
         case .logBuildError: return "Build/Install Error:"
         
-        case .warpTitle: return "WARP Config Gen"
-        case .warpFormat: return "Format:"
-        case .warpGenSettings: return "Generation Settings"
-        
-        case .warpMethod: return "Generation Method"
-        case .methodLocal: return "Local Device"
-        case .methodSSH: return "Via SSH Server"
-        case .sshHost: return "Host (IP)"
-        case .sshUser: return "User"
-        case .sshPort: return "Port"
-        case .sshPass: return "Password / Key Path"
-        case .warpParams: return "AmneziaWG Params"
-        case .warpRouting: return "Routing Rules"
-        
-        case .ipScanTitle: return "Cloudflare IP Scanner"
-        case .ipScanBestIP: return "Best IP found:"
-        case .ipScanStart: return "Start Scan"
-        case .ipScanButton: return "Scanner"
-        case .endpointAuto: return "Endpoint (Auto)"
-        case .endpointScanHelp: return "Scan Cloudflare IPs"
-        case .qrFailedTitle: return "QR Code generation failed"
-        case .qrFailedDesc: return "The config is too large or invalid."
         case .qrScanImport: return "Scan to import"
         case .btnShare: return "Share"
-        case .btnSaved: return "Saved"
-        
-        case .qrTitle: return "Config QR Code"
         case .qrNotGenerated: return "QR Code not generated"
-        case .qrScanHint: return "Scan to import config"
-        
-        case .aboutPowered: return "VPN: Xray • WARP: Cloudflare • OCR: Apple Vision"
+        case .aboutPowered: return "VPN: Xray • OCR: Apple Vision"
         case .aboutVersion: return "Version 3.0 Ultimate"
         case .aboutCopyright: return "© 2025 KnowerLife. Open Source."
         case .aboutTagline: return "Network tools in a single app"
-        case .aboutIntro: return "KnowerManager brings together three independent modules: an Xray-based VPN for secure connections, a WARP generator for personal Cloudflare configs, and an OCR scanner powered by Apple Vision. It handles networking and text without extra utilities."
+        case .aboutIntro: return "KnowerManager brings together two independent modules in one utility: an Xray-based VPN for secure connections and an OCR scanner powered by Apple Vision. It handles networking and text without extra utilities."
         
         case .menuStatusLabel: return "Status:"
         case .menuLanguage: return "Language"
@@ -670,19 +613,7 @@ enum LocalizationEN {
         case .ruleProxyTelegram: return "Proxy Telegram"
         case .ruleProxyGoogle: return "Proxy Google"
 
-        // WARP: routing categories
-        case .routePorno: return "Porno (XXX)"
-        case .routeDiscord: return "Discord"
-        case .routeYoutube: return "YouTube"
-        case .routeSocials: return "Social Networks"
-        case .routeTorrents: return "Torrents"
-        case .routeTools: return "Tools"
-        case .routeMusic: return "Music"
 
-        // WARP: errors
-        case .warpErrKeyGen: return "Key generation failed."
-        case .warpErrNetwork: return "Network error:"
-        case .warpErrResponse: return "Invalid server response."
 
         // OCR
         case .ocrDefaultVoice: return "Default"

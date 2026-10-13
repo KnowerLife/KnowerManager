@@ -55,7 +55,7 @@ struct MiniMenu: View {
                     .tracking(1)
             }
             Spacer()
-            Text("OCR · VPN · WARP")
+            Text("OCR · VPN")
                 .font(.system(size: 8, weight: .bold, design: .rounded))
                 .foregroundColor(.secondary)
                 .tracking(0.5)
@@ -74,11 +74,8 @@ struct MiniMenu: View {
             actionTile(title: settings.t(.vpnTitle), icon: "lock.shield", color: .green) {
                 MenuBarManager.shared.openMainWindow(tab: 0)
             }
-            actionTile(title: settings.t(.tabWarp), icon: "key.fill", color: .purple) {
-                MenuBarManager.shared.openMainWindow(tab: 1)
-            }
             actionTile(title: settings.t(.tabOcr), icon: "text.viewfinder", color: .blue) {
-                MenuBarManager.shared.openMainWindow(tab: 2)
+                MenuBarManager.shared.openMainWindow(tab: 1)
             }
             actionTile(title: settings.t(.ocrArea), icon: "viewfinder", color: .pink) {
                 ocrManager.captureArea()
