@@ -495,7 +495,6 @@ enum LocalizationEN {
         case .updateUpToDate: return "You have the latest version."
         case .updateAvailable: return "New version available: %@"
         case .updateCheckFailed: return "Could not check for updates."
-        case .btnDownload: return "Download"
         case .automationTitle: return "Automation"
         case .notificationsTitle: return "Notifications"
         case .notificationsDesc: return "Notify when status changes."

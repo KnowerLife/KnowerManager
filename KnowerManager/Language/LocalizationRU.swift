@@ -495,7 +495,6 @@ enum LocalizationRU {
         case .updateUpToDate: return "Установлена последняя версия."
         case .updateAvailable: return "Доступна новая версия: %@"
         case .updateCheckFailed: return "Не удалось проверить обновления."
-        case .btnDownload: return "Скачать"
         case .automationTitle: return "Автоматизация"
         case .notificationsTitle: return "Уведомления"
         case .notificationsDesc: return "Сообщать об изменении статуса."
