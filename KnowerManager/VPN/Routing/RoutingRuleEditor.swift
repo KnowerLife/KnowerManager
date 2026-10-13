@@ -103,6 +103,7 @@ struct RoutingRuleEditor: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                .controlSize(.small)
             }
         }
         .padding(10)
@@ -120,10 +121,11 @@ struct RoutingRuleEditor: View {
                     Text(settings.t(.routingNetworkAny)).tag("")
                     Text("TCP").tag("tcp")
                     Text("UDP").tag("udp")
-                    Text("TCP + UDP").tag("tcp,udp")
+                    Text("TCP+UDP").tag("tcp,udp")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                .controlSize(.small)
             }
 
             labeled(settings.t(.routingFieldDomains)) {
