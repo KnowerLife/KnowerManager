@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Окно настройки маршрутизации (аналог Xray routing / Happ).
 /// Режим работы + список правил с возможностью добавления, редактирования,
@@ -28,7 +29,15 @@ struct RoutingView: View {
             }
         }
         .frame(width: 380)
-        .frame(minHeight: 460, idealHeight: 600, maxHeight: 660)
+        .frame(height: sheetHeight)
+    }
+
+    /// Высота окна: подстраивается под доступную высоту экрана, чтобы окно
+    /// гарантированно помещалось и ничего не обрезалось (при нехватке места
+    /// содержимое редактора прокручивается).
+    private var sheetHeight: CGFloat {
+        let visible = NSScreen.main?.visibleFrame.height ?? 800
+        return min(620, max(400, visible - 180))
     }
 
     // MARK: - List

@@ -137,7 +137,13 @@ class RoutingManager: ObservableObject {
 
     // MARK: - Persistence
 
+    /// Пока идёт загрузка, автосохранение отключено: иначе присвоение `mode`
+    /// вызвало бы `save()` и перезаписало ещё не прочитанные `rules` пустым
+    /// значением (rules на тот момент — значение по умолчанию `[]`).
+    private var isLoading = false
+
     private func save() {
+        guard !isLoading else { return }
         if let data = try? JSONEncoder().encode(mode) {
             UserDefaults.standard.set(data, forKey: "\(storageKey)_mode")
         }
@@ -147,16 +153,23 @@ class RoutingManager: ObservableObject {
     }
 
     private func load() {
+        isLoading = true
+
         if let data = UserDefaults.standard.data(forKey: "\(storageKey)_mode"),
            let savedMode = try? JSONDecoder().decode(VPNRoutingMode.self, from: data) {
             self.mode = savedMode
         }
 
         if let data = UserDefaults.standard.data(forKey: "\(storageKey)_rules"),
-           let savedRules = try? JSONDecoder().decode([VPNRoutingRule].self, from: data) {
+           let savedRules = try? JSONDecoder().decode([VPNRoutingRule].self, from: data),
+           !savedRules.isEmpty {
             self.rules = savedRules
         } else {
+            // Нет сохранённых правил (или они пусты) — ставим набор по умолчанию.
             loadDefaults()
         }
+
+        isLoading = false
+        save()
     }
 }
