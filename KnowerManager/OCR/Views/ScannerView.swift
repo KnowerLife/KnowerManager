@@ -274,6 +274,23 @@ struct ScannerView: View {
                             }
                         }.onTapGesture { ocrManager.selectFromHistory(item) }
                     }
+                    Button(action: { ocrManager.clearHistory() }) {
+                        VStack(spacing: 4) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 14))
+                            Text(settings.t(.ocrClearHistory))
+                                .font(.system(size: 8))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                        }
+                        .foregroundColor(.secondary)
+                        .frame(width: 52, height: 52)
+                        .background(Color.gray.opacity(0.08))
+                        .cornerRadius(8)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .help(settings.t(.ocrClearHistory))
                 }.padding(4)
             }.frame(height: 60)
         }

@@ -146,7 +146,7 @@ struct RecognitionResult: Identifiable, Codable {
         self.date = date
         self.text = text
         self.confidence = confidence
-        self.previewData = preview?.tiffRepresentation
+        self.previewData = preview?.compactPreviewData
         self.detectedLanguage = detectedLanguage
         self.blocks = blocks
         self.barcodes = barcodes
@@ -155,6 +155,18 @@ struct RecognitionResult: Identifiable, Codable {
     var previewImage: NSImage? {
         guard let data = previewData else { return nil }
         return NSImage(data: data)
+    }
+}
+
+extension NSImage {
+    /// Компактное JPEG-представление превью (меньше, чем TIFF) — для хранения
+    /// истории распознаваний на диске.
+    var compactPreviewData: Data? {
+        guard let tiff = tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff) else {
+            return tiffRepresentation
+        }
+        return rep.representation(using: .jpeg, properties: [.compressionFactor: 0.7]) ?? tiffRepresentation
     }
 }
 

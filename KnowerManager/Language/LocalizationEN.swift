@@ -396,6 +396,7 @@ enum LocalizationEN {
         case .ocrCopied: return "Text copied"
         case .ocrCleared: return "Cleared"
         case .ocrHistoryLoaded: return "Loaded from history"
+        case .ocrClearHistory: return "Clear history"
         case .ocrSaveTitle: return "Save Text"
         case .ocrSaveImageTitle: return "Save Scan Image"
         case .ocrSaveError: return "Save Error"

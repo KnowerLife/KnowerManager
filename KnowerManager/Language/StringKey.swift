@@ -152,6 +152,7 @@ enum StringKey {
     case ocrStatusReady, ocrCapturing, ocrCancel, ocrRecognizing, ocrDone
     case ocrAIDisabled, ocrAIProcessing, ocrAIDone, ocrAIErrorPrefix
     case ocrCopied, ocrCleared, ocrHistoryLoaded, ocrSaveTitle, ocrSaveError
+    case ocrClearHistory
     
     // --- Screen Capture Permissions ---
     case scPermTitle, scPermOpenSettings, scPermLater

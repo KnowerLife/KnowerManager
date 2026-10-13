@@ -46,7 +46,9 @@ class OCRManager: ObservableObject {
     @Published var statusMessage: String
     @Published var isProcessing: Bool = false
     @Published var isAIProcessing: Bool = false
-    @Published var recognitionHistory: [RecognitionResult] = []
+    @Published var recognitionHistory: [RecognitionResult] = [] {
+        didSet { scheduleHistorySave() }
+    }
 
     private var isSyncingText = false
 
@@ -57,6 +59,7 @@ class OCRManager: ObservableObject {
         self.ocrOptions = Self.load(OCROptions.self, key: Self.optionsKey) ?? .default
         self.preprocessingOptions = Self.load(ImagePreprocessingOptions.self, key: Self.preprocessingKey) ?? .default
         self.statusMessage = SettingsManager.shared.t(.ocrStatusReady)
+        self.recognitionHistory = Self.loadHistory()
     }
 
     // MARK: - Персистентность
@@ -70,6 +73,37 @@ class OCRManager: ObservableObject {
     private static func load<T: Decodable>(_ type: T.Type, key: String) -> T? {
         guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
         return try? JSONDecoder().decode(type, from: data)
+    }
+
+    // MARK: - История распознаваний (на диске)
+
+    /// Путь к файлу истории в Application Support/KnowerManager.
+    nonisolated static func historyStorageURL() -> URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        let dir = appSupport.appendingPathComponent("KnowerManager", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("ocr_history.json")
+    }
+
+    private nonisolated static func loadHistory() -> [RecognitionResult] {
+        guard let data = try? Data(contentsOf: historyStorageURL()) else { return [] }
+        return (try? JSONDecoder().decode([RecognitionResult].self, from: data)) ?? []
+    }
+
+    /// Сохраняет историю в фоне (снимок делается на главном потоке).
+    private func scheduleHistorySave() {
+        let snapshot = recognitionHistory
+        DispatchQueue.global(qos: .utility).async {
+            guard let data = try? JSONEncoder().encode(snapshot) else { return }
+            try? data.write(to: Self.historyStorageURL(), options: .atomic)
+        }
+    }
+
+    /// Полностью очищает историю распознаваний.
+    func clearHistory() {
+        recognitionHistory.removeAll()
+        statusMessage = settings.t(.ocrCleared)
     }
 
     // MARK: - Захват экрана

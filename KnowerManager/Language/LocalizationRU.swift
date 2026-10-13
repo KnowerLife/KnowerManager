@@ -396,6 +396,7 @@ enum LocalizationRU {
         case .ocrCopied: return "Текст скопирован"
         case .ocrCleared: return "Очищено"
         case .ocrHistoryLoaded: return "Загружено из истории"
+        case .ocrClearHistory: return "Очистить историю"
         case .ocrSaveTitle: return "Сохранить текст"
         case .ocrSaveImageTitle: return "Сохранить изображение"
         case .ocrSaveError: return "Ошибка сохранения"
