@@ -98,6 +98,18 @@ struct SSConnectionView: View {
                 .buttonStyle(.plain)
                 .help(settings.t(.routingTitle)) // Tooltip
                 .sheet(isPresented: $showRouting) { RoutingView() }
+                
+                // Кнопка «Открыть папку данных»
+                Button(action: { xray.openDataFolder() }) {
+                    Image(systemName: "folder")
+                        .font(.system(size: 14))
+                        .foregroundColor(.primary)
+                        .frame(width: 28, height: 28)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+                .help(settings.t(.vpnOpenDataFolder))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -300,6 +312,9 @@ struct SSConnectionView: View {
                                     else { confirmDeleteSingle(profile) }
                                 })
                             }
+                            .onTapGesture(count: 2) {
+                                connectTo(profile)
+                            }
                             .onTapGesture {
                                 xray.selectedProfileId = profile.id
                             }
@@ -410,6 +425,16 @@ struct SSConnectionView: View {
     }
     
     // --- ACTIONS ---
+    /// Двойной клик по профилю: подключиться к нему, а если он уже активен — отключиться.
+    func connectTo(_ profile: ShadowsocksProfile) {
+        if xray.isRunning && xray.activeProfileId == profile.id {
+            xray.stop()
+        } else {
+            xray.selectedProfileId = profile.id
+            xray.start(profile: profile)
+        }
+    }
+    
     func deleteSelected() {
         guard !selectedIds.isEmpty else { return }
         let count = selectedIds.count

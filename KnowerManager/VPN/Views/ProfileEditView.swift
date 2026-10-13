@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct ProfileEditView: View {
     @Binding var profile: ShadowsocksProfile?
@@ -39,6 +40,10 @@ struct ProfileEditView: View {
     // ALPN (список через запятую)
     @State private var alpn: String = ""
     
+    // Вставка из ссылки
+    @State private var pasteStatus: String?
+    @State private var pasteFailed = false
+    
     let commonNetworks = ["tcp", "ws", "grpc", "h2"]
     let advancedNetworks = ["httpupgrade", "splithttp", "kcp", "quic"]
     let securities = ["none", "tls", "reality"]
@@ -56,9 +61,28 @@ struct ProfileEditView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Заголовок
-            Text(profile == nil ? settings.t(.btnCreateProfile) : settings.t(.editTitle))
-                .font(.headline)
-                .padding(.top)
+            HStack {
+                Text(profile == nil ? settings.t(.btnCreateProfile) : settings.t(.editTitle))
+                    .font(.headline)
+                Spacer()
+                Button {
+                    pasteFromLink()
+                } label: {
+                    Label(settings.t(.btnPasteFromLink), systemImage: "doc.on.clipboard")
+                }
+                .buttonStyle(.borderless)
+                .help(settings.t(.btnPasteFromLink))
+            }
+            .padding(.top, 12)
+            .padding(.horizontal, 16)
+            
+            if let status = pasteStatus {
+                Text(status)
+                    .font(.caption)
+                    .foregroundColor(pasteFailed ? .red : .secondary)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+            }
             
             Form {
                 // 1. MAIN INFO
@@ -216,6 +240,11 @@ struct ProfileEditView: View {
             return
         }
         
+        apply(profile: p)
+    }
+    
+    /// Заполняет поля формы данными профиля (используется при загрузке и вставке из ссылки).
+    private func apply(profile p: ShadowsocksProfile) {
         name = p.name
         selectedProtocol = p.protocolType
         server = p.server
@@ -248,6 +277,20 @@ struct ProfileEditView: View {
         quicSecurity = p.quicSecurity ?? ""
         quicKey = p.quicKey ?? ""
         alpn = p.alpn ?? ""
+    }
+    
+    /// Читает ссылку из буфера обмена, распознаёт её и заполняет поля формы.
+    /// Профиль НЕ сохраняется автоматически — пользователь может проверить и поправить.
+    private func pasteFromLink() {
+        guard let text = NSPasteboard.general.string(forType: .string),
+              let parsed = LinkParser.parseLinks(from: text).first else {
+            pasteFailed = true
+            pasteStatus = settings.t(.linkPasteError)
+            return
+        }
+        apply(profile: parsed)
+        pasteFailed = false
+        pasteStatus = settings.t(.linkPasted)
     }
     
     private func saveChanges() {

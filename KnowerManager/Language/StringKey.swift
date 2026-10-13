@@ -290,6 +290,9 @@ enum StringKey {
     case labelPath
     case labelHost
     case btnCreateProfile
+    case btnPasteFromLink
+    case linkPasted
+    case linkPasteError
     case faqVpnQ
     case faqVpnA
     case faqDeepScanQ
