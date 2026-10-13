@@ -44,9 +44,13 @@ struct ContentView: View {
                         SSConnectionView()
                             .padding(.horizontal, 18)
                             .transition(.opacity)
-                    } else {
+                    } else if selectedTab == 1 {
                         // --- ТАБ 1: OCR (Сканер) ---
                         ScannerView(ocrManager: ocrManager, settings: settings)
+                            .padding(.horizontal, 18).transition(.opacity)
+                    } else {
+                        // --- ТАБ 2: Инструменты ---
+                        ToolsView()
                             .padding(.horizontal, 18).transition(.opacity)
                     }
                 }
@@ -70,7 +74,7 @@ struct ContentView: View {
             }
         })
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("SwitchTab"))) { note in
-            if let tab = note.userInfo?["tab"] as? Int, (0...1).contains(tab) {
+            if let tab = note.userInfo?["tab"] as? Int, (0...2).contains(tab) {
                 withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
             }
         }
@@ -121,7 +125,8 @@ struct ModernTopBar: View {
             }
             let tabs = [
                 UXUIKit.ModernTabBar.TabItem(title: settings.t(.vpnTitle), icon: "lock.shield", badge: nil),
-                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabOcr), icon: "text.viewfinder", badge: nil)
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.tabOcr), icon: "text.viewfinder", badge: nil),
+                UXUIKit.ModernTabBar.TabItem(title: settings.t(.toolsTitle), icon: "wrench.and.screwdriver", badge: nil)
             ]
             UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)
         }

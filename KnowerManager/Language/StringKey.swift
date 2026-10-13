@@ -86,6 +86,11 @@ enum StringKey {
     case speedDownload, speedRun, speedTesting
     case hostPlaceholder, hostAdd, hostLoadPopular, hostSave
     case logMonitor, logClear, logTime, logDomain, logStatus
+    case toolsDNSTitle, toolsDNSDesc, toolsFlushDNS, toolsFlushDNSResult
+    case toolsTrafficTitle, toolsTrafficDesc, toolsTrafficIn, toolsTrafficOut
+    case toolsPingTitle, toolsPingDesc, toolsPingHost, toolsPingButton
+    case toolsPortTitle, toolsPortDesc, toolsPortHost, toolsPortPort, toolsPortButton
+    case toolsResult, toolsCopy
     
     // --- General Settings Extra ---
     case hideDockTitle, hideDockDesc
