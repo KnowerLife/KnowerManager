@@ -27,7 +27,7 @@
   <img src="docs/screenshots/tray-menu.png" alt="Меню приложения в строке меню" width="250"/>
 </p>
 
-*Слева направо: VPN (Xray), WARP / AmneziaWG, OCR-сканер и меню в строке меню. Скриншоты сделаны на macOS 15.*
+*Слева направо: VPN (Xray), WARP / AmneziaWG, OCR-сканер и меню в строке меню. Скриншоты сделаны на macOS 27.*
 
 ---
 

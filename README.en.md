@@ -27,7 +27,7 @@ Everything is a click away from the menu bar: tabs, screen-area capture, toggles
   <img src="docs/screenshots/tray-menu.png" alt="Menu-bar app menu" width="250"/>
 </p>
 
-*From left to right: VPN (Xray), WARP / AmneziaWG, the OCR scanner, and the menu-bar menu. Screenshots taken on macOS 15.*
+*From left to right: VPN (Xray), WARP / AmneziaWG, the OCR scanner, and the menu-bar menu. Screenshots taken on macOS 27.*
 
 ---
 
