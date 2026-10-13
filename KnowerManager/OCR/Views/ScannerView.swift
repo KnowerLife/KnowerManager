@@ -17,6 +17,7 @@ struct ScannerView: View {
     @State private var showTTS = false
     @State private var showFileImporter = false
     @State private var isDropTargeted = false
+    @State private var historySearchText = ""
 
     private var isBusy: Bool { ocrManager.isProcessing || ocrManager.isAIProcessing }
 
@@ -265,34 +266,62 @@ struct ScannerView: View {
     @ViewBuilder
     private var historyStrip: some View {
         if !ocrManager.recognitionHistory.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(ocrManager.recognitionHistory) { item in
-                        HistoryThumbnail(item: item) {
-                            if let index = ocrManager.recognitionHistory.firstIndex(where: { $0.id == item.id }) {
-                                ocrManager.recognitionHistory.remove(at: index)
-                            }
-                        }.onTapGesture { ocrManager.selectFromHistory(item) }
-                    }
-                    Button(action: { ocrManager.clearHistory() }) {
-                        VStack(spacing: 4) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 14))
-                            Text(settings.t(.ocrClearHistory))
-                                .font(.system(size: 8))
-                                .lineLimit(2)
-                                .multilineTextAlignment(.center)
-                        }
+            VStack(spacing: 6) {
+                HStack {
+                    Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
-                        .frame(width: 52, height: 52)
-                        .background(Color.gray.opacity(0.08))
-                        .cornerRadius(8)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                        .font(.system(size: 10))
+                    TextField(settings.t(.ocrSearchHistoryPlaceholder), text: $historySearchText)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 10))
+                    if !historySearchText.isEmpty {
+                        Button(action: { historySearchText = "" }) {
+                            Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                        }.buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    .help(settings.t(.ocrClearHistory))
-                }.padding(4)
-            }.frame(height: 60)
+                }
+                .padding(6)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(6)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(filteredHistory) { item in
+                            HistoryThumbnail(item: item) {
+                                if let index = ocrManager.recognitionHistory.firstIndex(where: { $0.id == item.id }) {
+                                    ocrManager.recognitionHistory.remove(at: index)
+                                }
+                            }.onTapGesture { ocrManager.selectFromHistory(item) }
+                        }
+                        Button(action: { ocrManager.clearHistory() }) {
+                            VStack(spacing: 4) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 14))
+                                Text(settings.t(.ocrClearHistory))
+                                    .font(.system(size: 8))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .foregroundColor(.secondary)
+                            .frame(width: 52, height: 52)
+                            .background(Color.gray.opacity(0.08))
+                            .cornerRadius(8)
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .help(settings.t(.ocrClearHistory))
+                    }.padding(4)
+                }.frame(height: 60)
+            }
+        }
+    }
+    
+    private var filteredHistory: [RecognitionResult] {
+        if historySearchText.isEmpty {
+            return ocrManager.recognitionHistory
+        }
+        return ocrManager.recognitionHistory.filter {
+            $0.text.localizedCaseInsensitiveContains(historySearchText)
         }
     }
 
