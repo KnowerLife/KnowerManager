@@ -60,8 +60,10 @@ class XrayConfigGenerator {
             // 3. RULE-BASED MODE
             var rulesJson: [String] = []
             
-            // Добавляем пользовательские правила
-            for rule in manager.rules where rule.enabled {
+            // Добавляем пользовательские правила.
+            // Правила без условий пропускаем: они бы совпали со всем трафиком
+            // и «перекрыли» fallback-правило.
+            for rule in manager.rules where rule.enabled && rule.hasConditions {
                 var parts: [String] = []
                 
                 parts.append("\"type\": \"field\"")
@@ -84,6 +86,10 @@ class XrayConfigGenerator {
                 
                 if let port = rule.port, !port.isEmpty {
                     parts.append("\"port\": \(jstr(port))")
+                }
+                
+                if let network = rule.network, !network.isEmpty {
+                    parts.append("\"network\": \(jstr(network))")
                 }
                 
                 rulesJson.append("{ \(parts.joined(separator: ", ")) }")
