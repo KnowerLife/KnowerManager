@@ -91,11 +91,13 @@ struct ProfileEditView: View {
                 // 2. TRANSPORT (NETWORK)
                 if isXrayProtocol {
                     Section(settings.t(.labelNetwork)) {
-                        Picker(settings.t(.labelNetwork), selection: $network) {
+                        Picker("", selection: $network) {
                             ForEach(networks, id: \.self) { net in
                                 Text(net.uppercased()).tag(net)
                             }
-                        }.pickerStyle(.segmented)
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
                         
                         // gRPC Settings
                         if network == "grpc" {
