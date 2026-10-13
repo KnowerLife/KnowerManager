@@ -109,6 +109,65 @@ struct GeneralSettingsSheet: View {
                         }
                     }
                     
+                    // --- 2c. LOGS ---
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionHeader(title: settings.t(.logTitle))
+                        GroupBox {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    IconSquare(icon: "doc.text.magnifyingglass", color: .gray)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(settings.t(.logShow))
+                                            .font(.system(size: 13, weight: .medium))
+                                        Text(settings.t(.logPath))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    Button(settings.t(.logShow)) {
+                                        AppLogger.shared.isUILogVisible.toggle()
+                                    }
+                                    .buttonStyle(.plain)
+                                    .foregroundColor(.blue)
+                                }
+                                
+                                if AppLogger.shared.isUILogVisible {
+                                    ScrollView {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            ForEach(AppLogger.shared.uiLogLines, id: \.self) { line in
+                                                Text(line)
+                                                    .font(.system(size: 9, design: .monospaced))
+                                                    .foregroundColor(.secondary)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                            }
+                                        }
+                                    }
+                                    .frame(height: 120)
+                                    .padding(4)
+                                    .background(Color(NSColor.textBackgroundColor))
+                                    .cornerRadius(6)
+                                    
+                                    HStack {
+                                        Button(settings.t(.logCopy)) {
+                                            let text = AppLogger.shared.uiLogLines.joined(separator: "\n")
+                                            NSPasteboard.general.clearContents()
+                                            NSPasteboard.general.setString(text, forType: .string)
+                                        }
+                                        .font(.caption)
+                                        
+                                        Button(settings.t(.logClear)) {
+                                            AppLogger.shared.clearLogFile()
+                                        }
+                                        .font(.caption)
+                                        
+                                        Spacer()
+                                    }
+                                }
+                            }
+                            .padding(4)
+                        }
+                    }
+                    
                     // --- 3. APPEARANCE ---
                     VStack(alignment: .leading, spacing: 12) {
                         SectionHeader(title: settings.t(.settingsAppearance))

@@ -542,6 +542,11 @@ enum LocalizationEN {
         case .logTime: return "Time"
         case .logDomain: return "Domain"
         case .logStatus: return "Status"
+        case .logTitle: return "Logs"
+        case .logShow: return "Show Logs"
+        case .logHide: return "Hide Logs"
+        case .logCopy: return "Copy"
+        case .logPath: return "Log file path"
         
         case .statusCopied: return "Copied!"
         case .errorPrefix: return "Error: "

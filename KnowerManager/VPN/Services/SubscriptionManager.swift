@@ -57,7 +57,7 @@ class SubscriptionManager: ObservableObject {
               let data = try? Data(contentsOf: storageURL),
               let saved = try? JSONDecoder().decode([VPNSubscription].self, from: data) else { return }
         subscriptions = saved
-        print("📂 Loaded \(saved.count) subscriptions from disk")
+        AppLogger.shared.info("📂 Loaded \(saved.count) subscriptions from disk")
     }
 
     // MARK: - CRUD
@@ -155,10 +155,10 @@ class SubscriptionManager: ObservableObject {
                     self.subscriptions[i] = s
                 }
                 self.lastError = nil
-                print("✅ Subscription updated: \(fetched.profiles.count) profiles")
+                AppLogger.shared.info("✅ Subscription updated: \(fetched.profiles.count) profiles")
             case .failure(let error):
                 self.lastError = error.localizedDescription
-                print("❌ Subscription update failed: \(error.localizedDescription)")
+                AppLogger.shared.info("❌ Subscription update failed: \(error.localizedDescription)")
             }
         }
     }

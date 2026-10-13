@@ -542,6 +542,11 @@ enum LocalizationRU {
         case .logTime: return "Время"
         case .logDomain: return "Домен"
         case .logStatus: return "Статус"
+        case .logTitle: return "Логи"
+        case .logShow: return "Показать логи"
+        case .logHide: return "Скрыть логи"
+        case .logCopy: return "Копировать"
+        case .logPath: return "Путь к лог-файлу"
         
         case .statusCopied: return "Скопировано!"
         case .errorPrefix: return "Ошибка: "

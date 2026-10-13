@@ -37,7 +37,7 @@ class XrayService: ObservableObject {
         scanProgress = ScanProgress(current: 0, total: 0)
         // Намеренно НЕ вызываем stop(): воркеры сканирования работают на своих
         // портах и завершаются сами, а stop() оборвал бы активное VPN-соединение.
-        print("🛑 Deep scan stopped.")
+        AppLogger.shared.info("🛑 Deep scan stopped.")
     }
         
     func startDeepScan(limit: Int? = nil) {
@@ -54,7 +54,7 @@ class XrayService: ObservableObject {
         }
         
         guard !candidates.isEmpty else {
-            print("⚠️ No candidates. Run Ping All first.")
+            AppLogger.shared.warning("No candidates. Run Ping All first.")
             return
         }
         
@@ -63,7 +63,7 @@ class XrayService: ObservableObject {
         deepScanQueue = candidates
         scanProgress = ScanProgress(current: 0, total: candidates.count)
         
-        print("🧐 Starting TURBO Deep Scan for \(candidates.count) profiles...")
+        AppLogger.shared.info("🧐 Starting TURBO Deep Scan for \(candidates.count) profiles...")
         
         // Запускаем многопоточную проверку
         runParallelScan()
@@ -79,7 +79,7 @@ class XrayService: ObservableObject {
         let dispatchGroup = DispatchGroup()
         let queueLock = NSLock()
         
-        print("🚀 Starting TURBO Scan with \(threadCount) workers...")
+        AppLogger.shared.info("🚀 Starting TURBO Scan with \(threadCount) workers...")
         
         for i in 0..<threadCount {
             dispatchGroup.enter()
@@ -97,7 +97,7 @@ class XrayService: ObservableObject {
             // Не останавливаем основное соединение: воркеры сканирования уже
             // завершены, а активный VPN-профиль должен продолжать работать.
             self.saveProfiles()
-            print("✅✅✅ Deep Scan FINISHED.")
+            AppLogger.shared.info("✅✅✅ Deep Scan FINISHED.")
         }
     }
     
@@ -145,7 +145,7 @@ class XrayService: ObservableObject {
                     // 6. Обновляем результат на главном потоке, находя профиль по id:
                     // индекс мог измениться, пока проверка выполнялась.
                     if success {
-                        print("[\(port)] ⚡️ Alive: \(currentProfile.name) (\(Int(ms))ms)")
+                        AppLogger.shared.info("[\(port)] ⚡️ Alive: \(currentProfile.name) (\(Int(ms))ms)")
                         setLatency(Int(ms), for: currentProfile.id)
                     } else {
                         setLatency(-1, for: currentProfile.id)
@@ -271,7 +271,7 @@ class XrayService: ObservableObject {
             do {
                 let data = try JSONEncoder().encode(snapshot)
                 try data.write(to: self.storageURL)
-            } catch { print("❌ Failed to save profiles: \(error)") }
+            } catch { AppLogger.shared.error("Failed to save profiles: \(error)") }
         }
     }
     
@@ -289,7 +289,7 @@ class XrayService: ObservableObject {
                     self.profiles[index] = updatedProfile
                     // Если мы редактируем текущий подключенный профиль - нужно перезапустить соединение
                     if self.isRunning && self.selectedProfileId == updatedProfile.id {
-                        print("🔄 Profile updated while running. Restarting...")
+                        AppLogger.shared.info("🔄 Profile updated while running. Restarting...")
                         self.start(profile: updatedProfile)
                     }
                     self.saveProfiles()
@@ -303,8 +303,8 @@ class XrayService: ObservableObject {
             let data = try Data(contentsOf: storageURL)
             let loaded = try JSONDecoder().decode([ShadowsocksProfile].self, from: data)
             self.profiles = loaded
-            print("📂 Loaded \(loaded.count) profiles from disk")
-        } catch { print("❌ Failed to load profiles: \(error)") }
+            AppLogger.shared.info("📂 Loaded \(loaded.count) profiles from disk")
+        } catch { AppLogger.shared.error("Failed to load profiles: \(error)") }
     }
     
     // --- РУЧНАЯ ПРОВЕРКА (КНОПКА "CHECK HTTP") ---
@@ -371,7 +371,7 @@ class XrayService: ObservableObject {
     func pingAllProfiles(autoSelect: Bool = false) {
         guard !profiles.isEmpty else { return }
         isPinging = true
-        print("🚀 Starting massive ping for \(profiles.count) profiles...")
+        AppLogger.shared.info("🚀 Starting massive ping for \(profiles.count) profiles...")
         
         var idToIndexMap: [UUID: Int] = [:]
         for (index, profile) in profiles.enumerated() { idToIndexMap[profile.id] = index }
@@ -413,7 +413,7 @@ class XrayService: ObservableObject {
                     self.isPinging = false
                     self.saveProfiles()
                     if autoSelect { self.selectBestProfile() }
-                    print("✅ Massive ping finished.")
+                    AppLogger.shared.info("✅ Massive ping finished.")
                 }
             }
         }
@@ -423,7 +423,7 @@ class XrayService: ObservableObject {
     func pingProfiles(ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
         isPinging = true
-        print("🚀 Pinging \(ids.count) selected profiles...")
+        AppLogger.shared.info("🚀 Pinging \(ids.count) selected profiles...")
         
         var idToIndexMap: [UUID: Int] = [:]
         for (index, profile) in profiles.enumerated() { idToIndexMap[profile.id] = index }
@@ -454,7 +454,7 @@ class XrayService: ObservableObject {
                     self.applyBatchResults(finalResults, indexMap: idToIndexMap)
                     self.isPinging = false
                     self.saveProfiles()
-                    print("✅ Selected ping finished.")
+                    AppLogger.shared.info("✅ Selected ping finished.")
                 }
             }
         }
@@ -540,7 +540,7 @@ class XrayService: ObservableObject {
                 if !uniqueProfiles.isEmpty { self.profiles.append(contentsOf: uniqueProfiles) }
                 self.isImporting = false
                 self.saveProfiles()
-                print("✅ Imported \(uniqueProfiles.count) profiles")
+                AppLogger.shared.info("✅ Imported \(uniqueProfiles.count) profiles")
             }
         }
     }
@@ -584,7 +584,7 @@ class XrayService: ObservableObject {
             if let sel = self.selectedProfileId, !self.profiles.contains(where: { $0.id == sel }) {
                 self.selectedProfileId = nil
             }
-            print("✅ Subscription \(subscriptionId) update applied: \(updated.count) profiles")
+            AppLogger.shared.info("✅ Subscription \(subscriptionId) update applied: \(updated.count) profiles")
         }
     }
 
@@ -599,7 +599,7 @@ class XrayService: ObservableObject {
                 self.selectedProfileId = nil
                 if self.isRunning { self.stop() }
             }
-            print("🗑 Removed profiles of subscription \(subscriptionId)")
+            AppLogger.shared.info("🗑 Removed profiles of subscription \(subscriptionId)")
         }
     }
     
@@ -686,9 +686,9 @@ class XrayService: ObservableObject {
                     title: SettingsManager.shared.t(.vpnTitle),
                     body: SettingsManager.shared.t(.vpnNotifyConnected))
             }
-            print("✅ Xray started on \(localPort)")
+            AppLogger.shared.info("✅ Xray started on \(localPort)")
             setSystemProxy(enabled: true)
-        } catch { print("❌ Start failed: \(error)") }
+        } catch { AppLogger.shared.error("Start failed: \(error)") }
     }
     
     // MARK: - Лог Xray (кольцевой буфер последних строк)
