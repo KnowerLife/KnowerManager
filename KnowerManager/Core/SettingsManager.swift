@@ -481,6 +481,8 @@ enum StringKey {
         case labelWsSettings
         case labelTlsSettings
         case labelRealitySettings
+        case labelAdvancedTransport
+        case labelNone
     
     // --- Localization Logic ---
     func localized(lang: AppLanguage) -> String {
@@ -567,6 +569,8 @@ enum StringKey {
             case .labelWsSettings: return "Настройки WebSocket"
             case .labelTlsSettings: return "Настройки TLS"
             case .labelRealitySettings: return "Настройки Reality"
+            case .labelAdvancedTransport: return "Дополнительно"
+            case .labelNone: return "Не задано"
                 
             case .routingModeExclude: return "Исключения"
             case .urlPlaceholder: return "Ссылка на список (https://...)"
@@ -1179,6 +1183,8 @@ enum StringKey {
             case .labelWsSettings: return "WebSocket Settings"
             case .labelTlsSettings: return "TLS Settings"
             case .labelRealitySettings: return "Reality Settings"
+            case .labelAdvancedTransport: return "Advanced"
+            case .labelNone: return "None"
                 
             case .routingModeExclude: return "Exclude List"
             case .urlPlaceholder: return "List URL (https://...)"

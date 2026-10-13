@@ -39,7 +39,8 @@ struct ProfileEditView: View {
     // ALPN (список через запятую)
     @State private var alpn: String = ""
     
-    let networks = ["tcp", "ws", "httpupgrade", "splithttp", "h2", "grpc", "kcp", "quic"]
+    let commonNetworks = ["tcp", "ws", "grpc", "h2"]
+    let advancedNetworks = ["httpupgrade", "splithttp", "kcp", "quic"]
     let securities = ["none", "tls", "reality"]
     let fingerprints = ["chrome", "firefox", "safari", "ios", "randomized"]
     let flows = ["", "xtls-rprx-vision"]
@@ -91,13 +92,34 @@ struct ProfileEditView: View {
                 // 2. TRANSPORT (NETWORK)
                 if isXrayProtocol {
                     Section(settings.t(.labelNetwork)) {
+                        // Ходовые транспорты — сегментами
                         Picker("", selection: $network) {
-                            ForEach(networks, id: \.self) { net in
+                            ForEach(commonNetworks, id: \.self) { net in
                                 Text(net.uppercased()).tag(net)
                             }
                         }
-                        .pickerStyle(.menu)
+                        .pickerStyle(.segmented)
                         .labelsHidden()
+
+                        // Редкие транспорты — в «Дополнительно»
+                        HStack {
+                            Text(settings.t(.labelAdvancedTransport))
+                            Spacer()
+                            Menu {
+                                ForEach(advancedNetworks, id: \.self) { net in
+                                    Button(net.uppercased()) { network = net }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(advancedNetworks.contains(network) ? network.uppercased() : settings.t(.labelNone))
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.system(size: 9, weight: .semibold))
+                                }
+                                .foregroundColor(advancedNetworks.contains(network) ? .primary : .secondary)
+                            }
+                            .menuStyle(.borderlessButton)
+                            .fixedSize()
+                        }
                         
                         // gRPC Settings
                         if network == "grpc" {
