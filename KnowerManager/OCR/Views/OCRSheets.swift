@@ -106,7 +106,7 @@ struct OCRAdvancedSettingsSheet: View {
             }
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
 
                     OCRSectionTitle(text: settings.t(.ocrRecognition))
 
@@ -157,7 +157,7 @@ struct OCRAdvancedSettingsSheet: View {
                             Text(orientation.displayName).tag(orientation)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                     .labelsHidden()
 
                     Divider()
@@ -170,7 +170,7 @@ struct OCRAdvancedSettingsSheet: View {
                     Divider()
 
                     OCRSectionTitle(text: settings.t(.ocrLanguages))
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 6)], alignment: .leading, spacing: 6) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 5)], alignment: .leading, spacing: 5) {
                         ForEach(availableLanguages) { lang in
                             LanguageChip(language: lang,
                                          isSelected: ocrManager.ocrOptions.languages.contains(lang.rawValue)) {
@@ -179,7 +179,7 @@ struct OCRAdvancedSettingsSheet: View {
                         }
                     }
                 }
-                .padding(16)
+                .padding(12)
             }
             .frame(maxHeight: .infinity)
 
@@ -196,10 +196,10 @@ struct OCRAdvancedSettingsSheet: View {
                 }
                 .buttonStyle(ModernButtonStyle(color: .blue))
             }
-            .padding(16)
+            .padding(12)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(width: 440)
+        .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -223,11 +223,11 @@ private struct LanguageChip: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Text(language.flag)
-                Text(language.displayName).font(.system(size: 11)).lineLimit(1)
+                Text(language.displayName).font(.system(size: 10)).lineLimit(1)
                 Spacer(minLength: 0)
                 if isSelected { Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)) }
             }
-            .padding(.horizontal, 8).padding(.vertical, 6)
+            .padding(.horizontal, 6).padding(.vertical, 4)
             .background(isSelected ? Color.blue.opacity(0.15) : Color.primary.opacity(0.05))
             .foregroundColor(isSelected ? .blue : .primary)
             .cornerRadius(8)
@@ -346,7 +346,7 @@ struct OCREnhanceSheet: View {
             .padding(16)
             .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
         }
-        .frame(width: 440)
+        .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear(perform: buildThumbnail)
         .onChange(of: ocrManager.preprocessingOptions) { _ in updatePreview() }
@@ -433,7 +433,7 @@ struct OCRTTSSheet: View {
 
             Spacer()
         }
-        .frame(width: 420)
+        .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear {
             let code = ocrManager.detectedLanguage?.code ?? ocrManager.ocrOptions.languages.first

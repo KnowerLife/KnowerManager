@@ -12,7 +12,7 @@ struct WarpSettingsSheet: View {
                 VStack(spacing: 20) {
                     // Method & SSH
                     SectionCard(title: settings.t(.warpMethod), icon: "server.rack") {
-                        Picker("", selection: $warpManager.generationMethod) { Text(settings.t(.methodLocal)).tag(GenerationMethod.local); Text(settings.t(.methodSSH)).tag(GenerationMethod.ssh) }.pickerStyle(SegmentedPickerStyle()).labelsHidden()
+                        Picker("", selection: $warpManager.generationMethod) { Text(settings.t(.methodLocal)).tag(GenerationMethod.local); Text(settings.t(.methodSSH)).tag(GenerationMethod.ssh) }.pickerStyle(MenuPickerStyle()).labelsHidden()
                         if warpManager.generationMethod == .ssh {
                             VStack(spacing: 12) {
                                 Divider()
@@ -42,7 +42,7 @@ struct WarpSettingsSheet: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 420)
+        .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
     }
     
