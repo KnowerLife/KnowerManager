@@ -31,6 +31,14 @@ class SettingsManager: ObservableObject {
     // Automation
     @AppStorage("showNotifications") var showNotifications: Bool = true
     
+    // OCR
+    /// Глобальная горячая клавиша ⌘⇧Space для захвата области.
+    @AppStorage("ocrGlobalHotkey") var ocrGlobalHotkeyEnabled: Bool = true {
+        didSet { applyGlobalHotkeyState() }
+    }
+    /// Автоматически копировать распознанный текст в буфер после захвата.
+    @AppStorage("ocrAutoCopyResult") var ocrAutoCopyResult: Bool = false
+    
     // Dock Icon Logic
     @AppStorage("hideDockIcon") var hideDockIcon: Bool = false {
         didSet {
@@ -45,6 +53,15 @@ class SettingsManager: ObservableObject {
     init() {
         updateDockIconVisibility()
         requestNotificationAuthorizationIfPossible()
+    }
+    
+    /// Приводит состояние глобального хоткея в соответствие с настройкой.
+    func applyGlobalHotkeyState() {
+        if ocrGlobalHotkeyEnabled {
+            GlobalHotkeyManager.shared.start()
+        } else {
+            GlobalHotkeyManager.shared.stop()
+        }
     }
     
     private func requestNotificationAuthorizationIfPossible() {

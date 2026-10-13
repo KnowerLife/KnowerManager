@@ -488,6 +488,12 @@ enum LocalizationEN {
         case .notificationsTitle: return "Notifications"
         case .notificationsDesc: return "Notify when status changes."
         
+        case .ocrSettingsTitle: return "Scanner (OCR)"
+        case .ocrGlobalHotkeyTitle: return "Global hotkey ⌘⇧Space"
+        case .ocrGlobalHotkeyDesc: return "Capture an area for recognition from any app."
+        case .ocrAutoCopyTitle: return "Copy result automatically"
+        case .ocrAutoCopyDesc: return "Recognized text goes straight to the clipboard."
+        
         case .toolsSpeedTest: return "Speed Test"
         case .toolsHostlist: return "Hostlist Editor"
         case .toolsTraffic: return "Traffic Log"

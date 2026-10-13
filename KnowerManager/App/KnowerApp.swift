@@ -36,6 +36,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Он инициализирует MiniMenu и монитор событий
         MenuBarManager.shared.setup(settings: settingsManager)
         
+        // Включаем глобальный хоткей захвата области, если он разрешён в настройках.
+        settingsManager.applyGlobalHotkeyState()
+        
         // 3. ЯВНО открываем главное окно при старте приложения
         // Так как WindowGroup убрана, без этого вызова приложение запустится без окна
         MenuBarManager.shared.openMainWindow()

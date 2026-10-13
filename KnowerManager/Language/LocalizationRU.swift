@@ -488,6 +488,12 @@ enum LocalizationRU {
         case .notificationsTitle: return "Уведомления"
         case .notificationsDesc: return "Сообщать об изменении статуса."
         
+        case .ocrSettingsTitle: return "Сканер (OCR)"
+        case .ocrGlobalHotkeyTitle: return "Глобальная горячая клавиша ⌘⇧Space"
+        case .ocrGlobalHotkeyDesc: return "Захват области для распознавания из любого приложения."
+        case .ocrAutoCopyTitle: return "Копировать результат автоматически"
+        case .ocrAutoCopyDesc: return "Распознанный текст сразу попадает в буфер обмена."
+        
         case .toolsSpeedTest: return "Тест"
         case .toolsHostlist: return "Редактор списка"
         case .toolsTraffic: return "Монитор трафика"

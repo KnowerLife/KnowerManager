@@ -83,6 +83,21 @@ struct GeneralSettingsSheet: View {
                         }
                     }
                     
+                    // --- 2b. SCANNER (OCR) ---
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionHeader(title: settings.t(.ocrSettingsTitle))
+                        GroupBox {
+                            VStack(spacing: 12) {
+                                SettingsRow(icon: "command", color: .indigo, title: settings.t(.ocrGlobalHotkeyTitle), desc: settings.t(.ocrGlobalHotkeyDesc), toggle: $settings.ocrGlobalHotkeyEnabled)
+                                
+                                Divider()
+                                
+                                SettingsRow(icon: "doc.on.clipboard.fill", color: .teal, title: settings.t(.ocrAutoCopyTitle), desc: settings.t(.ocrAutoCopyDesc), toggle: $settings.ocrAutoCopyResult)
+                            }
+                            .padding(4)
+                        }
+                    }
+                    
                     // --- 3. APPEARANCE ---
                     VStack(alignment: .leading, spacing: 12) {
                         SectionHeader(title: settings.t(.settingsAppearance))

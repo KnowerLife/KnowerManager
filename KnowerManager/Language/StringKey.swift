@@ -95,6 +95,11 @@ enum StringKey {
     case notificationsTitle, notificationsDesc
     case hostSaveMessage
     
+    // --- OCR Settings ---
+    case ocrSettingsTitle
+    case ocrGlobalHotkeyTitle, ocrGlobalHotkeyDesc
+    case ocrAutoCopyTitle, ocrAutoCopyDesc
+    
     // --- KnowerWatch (Auto-Heal) ---
     case kwTitle, kwDesc
     case kwNotificationTitle, kwRestoredBody

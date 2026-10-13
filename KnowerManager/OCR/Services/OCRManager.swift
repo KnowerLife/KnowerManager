@@ -107,6 +107,7 @@ class OCRManager: ObservableObject {
                     self.appendToHistory(page)
                     self.isProcessing = false
                     self.finishStatus(for: page)
+                    self.autoCopyIfEnabled(for: page)
                 }
             } else {
                 await MainActor.run {
@@ -302,6 +303,17 @@ class OCRManager: ObservableObject {
     private func finishStatus(for page: OCRPage) {
         let done = settings.t(.ocrDone)
         statusMessage = "\(done) (\(Int(page.confidence * 100))%)"
+    }
+    
+    /// Если в настройках включено авто-копирование — кладёт текст страницы в буфер обмена.
+    private func autoCopyIfEnabled(for page: OCRPage) {
+        guard SettingsManager.shared.ocrAutoCopyResult else { return }
+        let text = page.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(page.text, forType: .string)
+        let done = settings.t(.ocrDone)
+        statusMessage = "\(done) (\(Int(page.confidence * 100))%) · \(settings.t(.ocrCopied))"
     }
 
     // MARK: - Определение языка
