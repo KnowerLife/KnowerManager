@@ -104,7 +104,7 @@ struct ModernTopBar: View {
                         Text(settings.t(.appTitle))
                             .font(.system(size: 13, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
-                        Text("Network Control Suite")
+                        Text(settings.t(.appTagline))
                             .font(.system(size: 9, weight: .medium))
                             .foregroundColor(.secondary)
                             .textCase(.uppercase)

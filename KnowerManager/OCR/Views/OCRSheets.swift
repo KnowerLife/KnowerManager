@@ -400,7 +400,7 @@ struct OCRTTSSheet: View {
                     get: { speech.config.voiceIdentifier ?? "" },
                     set: { speech.config.voiceIdentifier = $0.isEmpty ? nil : $0; speech.saveConfig() }
                 )) {
-                    Text("Default").tag("")
+                    Text(settings.t(.ocrDefaultVoice)).tag("")
                     ForEach(speech.availableVoices, id: \.identifier) { voice in
                         Text("\(voice.name) — \(voice.language)").tag(voice.identifier)
                     }

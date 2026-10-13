@@ -39,7 +39,7 @@ final class ProfileProxyTester: ObservableObject {
             defer { self.cleanup(port: port, configPath: configPath) }
 
             guard let binary = self.xrayBinaryPath() else {
-                DispatchQueue.main.async { self.fail("Xray binary not found") }
+                DispatchQueue.main.async { self.fail(SettingsManager.shared.t(.proxyTestErrNoBinary)) }
                 return
             }
 
@@ -47,7 +47,7 @@ final class ProfileProxyTester: ObservableObject {
             let json = XrayConfigGenerator.shared.createConfig(for: profile, localPort: port)
             do { try json.write(to: configPath, atomically: true, encoding: .utf8) }
             catch {
-                DispatchQueue.main.async { self.fail("Config write failed") }
+                DispatchQueue.main.async { self.fail(SettingsManager.shared.t(.proxyTestErrConfig)) }
                 return
             }
 
@@ -58,32 +58,32 @@ final class ProfileProxyTester: ObservableObject {
             task.standardOutput = FileHandle.nullDevice
             task.standardError = FileHandle.nullDevice
             do { try task.run() } catch {
-                DispatchQueue.main.async { self.fail("Xray run failed") }
+                DispatchQueue.main.async { self.fail(SettingsManager.shared.t(.proxyTestErrRun)) }
                 return
             }
             self.process = task
 
             // 3. Ждём порт
-            DispatchQueue.main.async { self.statusText = "Starting proxy..." }
+            DispatchQueue.main.async { self.statusText = SettingsManager.shared.t(.proxyTestStarting) }
             guard self.waitForLocalPort(port: port, timeout: 4.0) else {
                 task.terminate()
-                DispatchQueue.main.async { self.fail("Proxy did not start") }
+                DispatchQueue.main.async { self.fail(SettingsManager.shared.t(.proxyTestErrPort)) }
                 return
             }
 
             // 4. Задержка (HEAD 204 через SOCKS)
-            DispatchQueue.main.async { self.statusText = "Measuring latency..." }
+            DispatchQueue.main.async { self.statusText = SettingsManager.shared.t(.proxyTestMeasuringLatency) }
             let latency = self.curlLatency(port: port)
             DispatchQueue.main.async { self.latencyMs = latency }
 
             guard latency != nil, !self.isCancelled else {
                 task.terminate()
-                DispatchQueue.main.async { self.fail("No connectivity through proxy") }
+                DispatchQueue.main.async { self.fail(SettingsManager.shared.t(.proxyTestErrConnectivity)) }
                 return
             }
 
             // 5. Скорость (скачивание через SOCKS)
-            DispatchQueue.main.async { self.statusText = "Measuring download speed..." }
+            DispatchQueue.main.async { self.statusText = SettingsManager.shared.t(.proxyTestMeasuringSpeed) }
             let mbps = self.curlSpeed(port: port)
             DispatchQueue.main.async { self.downloadMbps = mbps }
             task.terminate()

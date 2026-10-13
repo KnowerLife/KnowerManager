@@ -69,12 +69,12 @@ class SubscriptionManager: ObservableObject {
         guard !trimmed.isEmpty,
               trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://"),
               let _ = URL(string: trimmed) else {
-            lastError = "Invalid URL"
+            lastError = SettingsManager.shared.t(.vpnErrInvalidURL)
             return nil
         }
         // Не дублируем один и тот же URL.
         if subscriptions.contains(where: { $0.url == trimmed }) {
-            lastError = "Subscription already exists"
+            lastError = SettingsManager.shared.t(.vpnErrSubExists)
             return nil
         }
         let sub = VPNSubscription(

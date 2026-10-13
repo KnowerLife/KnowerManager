@@ -253,7 +253,7 @@ struct SSConnectionView: View {
                     }
                     .menuStyle(.borderlessButton)
                     .frame(width: 28, height: 28)
-                    .help("Delete Options")
+                    .help(settings.t(.helpDeleteOptions))
                 }
             }
             .padding(.horizontal, 16)
@@ -275,7 +275,7 @@ struct SSConnectionView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    Button("Import Profile") { showSubscriptions = true }
+                    Button(settings.t(.btnImportProfile)) { showSubscriptions = true }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                     Spacer()
@@ -350,7 +350,7 @@ struct SSConnectionView: View {
                             .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text(isLogExpanded ? "Скрыть" : "Показать")
+                        Text(settings.t(isLogExpanded ? .btnHide : .btnShow))
                             .font(.system(size: 9))
                             .foregroundColor(.secondary)
                         Image(systemName: isLogExpanded ? "chevron.up" : "chevron.down")

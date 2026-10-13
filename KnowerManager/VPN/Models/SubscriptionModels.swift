@@ -57,7 +57,7 @@ struct VPNSubscription: Identifiable, Codable, Hashable {
     var displayName: String {
         if !name.isEmpty { return name }
         if let host = URL(string: url)?.host, !host.isEmpty { return host }
-        return "Subscription"
+        return SettingsManager.shared.t(.subDefaultName)
     }
 
     var nextUpdate: Date? {

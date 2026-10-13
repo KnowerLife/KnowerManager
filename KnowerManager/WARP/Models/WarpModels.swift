@@ -100,6 +100,19 @@ enum RoutingRule: String, CaseIterable, Identifiable {
     
     var id: String { rawValue }
     
+    /// Локализованное название категории для отображения в интерфейсе.
+    var displayName: String {
+        switch self {
+        case .porno: return SettingsManager.shared.t(.routePorno)
+        case .discord: return SettingsManager.shared.t(.routeDiscord)
+        case .youtube: return SettingsManager.shared.t(.routeYoutube)
+        case .socials: return SettingsManager.shared.t(.routeSocials)
+        case .torrent: return SettingsManager.shared.t(.routeTorrents)
+        case .tools: return SettingsManager.shared.t(.routeTools)
+        case .music: return SettingsManager.shared.t(.routeMusic)
+        }
+    }
+    
     var repoKey: String {
         switch self {
         case .porno: return "porno"

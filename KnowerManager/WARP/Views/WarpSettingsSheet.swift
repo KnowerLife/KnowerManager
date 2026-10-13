@@ -34,7 +34,7 @@ struct WarpSettingsSheet: View {
                     SectionCard(title: settings.t(.warpRouting), icon: "arrow.triangle.branch") {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 16, alignment: .leading), GridItem(.flexible(), spacing: 16, alignment: .leading)], alignment: .leading, spacing: 10) {
                             ForEach(RoutingRule.allCases) { rule in
-                                ToggleRow(title: rule.rawValue, isOn: binding(for: rule))
+                                ToggleRow(title: rule.displayName, isOn: binding(for: rule))
                             }
                         }
                     }

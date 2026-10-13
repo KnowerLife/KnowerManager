@@ -11,9 +11,9 @@ enum WarpError: Error, LocalizedError {
     
     var errorDescription: String? {
         switch self {
-        case .keyGenerationFailed: return "Ошибка генерации ключей."
-        case .networkError(let err): return "Ошибка сети: \(err.localizedDescription)"
-        case .invalidResponse: return "Некорректный ответ сервера."
+        case .keyGenerationFailed: return SettingsManager.shared.t(.warpErrKeyGen)
+        case .networkError(let err): return "\(SettingsManager.shared.t(.warpErrNetwork)) \(err.localizedDescription)"
+        case .invalidResponse: return SettingsManager.shared.t(.warpErrResponse)
         case .apiError(let msg): return "Cloudflare API: \(msg)"
         }
     }

@@ -14,7 +14,10 @@ struct ProfileSpeedTestView: View {
                 Text(settings.t(.proxyTestTitle))
                     .font(.headline)
                 Spacer()
-                Button("X") { dismiss() }
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .semibold))
+                }
                     .buttonStyle(.plain)
                     .foregroundColor(.secondary)
             }
@@ -41,7 +44,7 @@ struct ProfileSpeedTestView: View {
                         )
                         resultCard(
                             title: settings.t(.proxyTestSpeed),
-                            value: tester.downloadMbps.map { String(format: "%.1f Мбит/с", $0) } ?? "—",
+                            value: tester.downloadMbps.map { String(format: "%.1f \(settings.t(.unitMbps))", $0) } ?? "—",
                             icon: "arrow.down.circle.fill",
                             color: .blue
                         )

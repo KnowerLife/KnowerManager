@@ -17,7 +17,10 @@ struct ProfileQRExportView: View {
                 Text(settings.t(.vpnQrExportTitle))
                     .font(.headline)
                 Spacer()
-                Button("X") { dismiss() }
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .semibold))
+                }
                     .buttonStyle(.plain)
                     .foregroundColor(.secondary)
             }

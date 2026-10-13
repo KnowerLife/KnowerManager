@@ -80,7 +80,7 @@ class AIService: ObservableObject {
     
     func processText(_ text: String, operation: AIOperation) async throws -> String {
         guard config.enabled else {
-            throw AIError.configurationError("ИИ обработка отключена")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgDisabled))
         }
         
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -94,7 +94,7 @@ class AIService: ObservableObject {
         
         // Проверяем наличие API ключа для облачных провайдеров
         if config.provider != .local && config.apiKey.isEmpty {
-            throw AIError.configurationError("API ключ не установлен")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgNoKey))
         }
         
         await MainActor.run {
@@ -128,21 +128,22 @@ class AIService: ObservableObject {
         // Генерируем тестовый ответ в зависимости от операции
         switch operation {
         case .rewrite:
-            return "**Переписанный текст:**\n\n\(text.replacingOccurrences(of: ".", with: "!").replacingOccurrences(of: "я", with: "Я"))\n\nЭто пример переписанного текста в режиме отладки."
+            let rewritten = text.replacingOccurrences(of: ".", with: "!").replacingOccurrences(of: "я", with: "Я")
+            return String(format: SettingsManager.shared.t(.aiDebugRewrite), rewritten)
         case .improve:
-            return "**Улучшенный текст:**\n\n\(text.uppercased())\n\nТекст был улучшен: исправлена грамматика, добавлена структура."
+            return String(format: SettingsManager.shared.t(.aiDebugImprove), text.uppercased())
         case .summarize:
-            return "**Краткое содержание:**\n\n\(String(text.prefix(100)))...\n\nОсновная мысль: это тестовый текст."
+            return String(format: SettingsManager.shared.t(.aiDebugSummarize), String(text.prefix(100)))
         // TODO: Добавьте недостающие кейсы в перечисление AIOperation в его файле
         default:
             // Временный fallback для недостающих операций
-            return "**Обработанный текст (операция: \(String(describing: operation))):**\n\n\(text)\n\nЭто результат обработки в режиме отладки."
+            return String(format: SettingsManager.shared.t(.aiDebugGeneric), String(describing: operation), text)
         }
     }
     
     private func processWithOllama(prompt: String) async throws -> String {
         guard let ollamaURL = URL(string: "http://localhost:11434/api/generate") else {
-            throw AIError.configurationError("Некорректный URL Ollama")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgBadOllamaURL))
         }
         var request = URLRequest(url: ollamaURL)
         request.httpMethod = "POST"
@@ -164,12 +165,12 @@ class AIService: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw AIError.networkError("Некорректный ответ от сервера")
+            throw AIError.networkError(SettingsManager.shared.t(.aiMsgBadResponse))
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Неизвестная ошибка"
-            throw AIError.apiError("Ошибка API: \(httpResponse.statusCode) - \(errorMessage)")
+            let errorMessage = String(data: data, encoding: .utf8) ?? SettingsManager.shared.t(.aiMsgUnknown)
+            throw AIError.apiError("\(httpResponse.statusCode) - \(errorMessage)")
         }
         
         let ollamaResponse = try JSONDecoder().decode(OllamaResponse.self, from: data)
@@ -184,7 +185,7 @@ class AIService: ObservableObject {
     
     private func processWithAnthropic(prompt: String) async throws -> String {
         guard let url = URL(string: "\(config.provider.baseURL)/messages") else {
-            throw AIError.configurationError("Некорректный URL провайдера")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgBadProviderURL))
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -210,12 +211,12 @@ class AIService: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw AIError.networkError("Некорректный ответ от сервера")
+            throw AIError.networkError(SettingsManager.shared.t(.aiMsgBadResponse))
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
             let errorMessage = try await parseAPIError(data: data, statusCode: httpResponse.statusCode)
-            throw AIError.apiError("Ошибка API: \(httpResponse.statusCode) - \(errorMessage)")
+            throw AIError.apiError("\(httpResponse.statusCode) - \(errorMessage)")
         }
         
         let decoded = try JSONDecoder().decode(AnthropicResponse.self, from: data)
@@ -240,7 +241,7 @@ class AIService: ObservableObject {
         }
         
         guard let url = URL(string: "\(config.provider.baseURL)/chat/completions") else {
-            throw AIError.configurationError("Некорректный URL провайдера")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgBadProviderURL))
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -267,12 +268,12 @@ class AIService: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw AIError.networkError("Некорректный ответ от сервера")
+            throw AIError.networkError(SettingsManager.shared.t(.aiMsgBadResponse))
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
             let errorMessage = try await parseAPIError(data: data, statusCode: httpResponse.statusCode)
-            throw AIError.apiError("Ошибка API: \(httpResponse.statusCode) - \(errorMessage)")
+            throw AIError.apiError("\(httpResponse.statusCode) - \(errorMessage)")
         }
         
         let aiResponse = try JSONDecoder().decode(AIResponse.self, from: data)
@@ -301,7 +302,7 @@ class AIService: ObservableObject {
                 await MainActor.run {
                     self.balanceStatus = .insufficient
                 }
-                return "Недостаточно средств на счету. Пополните баланс на \(config.provider.rawValue)."
+                return String(format: SettingsManager.shared.t(.aiMsgInsufficient), config.provider.rawValue)
             }
             
             return "\(config.provider.rawValue): \(message)"
@@ -309,13 +310,13 @@ class AIService: ObservableObject {
         
         switch statusCode {
         case 401:
-            return "Неверный API ключ. Проверьте ключ в настройках."
+            return SettingsManager.shared.t(.aiMsgBadKey)
         case 429:
-            return "Слишком много запросов. Подождите и повторите позже."
+            return SettingsManager.shared.t(.aiMsgTooMany)
         case 500...599:
-            return "Ошибка сервера \(config.provider.rawValue). Попробуйте позже."
+            return String(format: SettingsManager.shared.t(.aiMsgServerError), config.provider.rawValue)
         default:
-            return "Ошибка API (\(statusCode)). Проверьте настройки."
+            return String(format: SettingsManager.shared.t(.aiMsgApiErrorFmt), statusCode)
         }
     }
     
@@ -348,7 +349,7 @@ class AIService: ObservableObject {
         guard config.provider == .deepseek else {
             // Для других провайдеров показываем сообщение
             await MainActor.run {
-                self.balanceStatus = .error("Проверка баланса доступна только для DeepSeek")
+                self.balanceStatus = .error(SettingsManager.shared.t(.aiBalanceDeepSeekOnly))
             }
             return
         }
@@ -373,14 +374,14 @@ class AIService: ObservableObject {
         }
         
         guard config.enabled else {
-            throw AIError.configurationError("ИИ не настроен")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgNotConfigured))
         }
         
         if config.provider != .local && config.apiKey.isEmpty {
-            throw AIError.configurationError("API ключ не установлен")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgNoKey))
         }
         
-        let testText = "Привет, это тестовое сообщение."
+        let testText = SettingsManager.shared.t(.aiTestText)
         do {
             _ = try await processText(testText, operation: .rewrite)
             return true
@@ -400,7 +401,7 @@ class AIService: ObservableObject {
     
     func customProcess(text: String, customPrompt: String) async throws -> String {
         guard config.enabled else {
-            throw AIError.configurationError("ИИ обработка отключена")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgDisabled))
         }
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw AIError.emptyText
@@ -411,7 +412,7 @@ class AIService: ObservableObject {
         }
         
         if config.provider != .local && config.apiKey.isEmpty {
-            throw AIError.configurationError("API ключ не установлен")
+            throw AIError.configurationError(SettingsManager.shared.t(.aiMsgNoKey))
         }
         
         await MainActor.run {

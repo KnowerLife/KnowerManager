@@ -112,10 +112,10 @@ struct SubscriptionsView: View {
                 Text(settings.t(.subAddTitle)).font(.headline)
                 TextField(settings.t(.subName), text: $newName)
                     .textFieldStyle(.roundedBorder)
-                TextField("URL (https://...)", text: $newURL)
+                TextField(settings.t(.subUrlPlaceholder), text: $newURL)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 11, design: .monospaced))
-                TextField("User-Agent", text: $newUA)
+                TextField(settings.t(.subUserAgent), text: $newUA)
                     .textFieldStyle(.roundedBorder)
                 Picker(settings.t(.subInterval), selection: $newInterval) {
                     ForEach(intervalOptions, id: \.self) { h in
@@ -145,9 +145,9 @@ struct SubscriptionsView: View {
     }
 
     private func intervalLabel(_ hours: Int) -> String {
-        if hours < 24 { return "\(hours) h" }
-        if hours == 24 { return "1 day" }
-        return "\(hours / 24) days"
+        if hours < 24 { return String(format: settings.t(.subIntervalHours), hours) }
+        if hours == 24 { return settings.t(.subIntervalDay) }
+        return String(format: settings.t(.subIntervalDays), hours / 24)
     }
 
     private func addNew() {

@@ -62,7 +62,7 @@ struct ProfileEditView: View {
             
             Form {
                 // 1. MAIN INFO
-                Section("General") {
+                Section(settings.t(.sectionGeneral)) {
                     TextField(settings.t(.labelName), text: $name)
                     
                     Picker(settings.t(.labelProtocol), selection: $selectedProtocol) {
@@ -78,11 +78,11 @@ struct ProfileEditView: View {
                         TextField(settings.t(.labelUUID), text: $uuidOrPassword) // Password
                         TextField(settings.t(.labelEncryption), text: $security) // Method (aes-256-gcm etc)
                     } else {
-                        TextField("UUID", text: $uuidOrPassword)
+                        TextField(settings.t(.labelUuidPlain), text: $uuidOrPassword)
                         
                         if selectedProtocol == .vless && security == "reality" {
                             Picker(settings.t(.labelFlow), selection: $flow) {
-                                Text("Не задано").tag("")
+                                Text(settings.t(.labelNone)).tag("")
                                 Text("xtls-rprx-vision").tag("xtls-rprx-vision")
                             }
                         }
@@ -135,12 +135,12 @@ struct ProfileEditView: View {
                         
                         // KCP / QUIC
                         if network == "kcp" {
-                            TextField("Seed", text: $kcpSeed)
+                            TextField(settings.t(.labelSeed), text: $kcpSeed)
                         }
                         if network == "quic" {
-                            TextField("QUIC Security", text: $quicSecurity)
+                            TextField(settings.t(.labelQuicSecurity), text: $quicSecurity)
                                 .help("chacha20-poly1305, aes-128-gcm, none")
-                            TextField("QUIC Key", text: $quicKey)
+                            TextField(settings.t(.labelQuicKey), text: $quicKey)
                         }
                     }
                     
@@ -176,8 +176,8 @@ struct ProfileEditView: View {
                         
                         // ALPN (список через запятую: h2,http/1.1)
                         if security == "tls" || security == "reality" {
-                            TextField("ALPN", text: $alpn)
-                                .help("h2,http/1.1 — через запятую, например: h2,http/1.1")
+                            TextField(settings.t(.labelAlpn), text: $alpn)
+                                .help(settings.t(.helpAlpn))
                         }
                     }
                 }
