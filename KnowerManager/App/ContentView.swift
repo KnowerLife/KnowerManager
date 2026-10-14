@@ -130,7 +130,7 @@ struct ModernTopBar: View {
             ]
             UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)
         }
-        .frame(maxWidth: .infinity)
+        .frame(width: DesignSystem.width)
     }
 }
 
