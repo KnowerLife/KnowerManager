@@ -246,6 +246,10 @@ class XrayService: ObservableObject {
     private let logMaxLines = 400
     private var logLines: [String] = []
     
+    // --- Персистентность лога Xray ---
+    private let xrayLogWriteQueue = DispatchQueue(label: "com.knower.xraylog", qos: .utility)
+    private let xrayLogMaxFileSize: UInt64 = 5 * 1024 * 1024 // 5 MB
+    
     private var workDir: URL { FileManager.default.temporaryDirectory.appendingPathComponent("KnowerXray") }
     private var configPath: URL { workDir.appendingPathComponent("config.json") }
     
@@ -255,6 +259,64 @@ class XrayService: ObservableObject {
         try? FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
         return appDir.appendingPathComponent("profiles.json")
     }
+    
+    /// Файл лога Xray (дописывается между сессиями).
+    private var xrayLogFileURL: URL {
+        storageURL.deletingLastPathComponent().appendingPathComponent("xray.log")
+    }
+    
+    /// Путь к файлу лога Xray (для открытия/экспорта из UI).
+    var xrayLogPath: URL { xrayLogFileURL }
+    
+    /// Очищает файл лога Xray и текущий буфер.
+    func clearXrayLogFile() {
+        let url = xrayLogFileURL
+        xrayLogWriteQueue.async {
+            try? "".write(to: url, atomically: true, encoding: .utf8)
+        }
+        DispatchQueue.main.async {
+            self.logLines.removeAll()
+            self.xrayLog = ""
+        }
+    }
+    
+    private func writeSessionHeader(profileName: String) {
+        let stamp = Self.logDateFormatter.string(from: Date())
+        let header = "\n===== \(stamp) · \(profileName) =====\n"
+        xrayLogWriteQueue.async { [weak self] in
+            self?.writeToXrayLogFile(header)
+        }
+    }
+    
+    private func writeToXrayLogFile(_ text: String) {
+        let url = xrayLogFileURL
+        rotateXrayLogIfNeeded(url)
+        guard let data = text.data(using: .utf8) else { return }
+        if FileManager.default.fileExists(atPath: url.path) {
+            if let handle = try? FileHandle(forWritingTo: url) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            }
+        } else {
+            try? data.write(to: url)
+        }
+    }
+    
+    private func rotateXrayLogIfNeeded(_ url: URL) {
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = attrs[.size] as? UInt64,
+              size > xrayLogMaxFileSize else { return }
+        let archive = url.appendingPathExtension("1") // xray.log.1
+        try? FileManager.default.removeItem(at: archive)
+        try? FileManager.default.moveItem(at: url, to: archive)
+    }
+    
+    private static let logDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return f
+    }()
     
     private var binaryPath: URL {
         return Bundle.main.url(forResource: "xray-core", withExtension: nil) ?? URL(fileURLWithPath: "/usr/local/bin/xray")
@@ -646,6 +708,7 @@ class XrayService: ObservableObject {
         task.standardError = pipe
         let startTime = Date()
         clearLog()
+        writeSessionHeader(profileName: profile.name)
         
         do {
             try task.run()
@@ -709,11 +772,20 @@ class XrayService: ObservableObject {
     }
     
     private func appendXrayLog(_ chunk: String) {
+        let rawLines = chunk
+            .components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !rawLines.isEmpty else { return }
+
+        // Персистентность: дописываем в файл в фоне.
+        let text = rawLines.joined(separator: "\n") + "\n"
+        xrayLogWriteQueue.async { [weak self] in
+            self?.writeToXrayLogFile(text)
+        }
+
         DispatchQueue.main.async {
-            for line in chunk.components(separatedBy: "\n") {
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty { self.logLines.append(trimmed) }
-            }
+            self.logLines.append(contentsOf: rawLines)
             if self.logLines.count > self.logMaxLines {
                 self.logLines.removeFirst(self.logLines.count - self.logMaxLines)
             }

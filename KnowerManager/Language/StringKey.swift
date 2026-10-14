@@ -346,6 +346,7 @@ enum StringKey {
     // --- Лог Xray & реальный тест профиля ---
     case vpnLogTitle
     case vpnLogEmpty
+    case vpnLogOpenFile, vpnLogClear
     case contextProxyTest
     case proxyTestTitle
     case proxyTestLatency

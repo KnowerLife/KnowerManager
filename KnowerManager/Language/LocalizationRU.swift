@@ -191,6 +191,8 @@ enum LocalizationRU {
         // --- Лог Xray & тест профиля (RU) ---
         case .vpnLogTitle: return "Лог Xray"
         case .vpnLogEmpty: return "Лог пуст. Подключитесь, чтобы увидеть вывод Xray."
+        case .vpnLogOpenFile: return "Открыть файл лога"
+        case .vpnLogClear: return "Очистить лог"
         case .contextProxyTest: return "Тест через прокси"
         case .proxyTestTitle: return "Тест профиля"
         case .proxyTestLatency: return "Задержка"

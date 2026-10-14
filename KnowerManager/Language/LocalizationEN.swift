@@ -192,6 +192,8 @@ enum LocalizationEN {
         // --- Xray log & proxy test (EN) ---
         case .vpnLogTitle: return "Xray Log"
         case .vpnLogEmpty: return "Log is empty. Connect to see Xray output."
+        case .vpnLogOpenFile: return "Open log file"
+        case .vpnLogClear: return "Clear log"
         case .contextProxyTest: return "Test via Proxy"
         case .proxyTestTitle: return "Profile Test"
         case .proxyTestLatency: return "Latency"

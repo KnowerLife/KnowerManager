@@ -403,25 +403,47 @@ struct SSConnectionView: View {
             // 5. XRAY LOG (сворачиваемый)
             // ==========================================
             VStack(spacing: 0) {
-                Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isLogExpanded.toggle() } }) {
-                    HStack(spacing: 6) {
-                        Circle().fill(xray.isRunning ? Color.green : Color.secondary)
-                            .frame(width: 6, height: 6)
-                        Text(settings.t(.vpnLogTitle))
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(settings.t(isLogExpanded ? .btnHide : .btnShow))
-                            .font(.system(size: 9))
-                            .foregroundColor(.secondary)
-                        Image(systemName: isLogExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 8))
-                            .foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    Circle().fill(xray.isRunning ? Color.green : Color.secondary)
+                        .frame(width: 6, height: 6)
+                    Text(settings.t(.vpnLogTitle))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    if isLogExpanded {
+                        Button {
+                            NSWorkspace.shared.activateFileViewerSelecting([xray.xrayLogPath])
+                        } label: {
+                            Image(systemName: "folder")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help(settings.t(.vpnLogOpenFile))
+
+                        Button {
+                            xray.clearXrayLogFile()
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .help(settings.t(.vpnLogClear))
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
+                    Text(settings.t(isLogExpanded ? .btnHide : .btnShow))
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
+                    Image(systemName: isLogExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 8))
+                        .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) { isLogExpanded.toggle() }
+                }
                 
                 if isLogExpanded {
                     ScrollViewReader { reader in
