@@ -53,7 +53,6 @@ struct UXUIKit {
                         Text(tab.title)
                             .font(DesignTokens.Typography.footnote.weight(.bold))
                             .lineLimit(1)
-                            .fixedSize()
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
