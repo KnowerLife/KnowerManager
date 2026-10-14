@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
+    @ObservedObject var hotkey = GlobalHotkeyManager.shared
     @Environment(\.dismiss) private var dismiss
     
     // Проверка обновлений
@@ -100,6 +101,10 @@ struct GeneralSettingsSheet: View {
                         GroupBox {
                             VStack(spacing: 12) {
                                 SettingsRow(icon: "command", color: .indigo, title: settings.t(.ocrGlobalHotkeyTitle), desc: settings.t(.ocrGlobalHotkeyDesc), toggle: $settings.ocrGlobalHotkeyEnabled)
+                                
+                                Divider()
+                                
+                                hotkeyEditRow
                                 
                                 Divider()
                                 
@@ -248,6 +253,47 @@ struct GeneralSettingsSheet: View {
         .frame(maxWidth: 420, idealHeight: 700, maxHeight: 720)
     }
     
+    // MARK: - Горячая клавиша
+
+    private var hotkeyEditRow: some View {
+        HStack(alignment: .center) {
+            IconSquare(icon: "keyboard", color: .indigo)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(settings.t(.ocrHotkeyChange))
+                    .font(.system(size: 13, weight: .medium))
+                Text(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyChangeDesc))
+                    .font(.caption)
+                    .foregroundColor(hotkey.isRecording ? .orange : .secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 10)
+            Text(hotkey.combinationString)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Color.black.opacity(0.06))
+                .cornerRadius(6)
+            Button(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyRecord)) {
+                if hotkey.isRecording {
+                    hotkey.stopRecording()
+                } else {
+                    hotkey.startRecording()
+                }
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.blue)
+            Button(settings.t(.ocrHotkeyReset)) {
+                hotkey.stopRecording()
+                hotkey.resetToDefault()
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 2)
+        .opacity(settings.ocrGlobalHotkeyEnabled ? 1 : 0.45)
+        .disabled(!settings.ocrGlobalHotkeyEnabled)
+        .onDisappear { hotkey.stopRecording() }
+    }
+
     // MARK: - Проверка обновлений
     
     private func checkForUpdates() {

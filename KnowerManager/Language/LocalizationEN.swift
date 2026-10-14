@@ -502,6 +502,11 @@ enum LocalizationEN {
         case .ocrSettingsTitle: return "Scanner (OCR)"
         case .ocrGlobalHotkeyTitle: return "Global hotkey ⌘⇧Space"
         case .ocrGlobalHotkeyDesc: return "Capture an area for recognition from any app."
+        case .ocrHotkeyChange: return "Change Shortcut"
+        case .ocrHotkeyChangeDesc: return "Click the button, then press a new key combination."
+        case .ocrHotkeyRecord: return "Record"
+        case .ocrHotkeyRecording: return "Press keys..."
+        case .ocrHotkeyReset: return "Reset"
         case .ocrAutoCopyTitle: return "Copy result automatically"
         case .ocrAutoCopyDesc: return "Recognized text goes straight to the clipboard."
         

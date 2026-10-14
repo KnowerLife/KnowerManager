@@ -502,6 +502,11 @@ enum LocalizationRU {
         case .ocrSettingsTitle: return "Сканер (OCR)"
         case .ocrGlobalHotkeyTitle: return "Глобальная горячая клавиша ⌘⇧Space"
         case .ocrGlobalHotkeyDesc: return "Захват области для распознавания из любого приложения."
+        case .ocrHotkeyChange: return "Изменить комбинацию"
+        case .ocrHotkeyChangeDesc: return "Нажмите кнопку, затем новую комбинацию клавиш."
+        case .ocrHotkeyRecord: return "Записать"
+        case .ocrHotkeyRecording: return "Нажмите клавиши..."
+        case .ocrHotkeyReset: return "Сбросить"
         case .ocrAutoCopyTitle: return "Копировать результат автоматически"
         case .ocrAutoCopyDesc: return "Распознанный текст сразу попадает в буфер обмена."
         

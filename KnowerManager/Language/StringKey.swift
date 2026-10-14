@@ -106,6 +106,7 @@ enum StringKey {
     // --- OCR Settings ---
     case ocrSettingsTitle
     case ocrGlobalHotkeyTitle, ocrGlobalHotkeyDesc
+    case ocrHotkeyChange, ocrHotkeyChangeDesc, ocrHotkeyRecord, ocrHotkeyRecording, ocrHotkeyReset
     case ocrAutoCopyTitle, ocrAutoCopyDesc
     
     // --- KnowerWatch (Auto-Heal) ---
