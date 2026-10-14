@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 
 struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
@@ -10,6 +12,10 @@ struct GeneralSettingsSheet: View {
     @State private var updateMessage: String?
     @State private var updateDownloadURL: URL?
     @State private var updateFailed = false
+    
+    // Резервное копирование
+    @State private var backupMessage: String?
+    @State private var backupFailed = false
     
     var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.2"
@@ -173,6 +179,62 @@ struct GeneralSettingsSheet: View {
                         }
                     }
                     
+                    // --- 2d. BACKUP ---
+                    VStack(alignment: .leading, spacing: 12) {
+                        SectionHeader(title: settings.t(.backupTitle))
+                        GroupBox {
+                            VStack(spacing: 12) {
+                                HStack(alignment: .center) {
+                                    IconSquare(icon: "externaldrive.fill", color: .green)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(settings.t(.backupCreateTitle))
+                                            .font(.system(size: 13, weight: .medium))
+                                        Text(settings.t(.backupCreateDesc))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    Spacer(minLength: 10)
+                                    Button(settings.t(.backupCreateTitle)) {
+                                        createBackup()
+                                    }
+                                    .buttonStyle(.plain)
+                                    .foregroundColor(.blue)
+                                }
+                                .padding(.vertical, 2)
+                                
+                                Divider()
+                                
+                                HStack(alignment: .center) {
+                                    IconSquare(icon: "arrow.counterclockwise.circle.fill", color: .orange)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(settings.t(.backupRestoreTitle))
+                                            .font(.system(size: 13, weight: .medium))
+                                        Text(settings.t(.backupRestoreDesc))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    Spacer(minLength: 10)
+                                    Button(settings.t(.backupRestoreTitle)) {
+                                        restoreBackup()
+                                    }
+                                    .buttonStyle(.plain)
+                                    .foregroundColor(.orange)
+                                }
+                                .padding(.vertical, 2)
+                                
+                                if let message = backupMessage {
+                                    Label(message, systemImage: backupFailed ? "xmark.circle.fill" : "checkmark.circle.fill")
+                                        .font(.caption)
+                                        .foregroundColor(backupFailed ? .red : .green)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .padding(4)
+                        }
+                    }
+                    
                     // --- 3. APPEARANCE ---
                     VStack(alignment: .leading, spacing: 12) {
                         SectionHeader(title: settings.t(.settingsAppearance))
@@ -253,6 +315,58 @@ struct GeneralSettingsSheet: View {
         .frame(maxWidth: 420, idealHeight: 700, maxHeight: 720)
     }
     
+    // MARK: - Резервное копирование
+
+    private func createBackup() {
+        let panel = NSSavePanel()
+        panel.title = settings.t(.backupCreateTitle)
+        panel.nameFieldStringValue = BackupManager.suggestedFileName()
+        panel.canCreateDirectories = true
+        panel.allowedContentTypes = [.zip]
+        backupMessage = nil
+        backupFailed = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try BackupManager.createBackup(to: url)
+            backupFailed = false
+            backupMessage = "\(settings.t(.backupSaved)): \(url.lastPathComponent)"
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        } catch {
+            backupFailed = true
+            backupMessage = "\(settings.t(.backupFailed)): \(error.localizedDescription)"
+        }
+    }
+
+    private func restoreBackup() {
+        let panel = NSOpenPanel()
+        panel.title = settings.t(.backupRestoreTitle)
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [.zip]
+        backupMessage = nil
+        backupFailed = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        let alert = NSAlert()
+        alert.messageText = settings.t(.backupConfirmTitle)
+        alert.informativeText = settings.t(.backupConfirmBody)
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: settings.t(.backupRestoreTitle))
+        alert.addButton(withTitle: settings.t(.btnCancel))
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        do {
+            try BackupManager.restoreBackup(from: url)
+            backupFailed = false
+            backupMessage = settings.t(.backupRestored)
+        } catch {
+            backupFailed = true
+            backupMessage = "\(settings.t(.backupFailed)): \(error.localizedDescription)"
+        }
+    }
+
     // MARK: - Горячая клавиша
 
     private var hotkeyEditRow: some View {

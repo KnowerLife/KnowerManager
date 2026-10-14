@@ -169,6 +169,16 @@ enum LocalizationEN {
         case .connStatsTraffic: return "Traffic"
         case .connStatsIn: return "In"
         case .connStatsOut: return "Out"
+        case .backupTitle: return "Backup"
+        case .backupCreateTitle: return "Create Backup"
+        case .backupCreateDesc: return "Save profiles, subscriptions and history to an archive."
+        case .backupRestoreTitle: return "Restore"
+        case .backupRestoreDesc: return "Load data from an archive. Current data will be replaced."
+        case .backupSaved: return "Backup saved"
+        case .backupRestored: return "Data restored"
+        case .backupFailed: return "Operation failed"
+        case .backupConfirmTitle: return "Restore data?"
+        case .backupConfirmBody: return "Current profiles, subscriptions and history will be replaced with the archive contents. Continue?"
 
         // --- QR for VPN profiles (EN) ---
         case .vpnQrExport: return "QR Code"

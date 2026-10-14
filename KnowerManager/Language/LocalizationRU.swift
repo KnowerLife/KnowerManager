@@ -168,6 +168,16 @@ enum LocalizationRU {
         case .connStatsTraffic: return "Трафик"
         case .connStatsIn: return "Принято"
         case .connStatsOut: return "Отдано"
+        case .backupTitle: return "Резервная копия"
+        case .backupCreateTitle: return "Создать копию"
+        case .backupCreateDesc: return "Сохранить профили, подписки и историю в архив."
+        case .backupRestoreTitle: return "Восстановить"
+        case .backupRestoreDesc: return "Загрузить данные из архива. Текущие данные будут заменены."
+        case .backupSaved: return "Копия сохранена"
+        case .backupRestored: return "Данные восстановлены"
+        case .backupFailed: return "Не удалось выполнить операцию"
+        case .backupConfirmTitle: return "Восстановить данные?"
+        case .backupConfirmBody: return "Текущие профили, подписки и история будут заменены содержимым архива. Продолжить?"
 
         // --- QR для профилей VPN (RU) ---
         case .vpnQrExport: return "QR код"

@@ -99,6 +99,11 @@ class OCRManager: ObservableObject {
         return (try? JSONDecoder().decode([RecognitionResult].self, from: data)) ?? []
     }
 
+    /// Перечитывает историю распознаваний с диска (после восстановления из копии).
+    func reloadHistoryFromDisk() {
+        recognitionHistory = Self.loadHistory()
+    }
+
     /// Сохраняет историю в фоне (снимок делается на главном потоке).
     private func scheduleHistorySave() {
         let snapshot = recognitionHistory

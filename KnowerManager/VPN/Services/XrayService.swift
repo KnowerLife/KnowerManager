@@ -311,6 +311,9 @@ class XrayService: ObservableObject {
         } catch { AppLogger.shared.error("Failed to load profiles: \(error)") }
     }
     
+    /// Перечитывает профили с диска (используется после восстановления из копии).
+    func reloadFromDisk() { loadProfiles() }
+    
     // --- РУЧНАЯ ПРОВЕРКА (КНОПКА "CHECK HTTP") ---
     // ОБНОВЛЕНО: ТЕПЕРЬ ИСПОЛЬЗУЕТ CURL (для надежности)
     func checkConnectivity(completion: @escaping (Bool, Double) -> Void) {

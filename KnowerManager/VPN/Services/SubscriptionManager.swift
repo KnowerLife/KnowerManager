@@ -60,6 +60,9 @@ class SubscriptionManager: ObservableObject {
         AppLogger.shared.info("📂 Loaded \(saved.count) subscriptions from disk")
     }
 
+    /// Перечитывает подписки с диска (после восстановления из копии).
+    func reloadFromDisk() { load() }
+
     // MARK: - CRUD
 
     /// Добавляет подписку по URL и сразу обновляет её.
