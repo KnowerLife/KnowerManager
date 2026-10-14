@@ -66,6 +66,9 @@ struct UXUIKit {
                                 .fill(DS.primaryGradient)
                                 .matchedGeometryEffect(id: "TAB_BG", in: namespace)
                                 .shadow(color: Color.blue.opacity(0.25), radius: CGFloat(6), x: CGFloat(0), y: CGFloat(2))
+                        } else {
+                            RoundedRectangle(cornerRadius: DesignTokens.Radius.sm + 2)
+                                .fill(Color.clear)
                         }
                     }
                 )
