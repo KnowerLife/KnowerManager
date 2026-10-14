@@ -44,6 +44,15 @@ struct ProfileEditView: View {
     @State private var pasteStatus: String?
     @State private var pasteFailed = false
     
+    // Группа/тег
+    @State private var group: String = ""
+    
+    /// Существующие группы среди профилей (для подсказок).
+    private var existingGroups: [String] {
+        let all = XrayService.shared.profiles.compactMap { $0.group?.trimmingCharacters(in: .whitespacesAndNewlines) }
+        return Array(Set(all.filter { !$0.isEmpty })).sorted()
+    }
+    
     let commonNetworks = ["tcp", "ws", "grpc", "h2"]
     let advancedNetworks = ["httpupgrade", "splithttp", "kcp", "quic"]
     let securities = ["none", "tls", "reality"]
@@ -97,6 +106,26 @@ struct ProfileEditView: View {
                     
                     TextField(settings.t(.labelServer), text: $server)
                     TextField(settings.t(.labelPort), text: $port)
+                    
+                    // Группа (для организации профилей)
+                    HStack(spacing: 6) {
+                        TextField(settings.t(.groupFieldPlaceholder), text: $group)
+                        if !existingGroups.isEmpty {
+                            Menu {
+                                Button(settings.t(.groupNone)) { group = "" }
+                                Divider()
+                                ForEach(existingGroups, id: \.self) { g in
+                                    Button(g) { group = g }
+                                }
+                            } label: {
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.system(size: 9, weight: .semibold))
+                            }
+                            .menuStyle(.borderlessButton)
+                            .fixedSize()
+                        }
+                    }
+                    .help(settings.t(.groupLabel))
                     
                     if selectedProtocol == .shadowsocks {
                         TextField(settings.t(.labelUUID), text: $uuidOrPassword) // Password
@@ -277,6 +306,7 @@ struct ProfileEditView: View {
         quicSecurity = p.quicSecurity ?? ""
         quicKey = p.quicKey ?? ""
         alpn = p.alpn ?? ""
+        group = p.group ?? ""
     }
     
     /// Читает ссылку из буфера обмена, распознаёт её и заполняет поля формы.
@@ -389,6 +419,10 @@ struct ProfileEditView: View {
         
         // Сброс пинга
         p.latency = nil
+        
+        // Группа/тег
+        let trimmedGroup = group.trimmingCharacters(in: .whitespacesAndNewlines)
+        p.group = trimmedGroup.isEmpty ? nil : trimmedGroup
         
         onSave(p)
         profile = nil

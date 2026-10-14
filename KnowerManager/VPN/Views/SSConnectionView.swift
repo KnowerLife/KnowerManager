@@ -23,6 +23,15 @@ struct SSConnectionView: View {
     }
     @State private var profileFilter: ProfileFilter = .all
     
+    // Фильтр по группе (nil = все группы)
+    @State private var groupFilter: String? = nil
+    
+    /// Все группы, встречающиеся среди профилей (отсортированные).
+    private var availableGroups: [String] {
+        let all = xray.profiles.compactMap { $0.group?.trimmingCharacters(in: .whitespacesAndNewlines) }
+        return Array(Set(all.filter { !$0.isEmpty })).sorted()
+    }
+    
     // --- МУЛЬТИ-ВЫБОР ---
     @State private var selectedIds = Set<UUID>()
     
@@ -175,6 +184,33 @@ struct SSConnectionView: View {
                     .help(settings.t(.subFilterHelp))
                 }
                 
+                // Фильтр по группе (виден, если есть хотя бы одна группа)
+                if !availableGroups.isEmpty {
+                    Menu {
+                        Button {
+                            groupFilter = nil
+                        } label: {
+                            Label(settings.t(.groupAll), systemImage: "square.grid.2x2")
+                            if groupFilter == nil { Image(systemName: "checkmark") }
+                        }
+                        Divider()
+                        ForEach(availableGroups, id: \.self) { g in
+                            Button {
+                                groupFilter = g
+                            } label: {
+                                Label(g, systemImage: "folder")
+                                if groupFilter == g { Image(systemName: "checkmark") }
+                            }
+                        }
+                    } label: {
+                        IconBtn(icon: "folder.badge.gearshape",
+                                color: groupFilter == nil ? .primary : .orange)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .frame(width: 28, height: 28)
+                    .help(settings.t(.groupFilterHelp))
+                }
+                
                 // Действия (Справа)
                 HStack(spacing: 4) {
                     
@@ -301,12 +337,18 @@ struct SSConnectionView: View {
                             .contextMenu {
                                 // Контекстное меню вынесено в Row для чистоты
                                 ProfileContextMenu(profile: profile, selectedIds: selectedIds,
+                                                   groups: availableGroups,
                                                    onPing: { xray.pingProfiles(ids: [$0]) },
                                                    onEdit: { profileToEdit = $0 },
                                                    onConnect: { xray.selectedProfileId = $0; xray.toggleConnection() },
                                                    onShare: { qrExportProfile = $0 },
                                                    onTest: { testProfile = $0 },
                                                    onFavorite: { xray.toggleFavorite(id: $0) },
+                                                   onSetGroup: { prof, g in
+                                    var updated = prof
+                                    updated.group = g
+                                    xray.updateProfile(updated)
+                                },
                                                    onDelete: { _ in
                                     if selectedIds.contains(profile.id) { deleteSelected() }
                                     else { confirmDeleteSingle(profile) }
@@ -421,6 +463,8 @@ struct SSConnectionView: View {
         }
         .onReceive(xray.$profiles) { _ in performSearch() }
         .onReceive(subs.$subscriptions) { _ in performSearch() }
+        .onChange(of: profileFilter) { _ in performSearch() }
+        .onChange(of: groupFilter) { _ in performSearch() }
         .onAppear { performSearch() }
     }
     
@@ -497,6 +541,7 @@ struct SSConnectionView: View {
         let snapshot = xray.profiles
         let sortedByPing = isSortedByPing
         let filter = profileFilter
+        let group = groupFilter
         let task = DispatchWorkItem {
             var result = snapshot
             // Фильтр по источнику
@@ -506,6 +551,10 @@ struct SSConnectionView: View {
                 result = result.filter { $0.subscriptionId == nil }
             case .subscription(let id):
                 result = result.filter { $0.subscriptionId == id }
+            }
+            // Фильтр по группе
+            if let group = group {
+                result = result.filter { ($0.group ?? "") == group }
             }
             if !query.isEmpty {
                 result = result.filter {
@@ -576,6 +625,9 @@ struct ProfileRow: View {
                 }
                 
                 HStack(spacing: 6) {
+                    if let group = profile.group, !group.isEmpty {
+                        ProtocolBadge(text: group, color: .orange)
+                    }
                     ProtocolBadge(text: profile.protocolType.rawValue.uppercased(), color: .blue)
                     if let sec = profile.security, sec != "none" {
                         ProtocolBadge(text: sec.uppercased(), color: .purple)
@@ -631,12 +683,14 @@ struct ProtocolBadge: View {
 struct ProfileContextMenu: View {
     let profile: ShadowsocksProfile
     let selectedIds: Set<UUID>
+    let groups: [String]
     let onPing: (UUID) -> Void
     let onEdit: (ShadowsocksProfile) -> Void
     let onConnect: (UUID) -> Void
     let onShare: (ShadowsocksProfile) -> Void
     let onTest: (ShadowsocksProfile) -> Void
     let onFavorite: (UUID) -> Void
+    let onSetGroup: (ShadowsocksProfile, String?) -> Void
     let onDelete: (UUID) -> Void
     @ObservedObject var settings = SettingsManager.shared
     
@@ -645,6 +699,17 @@ struct ProfileContextMenu: View {
         Button { onPing(profile.id) } label: { Label(settings.t(.contextPing), systemImage: "bolt") }
         Divider()
         Button { onEdit(profile) } label: { Label(settings.t(.contextEdit), systemImage: "pencil") }
+        Menu {
+            Button(settings.t(.groupNone)) { onSetGroup(profile, nil) }
+            if !groups.isEmpty {
+                Divider()
+                ForEach(groups, id: \.self) { g in
+                    Button(g) { onSetGroup(profile, g) }
+                }
+            }
+        } label: {
+            Label(settings.t(.groupSetTitle), systemImage: "folder")
+        }
         Button { onShare(profile) } label: { Label(settings.t(.vpnQrExport), systemImage: "qrcode") }
         Button { onTest(profile) } label: { Label(settings.t(.contextProxyTest), systemImage: "speedometer") }
         Button { onFavorite(profile.id) } label: { Label(profile.isBookmarked ? settings.t(.contextUnfavorite) : settings.t(.contextFavorite), systemImage: "star") }

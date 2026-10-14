@@ -158,6 +158,12 @@ enum LocalizationEN {
         case .subFilterAll: return "All"
         case .subFilterManual: return "Manual"
         case .subFilterHelp: return "Filter by source"
+        case .groupLabel: return "Group"
+        case .groupNone: return "No group"
+        case .groupAll: return "All groups"
+        case .groupFilterHelp: return "Filter by group"
+        case .groupFieldPlaceholder: return "e.g. Work"
+        case .groupSetTitle: return "Group"
 
         // --- QR for VPN profiles (EN) ---
         case .vpnQrExport: return "QR Code"

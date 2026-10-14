@@ -157,6 +157,12 @@ enum LocalizationRU {
         case .subFilterAll: return "Все"
         case .subFilterManual: return "Ручные"
         case .subFilterHelp: return "Фильтр по источнику"
+        case .groupLabel: return "Группа"
+        case .groupNone: return "Без группы"
+        case .groupAll: return "Все группы"
+        case .groupFilterHelp: return "Фильтр по группе"
+        case .groupFieldPlaceholder: return "Например: Работа"
+        case .groupSetTitle: return "Группа"
 
         // --- QR для профилей VPN (RU) ---
         case .vpnQrExport: return "QR код"

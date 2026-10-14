@@ -82,6 +82,9 @@ struct ShadowsocksProfile: Identifiable, Codable, Hashable {
     
     // Источник: подписка (nil = ручной/локальный профиль)
     var subscriptionId: UUID? = nil
+
+    // Группа/тег для группировки профилей (nil = без группы)
+    var group: String? = nil
     
     var subscriptionLabel: String {
         guard let subId = subscriptionId else { return "" }
@@ -136,6 +139,7 @@ struct ShadowsocksProfile: Identifiable, Codable, Hashable {
         spiderX = try c.decodeIfPresent(String.self, forKey: .spiderX)
         latency = try c.decodeIfPresent(Int.self, forKey: .latency)
         subscriptionId = try c.decodeIfPresent(UUID.self, forKey: .subscriptionId)
+        group = try c.decodeIfPresent(String.self, forKey: .group)
         obfs = try c.decodeIfPresent(String.self, forKey: .obfs)
         obfsPassword = try c.decodeIfPresent(String.self, forKey: .obfsPassword)
         alpn = try c.decodeIfPresent(String.self, forKey: .alpn)
