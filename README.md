@@ -154,6 +154,28 @@ scripts/install_hooks.sh
 
 ---
 
+## Релизы
+
+Релиз публикуется workflow `.github/workflows/release.yml` двумя способами:
+
+1. **Вручную** — GitHub → **Actions** → **Release** → *Run workflow* → выбрать, на
+   сколько поднять версию (`patch` / `minor` / `major` / `none`). Workflow сам:
+   поднимет версию и билд, закоммитит, поставит тег `vX.Y.Z`, прогонит тесты,
+   соберёт `KnowerManager.app`, упакует в zip и создаст GitHub Release.
+2. **Тегом** — `git tag v3.0.2 && git push origin v3.0.2`. Версия берётся из тега,
+   bump не выполняется; workflow собирает и публикует Release для этого тега.
+
+Проверка обновлений в приложении («Настройки → Проверить обновления») читает
+список релизов через GitHub API и сравнивает тег (`vX.Y.Z`) с
+`CFBundleShortVersionString`. Чтобы обновление «увиделось», нужен **релиз с тегом
+новее установленной версии**.
+
+> Сборка в CI — **без подписи** (`CODE_SIGNING_ALLOWED=NO`). При первом запуске
+> скачанного `.app` macOS может показать предупреждение Gatekeeper. Снять карантин:
+> `xattr -dr com.apple.quarantine /путь/KnowerManager.app`.
+
+---
+
 ## Крупные бинарные ресурсы (Git LFS)
 
 Три файла хранятся в репозитории через **Git LFS** (см. `.gitattributes`):

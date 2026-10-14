@@ -154,6 +154,28 @@ Skip the bump for a single commit: `git commit --no-verify` or
 
 ---
 
+## Releases
+
+Releases are published by `.github/workflows/release.yml` in two ways:
+
+1. **Manually** — GitHub → **Actions** → **Release** → *Run workflow* → pick how to
+   bump the version (`patch` / `minor` / `major` / `none`). The workflow bumps the
+   version and build, commits, creates a `vX.Y.Z` tag, runs the tests, builds
+   `KnowerManager.app`, zips it and creates a GitHub Release.
+2. **By tag** — `git tag v3.0.2 && git push origin v3.0.2`. The version comes from
+   the tag, no bump is performed; the workflow builds and publishes a Release for it.
+
+The in-app update check ("Settings → Check for updates") reads the releases list
+via the GitHub API and compares the tag (`vX.Y.Z`) with `CFBundleShortVersionString`.
+For an update to show up there must be a **release whose tag is newer than the
+installed version**.
+
+> The CI build is **unsigned** (`CODE_SIGNING_ALLOWED=NO`). On first launch macOS
+> may show a Gatekeeper warning. To clear the quarantine:
+> `xattr -dr com.apple.quarantine /path/to/KnowerManager.app`.
+
+---
+
 ## Large binary assets (Git LFS)
 
 Three files are stored in the repository via **Git LFS** (see `.gitattributes`):
