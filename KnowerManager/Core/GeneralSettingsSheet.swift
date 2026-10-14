@@ -45,238 +45,150 @@ struct GeneralSettingsSheet: View {
                 VStack(spacing: 24) {
                     
                     // --- 1. GENERAL SETTINGS + SECURITY ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.settingsGeneral))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                // Launch at Login
-                                SettingsRow(icon: "paperplane.fill", color: .purple, title: settings.t(.launchAtLogin), desc: settings.t(.launchAtLoginDesc), toggle: $settings.isLaunchAtLoginEnabled)
-                                
-                                Divider()
-                                
-                                // Hide Dock
-                                SettingsRow(icon: "dock.rectangle", color: .blue, title: settings.t(.hideDockTitle), desc: settings.t(.hideDockDesc), toggle: $settings.hideDockIcon)
-                                
-                                Divider()
-                                
-                                // Open window on launch
-                                SettingsRow(icon: "macwindow", color: .teal, title: settings.t(.openWindowOnLaunchTitle), desc: settings.t(.openWindowOnLaunchDesc), toggle: $settings.showWindowOnLaunch)
-                                
-                                Divider()
-                                
-                                // --- BUTTON: FORGET PASSWORD (НОВОЕ) ---
-                                HStack(alignment: .center) {
-                                    IconSquare(icon: "key.slash.fill", color: .red) // Красный ключ
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(settings.t(.passForget)) // "Забыть сохраненный пароль"
-                                            .font(.system(size: 13, weight: .medium))
-                                    }
-                                    Spacer()
-                                    Button(action: {
-                                        // Сбрасываем сохранённый пароль администратора
-                                        PrivilegedRunner.shared.forgetPassword()
-                                    }) {
-                                        Image(systemName: "trash")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.secondary)
-                                            .padding(6)
-                                            .background(Color.black.opacity(0.05))
-                                            .clipShape(Circle())
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                    .help(settings.t(.passForget))
+                    SettingsSection(title: settings.t(.settingsGeneral)) {
+                        VStack(spacing: 12) {
+                            // Launch at Login
+                            SettingsRow(icon: "paperplane.fill", color: .purple, title: settings.t(.launchAtLogin), desc: settings.t(.launchAtLoginDesc), toggle: $settings.isLaunchAtLoginEnabled)
+                            
+                            Divider()
+                            
+                            // Hide Dock
+                            SettingsRow(icon: "dock.rectangle", color: .blue, title: settings.t(.hideDockTitle), desc: settings.t(.hideDockDesc), toggle: $settings.hideDockIcon)
+                            
+                            Divider()
+                            
+                            // Open window on launch
+                            SettingsRow(icon: "macwindow", color: .teal, title: settings.t(.openWindowOnLaunchTitle), desc: settings.t(.openWindowOnLaunchDesc), toggle: $settings.showWindowOnLaunch)
+                            
+                            Divider()
+                            
+                            // --- BUTTON: FORGET PASSWORD ---
+                            SettingsActionRow(
+                                icon: "key.slash.fill",
+                                color: .red,
+                                title: settings.t(.passForget),
+                                desc: nil
+                            ) {
+                                IconActionButton(icon: "trash", color: .red, help: settings.t(.passForget)) {
+                                    // Сбрасываем сохранённый пароль администратора
+                                    PrivilegedRunner.shared.forgetPassword()
                                 }
-                                .padding(.vertical, 2)
                             }
-                            .padding(4)
                         }
                     }
                     
                     // --- 2. AUTOMATION ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.automationTitle))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                SettingsRow(icon: "bell.badge.fill", color: .red, title: settings.t(.notificationsTitle), desc: settings.t(.notificationsDesc), toggle: $settings.showNotifications)
-                            }
-                            .padding(4)
+                    SettingsSection(title: settings.t(.automationTitle)) {
+                        VStack(spacing: 12) {
+                            SettingsRow(icon: "bell.badge.fill", color: .red, title: settings.t(.notificationsTitle), desc: settings.t(.notificationsDesc), toggle: $settings.showNotifications)
                         }
                     }
                     
-                    // --- 2b. SCANNER (OCR) ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.ocrSettingsTitle))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                SettingsRow(icon: "command", color: .indigo, title: settings.t(.ocrGlobalHotkeyTitle), desc: settings.t(.ocrGlobalHotkeyDesc), toggle: $settings.ocrGlobalHotkeyEnabled)
-                                
-                                Divider()
-                                
-                                hotkeyEditRow
-                                
-                                Divider()
-                                
-                                SettingsRow(icon: "doc.on.clipboard.fill", color: .teal, title: settings.t(.ocrAutoCopyTitle), desc: settings.t(.ocrAutoCopyDesc), toggle: $settings.ocrAutoCopyResult)
-                            }
-                            .padding(4)
+                    // --- 3. SCANNER (OCR) ---
+                    SettingsSection(title: settings.t(.ocrSettingsTitle)) {
+                        VStack(spacing: 12) {
+                            SettingsRow(icon: "command", color: .indigo, title: settings.t(.ocrGlobalHotkeyTitle), desc: settings.t(.ocrGlobalHotkeyDesc), toggle: $settings.ocrGlobalHotkeyEnabled)
+                            
+                            Divider()
+                            
+                            hotkeyEditRow
+                            
+                            Divider()
+                            
+                            SettingsRow(icon: "doc.on.clipboard.fill", color: .teal, title: settings.t(.ocrAutoCopyTitle), desc: settings.t(.ocrAutoCopyDesc), toggle: $settings.ocrAutoCopyResult)
                         }
                     }
                     
-                    // --- 2c. LOGS ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.logTitle))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                HStack {
-                                    IconSquare(icon: "doc.text.magnifyingglass", color: .gray)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(settings.t(.logShow))
-                                            .font(.system(size: 13, weight: .medium))
-                                        Text(settings.t(.logPath))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    Spacer()
-                                    Button(logger.isUILogVisible ? settings.t(.logHide) : settings.t(.logShow)) {
-                                        logger.isUILogVisible.toggle()
-                                    }
-                                    .buttonStyle(.plain)
-                                    .foregroundColor(.blue)
+                    // --- 4. LOGS ---
+                    SettingsSection(title: settings.t(.logTitle)) {
+                        VStack(spacing: 12) {
+                            SettingsActionRow(
+                                icon: "doc.text.magnifyingglass",
+                                color: .gray,
+                                title: settings.t(.logShow),
+                                desc: settings.t(.logPath)
+                            ) {
+                                Button(logger.isUILogVisible ? settings.t(.logHide) : settings.t(.logShow)) {
+                                    logger.isUILogVisible.toggle()
                                 }
-                                
-                                if logger.isUILogVisible {
-                                    ScrollView {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            ForEach(logger.uiLogLines, id: \.self) { line in
-                                                Text(line)
-                                                    .font(.system(size: 9, design: .monospaced))
-                                                    .foregroundColor(.secondary)
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                            }
-                                        }
-                                    }
-                                    .frame(height: 120)
-                                    .padding(4)
-                                    .background(Color(NSColor.textBackgroundColor))
-                                    .cornerRadius(6)
-                                    
-                                    HStack(spacing: 12) {
-                                        Button(settings.t(.logCopy)) {
-                                            let text = logger.uiLogLines.joined(separator: "\n")
-                                            NSPasteboard.general.clearContents()
-                                            NSPasteboard.general.setString(text, forType: .string)
-                                        }
-                                        .font(.caption)
-                                        
-                                        Button(settings.t(.logClear)) {
-                                            logger.clear()
-                                        }
-                                        .font(.caption)
-                                        
-                                        Spacer()
-                                        
-                                        if let path = logger.currentLogPath {
-                                            Button {
-                                                NSWorkspace.shared.activateFileViewerSelecting([path])
-                                            } label: {
-                                                Image(systemName: "folder")
-                                                    .font(.system(size: 11))
-                                            }
-                                            .buttonStyle(.plain)
-                                            .foregroundColor(.secondary)
-                                            .help(settings.t(.logPath))
-                                        }
-                                    }
-                                }
+                                .buttonStyle(.plain)
+                                .foregroundColor(.blue)
+                                .fixedSize()
                             }
-                            .padding(4)
+                            
+                            if logger.isUILogVisible {
+                                logViewer
+                            }
                         }
                     }
                     
-                    // --- 2d. BACKUP ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.backupTitle))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                HStack(alignment: .center) {
-                                    IconSquare(icon: "externaldrive.fill", color: .green)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(settings.t(.backupCreateTitle))
-                                            .font(.system(size: 13, weight: .medium))
-                                        Text(settings.t(.backupCreateDesc))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                    Spacer(minLength: 10)
-                                    Button(settings.t(.backupCreateTitle)) {
-                                        createBackup()
-                                    }
-                                    .buttonStyle(.plain)
-                                    .foregroundColor(.blue)
-                                }
-                                .padding(.vertical, 2)
-                                
-                                Divider()
-                                
-                                HStack(alignment: .center) {
-                                    IconSquare(icon: "arrow.counterclockwise.circle.fill", color: .orange)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(settings.t(.backupRestoreTitle))
-                                            .font(.system(size: 13, weight: .medium))
-                                        Text(settings.t(.backupRestoreDesc))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                    Spacer(minLength: 10)
-                                    Button(settings.t(.backupRestoreTitle)) {
-                                        restoreBackup()
-                                    }
-                                    .buttonStyle(.plain)
-                                    .foregroundColor(.orange)
-                                }
-                                .padding(.vertical, 2)
-                                
-                                if let message = backupMessage {
-                                    Label(message, systemImage: backupFailed ? "xmark.circle.fill" : "checkmark.circle.fill")
-                                        .font(.caption)
-                                        .foregroundColor(backupFailed ? .red : .green)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // --- 5. BACKUP ---
+                    SettingsSection(title: settings.t(.backupTitle)) {
+                        VStack(spacing: 12) {
+                            SettingsActionRow(
+                                icon: "externaldrive.fill",
+                                color: .green,
+                                title: settings.t(.backupCreateTitle),
+                                desc: settings.t(.backupCreateDesc)
+                            ) {
+                                IconActionButton(icon: "square.and.arrow.up", color: .blue, help: settings.t(.backupCreateTitle)) {
+                                    createBackup()
                                 }
                             }
-                            .padding(4)
+                            
+                            Divider()
+                            
+                            SettingsActionRow(
+                                icon: "arrow.counterclockwise.circle.fill",
+                                color: .orange,
+                                title: settings.t(.backupRestoreTitle),
+                                desc: settings.t(.backupRestoreDesc)
+                            ) {
+                                IconActionButton(icon: "square.and.arrow.down", color: .orange, help: settings.t(.backupRestoreTitle)) {
+                                    restoreBackup()
+                                }
+                            }
+                            
+                            if let message = backupMessage {
+                                Label(message, systemImage: backupFailed ? "xmark.circle.fill" : "checkmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundColor(backupFailed ? .red : .green)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
                     }
                     
-                    // --- 3. APPEARANCE ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: settings.t(.settingsAppearance))
-                        GroupBox {
-                            VStack(spacing: 12) {
-                                HStack {
-                                    IconSquare(icon: "globe", color: .blue)
-                                    Text(settings.t(.menuLanguage))
-                                    Spacer()
-                                    Picker("", selection: $settings.currentLanguage) {
-                                        ForEach(AppLanguage.allCases) { lang in Text(lang.rawValue).tag(lang) }
-                                    }
-                                    .labelsHidden().frame(width: 120)
+                    // --- 6. APPEARANCE ---
+                    SettingsSection(title: settings.t(.settingsAppearance)) {
+                        VStack(spacing: 12) {
+                            SettingsPickerRow(
+                                icon: "globe",
+                                color: .blue,
+                                title: settings.t(.menuLanguage)
+                            ) {
+                                Picker("", selection: $settings.currentLanguage) {
+                                    ForEach(AppLanguage.allCases) { lang in Text(lang.rawValue).tag(lang) }
                                 }
-                                Divider()
-                                HStack {
-                                    IconSquare(icon: "paintpalette.fill", color: .orange)
-                                    Text(settings.t(.menuTheme))
-                                    Spacer()
-                                    Picker("", selection: $settings.currentTheme) {
-                                        ForEach(AppTheme.allCases) { theme in
-                                            Text(theme.localizedName(language: settings.currentLanguage)).tag(theme)
-                                        }
-                                    }
-                                    .labelsHidden().frame(width: 120)
-                                }
+                                .labelsHidden()
+                                .frame(width: 120)
                             }
-                            .padding(4)
+                            
+                            Divider()
+                            
+                            SettingsPickerRow(
+                                icon: "paintpalette.fill",
+                                color: .orange,
+                                title: settings.t(.menuTheme)
+                            ) {
+                                Picker("", selection: $settings.currentTheme) {
+                                    ForEach(AppTheme.allCases) { theme in
+                                        Text(theme.localizedName(language: settings.currentLanguage)).tag(theme)
+                                    }
+                                }
+                                .labelsHidden()
+                                .frame(width: 120)
+                            }
                         }
                     }
                     
@@ -311,8 +223,10 @@ struct GeneralSettingsSheet: View {
                                         NSWorkspace.shared.open(url)
                                     }
                                     .font(.caption2)
+                                    .fixedSize()
                                 }
                             }
+                            .frame(maxWidth: .infinity)
                         }
                         
                         Text("© 2025 KnowerLife")
@@ -328,6 +242,53 @@ struct GeneralSettingsSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .frame(minWidth: DS.width, idealWidth: DS.width, maxWidth: DS.width,
                idealHeight: 700, maxHeight: 720)
+    }
+    
+    // MARK: - Просмотр логов
+    
+    private var logViewer: some View {
+        VStack(spacing: 8) {
+            ScrollView([.horizontal, .vertical]) {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(logger.uiLogLines, id: \.self) { line in
+                        Text(line)
+                            .font(.system(size: 9, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                    }
+                }
+                .padding(6)
+            }
+            .frame(height: 120)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(NSColor.textBackgroundColor))
+            .cornerRadius(6)
+            
+            HStack(spacing: 12) {
+                Button(settings.t(.logCopy)) {
+                    let text = logger.uiLogLines.joined(separator: "\n")
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(text, forType: .string)
+                }
+                .font(.caption)
+                .fixedSize()
+                
+                Button(settings.t(.logClear)) {
+                    logger.clear()
+                }
+                .font(.caption)
+                .fixedSize()
+                
+                Spacer(minLength: 0)
+                
+                if let path = logger.currentLogPath {
+                    IconActionButton(icon: "folder", color: .secondary, help: settings.t(.logPath)) {
+                        NSWorkspace.shared.activateFileViewerSelecting([path])
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Резервное копирование
@@ -385,37 +346,53 @@ struct GeneralSettingsSheet: View {
     // MARK: - Горячая клавиша
 
     private var hotkeyEditRow: some View {
-        HStack(alignment: .center) {
-            IconSquare(icon: "keyboard", color: .indigo)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(settings.t(.ocrHotkeyChange))
-                    .font(.system(size: 13, weight: .medium))
-                Text(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyChangeDesc))
-                    .font(.caption)
-                    .foregroundColor(hotkey.isRecording ? .orange : .secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 10)
-            Text(hotkey.combinationString)
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(Color.black.opacity(0.06))
-                .cornerRadius(6)
-            Button(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyRecord)) {
-                if hotkey.isRecording {
-                    hotkey.stopRecording()
-                } else {
-                    hotkey.startRecording()
+        VStack(alignment: .leading, spacing: 8) {
+            // Строка с описанием и текущей комбинацией
+            HStack(alignment: .center, spacing: 0) {
+                IconSquare(icon: "keyboard", color: .indigo)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(settings.t(.ocrHotkeyChange))
+                        .font(.system(size: 13, weight: .medium))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyChangeDesc))
+                        .font(.caption)
+                        .foregroundColor(hotkey.isRecording ? .orange : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Text(hotkey.combinationString)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .lineLimit(1)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(Color.black.opacity(0.06))
+                    .cornerRadius(6)
+                    .fixedSize()
+                    .padding(.leading, 8)
             }
-            .buttonStyle(.plain)
-            .foregroundColor(.blue)
-            Button(settings.t(.ocrHotkeyReset)) {
-                hotkey.stopRecording()
-                hotkey.resetToDefault()
+            
+            // Отдельная строка под кнопки — так они не сжимают текст описания.
+            HStack(spacing: 12) {
+                Spacer(minLength: 0)
+                Button(hotkey.isRecording ? settings.t(.ocrHotkeyRecording) : settings.t(.ocrHotkeyRecord)) {
+                    if hotkey.isRecording {
+                        hotkey.stopRecording()
+                    } else {
+                        hotkey.startRecording()
+                    }
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.blue)
+                .fixedSize()
+                
+                Button(settings.t(.ocrHotkeyReset)) {
+                    hotkey.stopRecording()
+                    hotkey.resetToDefault()
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                .fixedSize()
             }
-            .buttonStyle(.plain)
-            .foregroundColor(.secondary)
         }
         .padding(.vertical, 2)
         .opacity(settings.ocrGlobalHotkeyEnabled ? 1 : 0.45)
@@ -457,6 +434,22 @@ struct GeneralSettingsSheet: View {
 
 // MARK: - COMPONENTS
 
+/// Секция настроек: заголовок + содержимое в рамке.
+struct SettingsSection<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: () -> Content
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionHeader(title: title)
+            GroupBox {
+                content()
+                    .padding(4)
+            }
+        }
+    }
+}
+
 struct SectionHeader: View {
     let title: String
     var body: some View {
@@ -468,6 +461,8 @@ struct SectionHeader: View {
     }
 }
 
+/// Строка с переключателем. Текст занимает всё доступное место,
+/// переключатель фиксирован — поэтому ничего не сжимается.
 struct SettingsRow: View {
     let icon: String
     let color: Color
@@ -476,7 +471,7 @@ struct SettingsRow: View {
     @Binding var toggle: Bool
     
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 0) {
             IconSquare(icon: icon, color: color)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -487,12 +482,92 @@ struct SettingsRow: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Spacer(minLength: 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.trailing, 10)
+            
             Toggle("", isOn: $toggle)
                 .toggleStyle(SwitchToggleStyle())
                 .labelsHidden()
+                .fixedSize()
         }
         .padding(.vertical, 2)
+    }
+}
+
+/// Строка с действием (кнопкой) справа. Описание переносится по строкам,
+/// а действие фиксировано — поэтому ничего не сжимается.
+struct SettingsActionRow<ActionContent: View>: View {
+    let icon: String
+    let color: Color
+    let title: String
+    let desc: String?
+    @ViewBuilder var action: () -> ActionContent
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            IconSquare(icon: icon, color: color)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .fixedSize(horizontal: false, vertical: true)
+                if let desc {
+                    Text(desc)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.trailing, 10)
+            
+            action()
+                .fixedSize()
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+/// Строка с пикером справа. Подпись слева не сжимается.
+struct SettingsPickerRow<PickerContent: View>: View {
+    let icon: String
+    let color: Color
+    let title: String
+    @ViewBuilder var picker: () -> PickerContent
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            IconSquare(icon: icon, color: color)
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.trailing, 10)
+            picker()
+                .fixedSize()
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+/// Круглая иконка-кнопка (действия в строках настроек).
+struct IconActionButton: View {
+    let icon: String
+    var color: Color = .secondary
+    let help: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(color)
+                .frame(width: 28, height: 28)
+                .background(color.opacity(0.12))
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(help)
+        .fixedSize()
     }
 }
 
@@ -509,5 +584,6 @@ struct IconSquare: View {
                 .foregroundColor(color)
         }
         .padding(.trailing, 8)
+        .fixedSize()
     }
 }
