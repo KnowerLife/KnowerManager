@@ -100,7 +100,7 @@ struct ProfileQRExportView: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 330)
+        .frame(width: DS.width)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear(perform: generate)
     }

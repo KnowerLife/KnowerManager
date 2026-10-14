@@ -44,7 +44,7 @@ struct AIConfigSheet: View {
             Divider()
             footer
         }
-        .frame(width: 460, height: 560)
+        .frame(width: DS.width, height: 560)
     }
 
     // MARK: - Header / Footer

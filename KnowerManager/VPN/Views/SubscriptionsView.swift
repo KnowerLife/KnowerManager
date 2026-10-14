@@ -41,7 +41,7 @@ struct SubscriptionsView: View {
 
             footer
         }
-        .frame(width: 440, height: 460)
+        .frame(width: DS.width, height: 460)
         .background(Color(NSColor.windowBackgroundColor))
     }
 

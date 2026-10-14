@@ -94,7 +94,7 @@ struct ProfileSpeedTestView: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(width: 340)
+        .frame(width: DS.width)
         .fixedSize(horizontal: false, vertical: true)
         .onDisappear { tester.cancel() }
     }

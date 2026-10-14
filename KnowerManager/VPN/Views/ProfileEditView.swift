@@ -253,7 +253,7 @@ struct ProfileEditView: View {
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
         }
-        .frame(width: 420, height: 600)
+        .frame(width: DS.width, height: 600)
         .onAppear { loadValues() }
     }
     
