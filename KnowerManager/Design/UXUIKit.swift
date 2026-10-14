@@ -21,7 +21,7 @@ struct UXUIKit {
                     tabButton(tab: tab, tag: index)
                 }
             }
-            .frame(width: DesignSystem.width - 32)
+            .frame(width: DesignSystem.width - 40)
             .padding(DesignTokens.Spacing.xs + 2)
             .background(
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
