@@ -59,7 +59,7 @@ struct ContentView: View {
             }
             .padding(.bottom, 22)
         }
-        .frame(width: DesignSystem.width)
+        .frame(maxWidth: DesignSystem.width)
         .frame(minHeight: DesignSystem.heightCollapsed)
         .preferredColorScheme(settings.currentTheme == .dark ? .dark : (settings.currentTheme == .light ? .light : nil))
         .background(WindowAccessor { w in
@@ -130,6 +130,7 @@ struct ModernTopBar: View {
             ]
             UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
