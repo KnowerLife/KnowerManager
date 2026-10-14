@@ -78,20 +78,16 @@ struct ToolsView: View {
         dnsStatus = nil
         dnsFailed = false
         isFlushingDNS = true
-        Task {
-            do {
-                try await NetworkTools.flushDNS()
-                await MainActor.run {
-                    isFlushingDNS = false
-                    dnsFailed = false
-                    dnsStatus = settings.t(.toolsFlushDNSResult)
-                }
-            } catch {
-                await MainActor.run {
-                    isFlushingDNS = false
-                    dnsFailed = true
-                    dnsStatus = error.localizedDescription
-                }
+        // Сброс кэша требует прав администратора: dscacheutil и сброс mDNSResponder
+        // выполняются привилегированно (пароль спрашивается один раз и кэшируется).
+        PrivilegedRunner.shared.runAsAdmin(script: NetworkTools.dnsFlushScript) { ok, message in
+            isFlushingDNS = false
+            dnsFailed = !ok
+            if ok {
+                dnsStatus = settings.t(.toolsFlushDNSResult)
+            } else {
+                let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+                dnsStatus = trimmed.isEmpty ? settings.t(.toolsFlushDNSFailed) : trimmed
             }
         }
     }

@@ -6,28 +6,15 @@ enum NetworkTools {
 
     // MARK: DNS Flush
 
-    // Все методы помечены `nonisolated`, чтобы блокирующие системные вызовы
+    // Блокирующие методы помечены `nonisolated`, чтобы системные вызовы
     // (Process.waitUntilExit) не выполнялись на главном потоке и не «морозили» UI.
 
-    /// Сбрасывает кэш DNS macOS.
-    nonisolated static func flushDNS() async throws {
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/dscacheutil")
-        task.arguments = ["-flushcache"]
-
-        let killTask = Process()
-        killTask.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-        killTask.arguments = ["-HUP", "mDNSResponder"]
-
-        do {
-            try task.run()
-            task.waitUntilExit()
-            try killTask.run()
-            killTask.waitUntilExit()
-        } catch {
-            throw error
-        }
-    }
+    /// Команды для полного сброса DNS-кэша macOS.
+    /// Выполняются с правами администратора через `PrivilegedRunner`.
+    static let dnsFlushScript = """
+    /usr/bin/dscacheutil -flushcache
+    /usr/bin/killall -HUP mDNSResponder
+    """
 
     // MARK: Монитор трафика
 

@@ -87,7 +87,7 @@ enum StringKey {
     case hostPlaceholder, hostAdd, hostLoadPopular, hostSave
     case logMonitor, logClear, logTime, logDomain, logStatus
     case logTitle, logShow, logHide, logCopy, logPath
-    case toolsDNSTitle, toolsDNSDesc, toolsFlushDNS, toolsFlushDNSResult
+    case toolsDNSTitle, toolsDNSDesc, toolsFlushDNS, toolsFlushDNSResult, toolsFlushDNSFailed
     case toolsTrafficTitle, toolsTrafficDesc, toolsTrafficIn, toolsTrafficOut
     case toolsPingTitle, toolsPingDesc, toolsPingHost, toolsPingButton
     case toolsPortTitle, toolsPortDesc, toolsPortHost, toolsPortPort, toolsPortButton
