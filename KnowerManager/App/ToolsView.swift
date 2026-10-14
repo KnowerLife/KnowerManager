@@ -62,18 +62,19 @@ struct ToolsView: View {
                     }
                     .padding(.top, 4)
                 } label: {
-                    HStack {
+                    HStack(spacing: 6) {
                         Text(networkExpanded ? settings.t(.btnHide) : settings.t(.btnShow))
-                        Spacer()
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         Button {
                             networkInfo = NetworkInfoProvider.getActiveInterface()
                         } label: {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 10))
                         }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.plain)
                         .help(settings.t(.btnRefresh))
                     }
+                    .frame(maxWidth: .infinity)
                 }
                 .frame(maxWidth: .infinity)
                 .font(.caption)
@@ -185,6 +186,8 @@ struct ToolsView: View {
                 } label: {
                     Text(settings.t(.toolArpFlushTitle))
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .lineLimit(1)
+                        .multilineTextAlignment(.center)
                 }
                 .buttonStyle(ModernButtonStyle(color: .orange, variant: .outline))
                 .disabled(isArpFlushing)
