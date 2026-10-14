@@ -163,6 +163,11 @@ enum LocalizationRU {
         case .groupFilterHelp: return "Фильтр по группе"
         case .groupFieldPlaceholder: return "Например: Работа"
         case .groupSetTitle: return "Группа"
+        case .connStatsUptime: return "Время"
+        case .connStatsPort: return "Порт"
+        case .connStatsTraffic: return "Трафик"
+        case .connStatsIn: return "Принято"
+        case .connStatsOut: return "Отдано"
 
         // --- QR для профилей VPN (RU) ---
         case .vpnQrExport: return "QR код"

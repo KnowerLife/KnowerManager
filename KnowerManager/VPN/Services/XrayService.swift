@@ -234,8 +234,12 @@ class XrayService: ObservableObject {
     
     private var process: Process?
     private let localPort = 10808
+    /// Локальный SOCKS-порт, на котором слушает Xray (для отображения статистики).
+    var localPortNumber: Int { localPort }
     /// Момент установки соединения (для «тихих» уведомлений при быстрых переключениях).
-    private var connectedAt: Date?
+    @Published private(set) var connectedAt: Date?
+    /// Снимок системного трафика в момент подключения (для подсчёта сессии).
+    private var sessionTrafficBaseline: NetworkTools.TrafficStats?
     
     // --- ЛОГ XRAY ---
     @Published var xrayLog: String = ""
@@ -681,6 +685,7 @@ class XrayService: ObservableObject {
             DispatchQueue.main.async {
                 self.activeProfileId = profile.id
                 self.connectedAt = Date()
+                self.sessionTrafficBaseline = NetworkTools.getTrafficStats()
                 self.isRunning = true
                 SettingsManager.shared.sendNotification(
                     title: SettingsManager.shared.t(.vpnTitle),
@@ -727,8 +732,26 @@ class XrayService: ObservableObject {
                     body: SettingsManager.shared.t(.vpnNotifyDisconnected))
             }
             self.connectedAt = nil
+            self.sessionTrafficBaseline = nil
         }
         setSystemProxy(enabled: false)
+    }
+    
+    /// Длительность текущего соединения в секундах (0, если не подключено).
+    var connectionUptime: TimeInterval {
+        guard let start = connectedAt else { return 0 }
+        return Date().timeIntervalSince(start)
+    }
+    
+    /// Трафик через активные сетевые интерфейсы с момента подключения.
+    /// Возвращает nil, если соединение не установлено.
+    /// Примечание: это системный трафик, а не только трафик Xray.
+    func sessionTraffic() -> (bytesIn: UInt64, bytesOut: UInt64)? {
+        guard isRunning, let base = sessionTrafficBaseline else { return nil }
+        let now = NetworkTools.getTrafficStats()
+        let inBytes = now.bytesIn >= base.bytesIn ? now.bytesIn - base.bytesIn : 0
+        let outBytes = now.bytesOut >= base.bytesOut ? now.bytesOut - base.bytesOut : 0
+        return (inBytes, outBytes)
     }
     
     /// Открывает в Finder папку с данными приложения (профили, подписки, история).

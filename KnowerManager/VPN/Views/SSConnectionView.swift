@@ -307,6 +307,11 @@ struct SSConnectionView: View {
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
             
+            // Статистика соединения (только когда подключено)
+            if xray.isRunning {
+                ConnectionStatsBar(xray: xray)
+            }
+            
             Divider()
             
             // ==========================================
@@ -597,6 +602,79 @@ struct IconBtn: View {
             .frame(width: 28, height: 28)
             .background(isActive ? color : Color.gray.opacity(0.1))
             .cornerRadius(6)
+    }
+}
+
+// 1b. Статистика соединения (время, порт, трафик сессии)
+struct ConnectionStatsBar: View {
+    @ObservedObject var xray: XrayService
+    @ObservedObject var settings = SettingsManager.shared
+    
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { _ in
+            HStack(spacing: 14) {
+                statItem(icon: "clock", color: .green,
+                         label: settings.t(.connStatsUptime),
+                         value: uptimeString)
+                
+                Divider().frame(height: 14)
+                
+                statItem(icon: "number", color: .blue,
+                         label: settings.t(.connStatsPort),
+                         value: "\(xray.localPortNumber)")
+                
+                if let traffic = xray.sessionTraffic() {
+                    Divider().frame(height: 14)
+                    
+                    statItem(icon: "arrow.down.circle", color: .teal,
+                             label: settings.t(.connStatsIn),
+                             value: formatBytes(traffic.bytesIn))
+                    
+                    statItem(icon: "arrow.up.circle", color: .orange,
+                             label: settings.t(.connStatsOut),
+                             value: formatBytes(traffic.bytesOut))
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color.green.opacity(0.06))
+        }
+    }
+    
+    private func statItem(icon: String, color: Color, label: String, value: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundColor(color)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(label)
+                    .font(.system(size: 8))
+                    .foregroundColor(.secondary)
+                Text(value)
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+            }
+        }
+    }
+    
+    private var uptimeString: String {
+        let total = Int(xray.connectionUptime)
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let s = total % 60
+        if h > 0 {
+            return String(format: "%d:%02d:%02d", h, m, s)
+        }
+        return String(format: "%02d:%02d", m, s)
+    }
+    
+    private func formatBytes(_ bytes: UInt64) -> String {
+        let kb = Double(bytes) / 1024
+        if kb < 1024 { return String(format: "%.0f KB", kb) }
+        let mb = kb / 1024
+        if mb < 1024 { return String(format: "%.1f MB", mb) }
+        return String(format: "%.2f GB", mb / 1024)
     }
 }
 

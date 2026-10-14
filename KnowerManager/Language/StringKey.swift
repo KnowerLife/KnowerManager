@@ -329,6 +329,7 @@ enum StringKey {
     case subFilterManual
     case subFilterHelp
     case groupLabel, groupNone, groupAll, groupFilterHelp, groupFieldPlaceholder, groupSetTitle
+    case connStatsUptime, connStatsPort, connStatsTraffic, connStatsIn, connStatsOut
     
     // --- QR для профилей VPN ---
     case vpnQrExport

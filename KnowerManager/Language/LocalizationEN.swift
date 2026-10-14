@@ -164,6 +164,11 @@ enum LocalizationEN {
         case .groupFilterHelp: return "Filter by group"
         case .groupFieldPlaceholder: return "e.g. Work"
         case .groupSetTitle: return "Group"
+        case .connStatsUptime: return "Uptime"
+        case .connStatsPort: return "Port"
+        case .connStatsTraffic: return "Traffic"
+        case .connStatsIn: return "In"
+        case .connStatsOut: return "Out"
 
         // --- QR for VPN profiles (EN) ---
         case .vpnQrExport: return "QR Code"

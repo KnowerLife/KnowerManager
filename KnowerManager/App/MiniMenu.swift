@@ -85,11 +85,13 @@ struct MiniMenu: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(settings.t(.vpnTitle))
                     .font(.system(size: 10, weight: .bold))
-                Text(vpnStatusText)
-                    .font(.system(size: 9))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                TimelineView(.periodic(from: .now, by: 1)) { _ in
+                    Text(vpnStatusText)
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
             }
             
             Spacer(minLength: 0)
@@ -121,15 +123,26 @@ struct MiniMenu: View {
     /// Текст статуса: «Подключено · имя», имя выбранного профиля или «Не подключено».
     private var vpnStatusText: String {
         if xray.isRunning {
+            let uptime = uptimeShort
             if let id = xray.activeProfileId, let profile = xray.profiles.first(where: { $0.id == id }) {
-                return "\(settings.t(.vpnConnected)) · \(profile.name)"
+                return "\(settings.t(.vpnConnected)) · \(profile.name) · \(uptime)"
             }
-            return settings.t(.vpnConnected)
+            return "\(settings.t(.vpnConnected)) · \(uptime)"
         }
         if let id = xray.selectedProfileId, let profile = xray.profiles.first(where: { $0.id == id }) {
             return profile.name
         }
         return settings.t(.vpnNotConnected)
+    }
+    
+    /// Короткое отображение времени соединения: «12:34» или «1:02:03».
+    private var uptimeShort: String {
+        let total = Int(xray.connectionUptime)
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let s = total % 60
+        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
+        return String(format: "%02d:%02d", m, s)
     }
     
     private var quickLaunchSection: some View {
