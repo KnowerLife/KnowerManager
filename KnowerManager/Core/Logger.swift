@@ -86,6 +86,14 @@ final class AppLogger: ObservableObject {
         }
     }
 
+    /// Очищает лог-файл и буфер для отображения в UI.
+    func clear() {
+        clearLogFile()
+        DispatchQueue.main.async { [weak self] in
+            self?.uiLogLines.removeAll()
+        }
+    }
+
     // MARK: - Private
 
     private func log(_ level: LogLevel, _ message: String, file: String, function: String, line: Int) {

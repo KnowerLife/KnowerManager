@@ -5,6 +5,8 @@ import UniformTypeIdentifiers
 struct GeneralSettingsSheet: View {
     @ObservedObject var settings = SettingsManager.shared
     @ObservedObject var hotkey = GlobalHotkeyManager.shared
+    // ВАЖНО: наблюдаем логгер, иначе переключение «Показать логи» не обновляет UI.
+    @ObservedObject var logger = AppLogger.shared
     @Environment(\.dismiss) private var dismiss
     
     // Проверка обновлений
@@ -135,17 +137,17 @@ struct GeneralSettingsSheet: View {
                                             .foregroundColor(.secondary)
                                     }
                                     Spacer()
-                                    Button(settings.t(.logShow)) {
-                                        AppLogger.shared.isUILogVisible.toggle()
+                                    Button(logger.isUILogVisible ? settings.t(.logHide) : settings.t(.logShow)) {
+                                        logger.isUILogVisible.toggle()
                                     }
                                     .buttonStyle(.plain)
                                     .foregroundColor(.blue)
                                 }
                                 
-                                if AppLogger.shared.isUILogVisible {
+                                if logger.isUILogVisible {
                                     ScrollView {
                                         VStack(alignment: .leading, spacing: 2) {
-                                            ForEach(AppLogger.shared.uiLogLines, id: \.self) { line in
+                                            ForEach(logger.uiLogLines, id: \.self) { line in
                                                 Text(line)
                                                     .font(.system(size: 9, design: .monospaced))
                                                     .foregroundColor(.secondary)
@@ -158,20 +160,32 @@ struct GeneralSettingsSheet: View {
                                     .background(Color(NSColor.textBackgroundColor))
                                     .cornerRadius(6)
                                     
-                                    HStack {
+                                    HStack(spacing: 12) {
                                         Button(settings.t(.logCopy)) {
-                                            let text = AppLogger.shared.uiLogLines.joined(separator: "\n")
+                                            let text = logger.uiLogLines.joined(separator: "\n")
                                             NSPasteboard.general.clearContents()
                                             NSPasteboard.general.setString(text, forType: .string)
                                         }
                                         .font(.caption)
                                         
                                         Button(settings.t(.logClear)) {
-                                            AppLogger.shared.clearLogFile()
+                                            logger.clear()
                                         }
                                         .font(.caption)
                                         
                                         Spacer()
+                                        
+                                        if let path = logger.currentLogPath {
+                                            Button {
+                                                NSWorkspace.shared.activateFileViewerSelecting([path])
+                                            } label: {
+                                                Image(systemName: "folder")
+                                                    .font(.system(size: 11))
+                                            }
+                                            .buttonStyle(.plain)
+                                            .foregroundColor(.secondary)
+                                            .help(settings.t(.logPath))
+                                        }
                                     }
                                 }
                             }
@@ -312,7 +326,8 @@ struct GeneralSettingsSheet: View {
             .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .frame(maxWidth: 420, idealHeight: 700, maxHeight: 720)
+        .frame(minWidth: DS.width, idealWidth: DS.width, maxWidth: DS.width,
+               idealHeight: 700, maxHeight: 720)
     }
     
     // MARK: - Резервное копирование
