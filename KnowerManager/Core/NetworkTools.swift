@@ -6,9 +6,11 @@ enum NetworkTools {
 
     // MARK: DNS Flush
 
+    // Все методы помечены `nonisolated`, чтобы блокирующие системные вызовы
+    // (Process.waitUntilExit) не выполнялись на главном потоке и не «морозили» UI.
+
     /// Сбрасывает кэш DNS macOS.
-    /// Требует прав администратора (вызывается через PrivilegedRunner).
-    static func flushDNS() -> Result<Void, Error> {
+    nonisolated static func flushDNS() async throws {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/dscacheutil")
         task.arguments = ["-flushcache"]
@@ -22,9 +24,8 @@ enum NetworkTools {
             task.waitUntilExit()
             try killTask.run()
             killTask.waitUntilExit()
-            return .success(())
         } catch {
-            return .failure(error)
+            throw error
         }
     }
 
@@ -40,7 +41,7 @@ enum NetworkTools {
         var total: UInt64 { bytesIn + bytesOut }
     }
 
-    static func getTrafficStats() -> TrafficStats {
+    nonisolated static func getTrafficStats() -> TrafficStats {
         var bytesIn: UInt64 = 0
         var bytesOut: UInt64 = 0
         var packetsIn: UInt64 = 0
@@ -80,7 +81,7 @@ enum NetworkTools {
     // MARK: Диагностика сети
 
     /// Простой ping через системную утилиту.
-    static func ping(host: String, count: Int = 4) async -> String {
+    nonisolated static func ping(host: String, count: Int = 4) async -> String {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/sbin/ping")
         task.arguments = ["-c", "\(count)", "-W", "2000", host]
@@ -100,7 +101,7 @@ enum NetworkTools {
     }
 
     /// DNS lookup через системный резолвер.
-    static func dnsLookup(host: String) async -> String {
+    nonisolated static func dnsLookup(host: String) async -> String {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/dig")
         task.arguments = ["+short", host]
@@ -120,7 +121,7 @@ enum NetworkTools {
     }
 
     /// Проверка порта (TCP connect).
-    static func checkPort(host: String, port: Int, timeout: TimeInterval = 3) async -> Bool {
+    nonisolated static func checkPort(host: String, port: Int, timeout: TimeInterval = 3) async -> Bool {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/nc")
         task.arguments = ["-z", "-w", "\(Int(timeout))", host, "\(port)"]

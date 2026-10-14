@@ -560,6 +560,8 @@ enum LocalizationRU {
         case .toolsPortHost: return "Хост"
         case .toolsPortPort: return "Порт"
         case .toolsPortButton: return "Проверить"
+        case .toolsPortOpen: return "открыт"
+        case .toolsPortClosed: return "закрыт"
         case .toolsResult: return "Результат"
         case .toolsCopy: return "Копировать"
         

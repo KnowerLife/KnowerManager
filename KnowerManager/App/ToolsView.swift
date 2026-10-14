@@ -1,6 +1,10 @@
 import SwiftUI
 
-// MARK: - Вкладка «Инструменты» (DNS Flush, Монитор трафика, Ping, Проверка порта)
+// MARK: - Вкладка «Инструменты» (Сброс DNS, Монитор трафика, Ping, Проверка порта)
+//
+// Вёрстка рассчитана на узкое окно (DS.width = 380). Кнопки используют
+// ModernButtonStyle (он растягивается на всю ширину), поэтому каждая кнопка
+// стоит в отдельной строке — рядом с полями ввода они сжимали бы друг друга.
 
 struct ToolsView: View {
     @ObservedObject var settings = SettingsManager.shared
@@ -8,6 +12,7 @@ struct ToolsView: View {
     // DNS Flush
     @State private var dnsStatus: String?
     @State private var dnsFailed = false
+    @State private var isFlushingDNS = false
 
     // Traffic
     @State private var trafficStats = NetworkTools.TrafficStats(bytesIn: 0, bytesOut: 0, packetsIn: 0, packetsOut: 0)
@@ -21,8 +26,14 @@ struct ToolsView: View {
     // Port check
     @State private var portHost = "google.com"
     @State private var portNumber = "443"
-    @State private var portResult: String?
+    @State private var portResult: PortCheckResult?
     @State private var isCheckingPort = false
+
+    private struct PortCheckResult {
+        let host: String
+        let port: Int
+        let isOpen: Bool
+    }
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -42,23 +53,22 @@ struct ToolsView: View {
     // MARK: - DNS Flush
 
     private var dnsFlushSection: some View {
-        card(title: settings.t(.toolsDNSTitle), icon: "arrow.clockwise.circle", color: .blue) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(settings.t(.toolsDNSDesc))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        card(title: settings.t(.toolsDNSTitle), icon: "arrow.clockwise.circle.fill", color: .blue) {
+            VStack(alignment: .leading, spacing: 10) {
+                description(settings.t(.toolsDNSDesc))
 
-                HStack {
-                    Button(settings.t(.toolsFlushDNS)) {
-                        flushDNS()
-                    }
-                    .buttonStyle(ModernButtonStyle(color: .blue))
+                Button {
+                    flushDNS()
+                } label: {
+                    Text(settings.t(.toolsFlushDNS))
+                }
+                .buttonStyle(ModernButtonStyle(color: .blue))
+                .disabled(isFlushingDNS)
 
-                    if let status = dnsStatus {
-                        Label(status, systemImage: dnsFailed ? "xmark.circle.fill" : "checkmark.circle.fill")
-                            .font(.caption)
-                            .foregroundColor(dnsFailed ? .red : .green)
-                    }
+                if isFlushingDNS {
+                    loadingRow
+                } else if let status = dnsStatus {
+                    statusBanner(status, ok: !dnsFailed)
                 }
             }
         }
@@ -67,43 +77,68 @@ struct ToolsView: View {
     private func flushDNS() {
         dnsStatus = nil
         dnsFailed = false
-        let result = NetworkTools.flushDNS()
-        switch result {
-        case .success:
-            dnsFailed = false
-            dnsStatus = settings.t(.toolsFlushDNSResult)
-        case .failure(let error):
-            dnsFailed = true
-            dnsStatus = error.localizedDescription
+        isFlushingDNS = true
+        Task {
+            do {
+                try await NetworkTools.flushDNS()
+                await MainActor.run {
+                    isFlushingDNS = false
+                    dnsFailed = false
+                    dnsStatus = settings.t(.toolsFlushDNSResult)
+                }
+            } catch {
+                await MainActor.run {
+                    isFlushingDNS = false
+                    dnsFailed = true
+                    dnsStatus = error.localizedDescription
+                }
+            }
         }
     }
 
     // MARK: - Traffic Monitor
 
     private var trafficSection: some View {
-        card(title: settings.t(.toolsTrafficTitle), icon: "arrow.up.arrow.down.circle", color: .green) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(settings.t(.toolsTrafficDesc))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        card(title: settings.t(.toolsTrafficTitle), icon: "arrow.up.arrow.down.circle.fill", color: .green) {
+            VStack(alignment: .leading, spacing: 10) {
+                description(settings.t(.toolsTrafficDesc))
 
-                HStack(spacing: 16) {
-                    trafficItem(label: settings.t(.toolsTrafficIn), bytes: trafficStats.bytesIn, color: .blue)
-                    trafficItem(label: settings.t(.toolsTrafficOut), bytes: trafficStats.bytesOut, color: .orange)
+                HStack(spacing: 8) {
+                    trafficTile(icon: "arrow.down", label: settings.t(.toolsTrafficIn),
+                                bytes: trafficStats.bytesIn, color: .blue)
+                    trafficTile(icon: "arrow.up", label: settings.t(.toolsTrafficOut),
+                                bytes: trafficStats.bytesOut, color: .orange)
                 }
             }
         }
     }
 
-    private func trafficItem(label: String, bytes: UInt64, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+    private func trafficTile(icon: String, label: String, bytes: UInt64, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(color)
+                Text(label)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
             Text(formatBytes(bytes))
-                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
                 .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(color.opacity(0.10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(color.opacity(0.25), lineWidth: 1)
+        )
+        .cornerRadius(8)
     }
 
     private func startTrafficTimer() {
@@ -137,37 +172,26 @@ struct ToolsView: View {
 
     private var pingSection: some View {
         card(title: settings.t(.toolsPingTitle), icon: "antenna.radiowaves.left.and.right", color: .purple) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(settings.t(.toolsPingDesc))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 10) {
+                description(settings.t(.toolsPingDesc))
 
-                HStack {
-                    TextField(settings.t(.toolsPingHost), text: $pingHost)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.system(size: 12))
+                TextField(settings.t(.toolsPingHost), text: $pingHost)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+                    .onSubmit { if !isPinging { runPing() } }
 
-                    Button(settings.t(.toolsPingButton)) {
-                        runPing()
-                    }
-                    .buttonStyle(ModernButtonStyle(color: .purple))
-                    .disabled(isPinging || pingHost.isEmpty)
+                Button {
+                    runPing()
+                } label: {
+                    Text(settings.t(.toolsPingButton))
                 }
+                .buttonStyle(ModernButtonStyle(color: .purple))
+                .disabled(isPinging || pingHost.isEmpty)
 
                 if isPinging {
-                    HStack {
-                        ProgressView().controlSize(.mini)
-                        Text("...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if let result = pingResult {
-                    Text(result)
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    loadingRow
+                } else if let result = pingResult {
+                    outputBox(result)
                 }
             }
         }
@@ -190,44 +214,37 @@ struct ToolsView: View {
     // MARK: - Port Check
 
     private var portCheckSection: some View {
-        card(title: settings.t(.toolsPortTitle), icon: "network.badge.shield.half.filled", color: .orange) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(settings.t(.toolsPortDesc))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        card(title: settings.t(.toolsPortTitle), icon: "network", color: .orange) {
+            VStack(alignment: .leading, spacing: 10) {
+                description(settings.t(.toolsPortDesc))
 
-                HStack {
+                HStack(spacing: 8) {
                     TextField(settings.t(.toolsPortHost), text: $portHost)
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 12))
-                        .frame(width: 160)
+                        .frame(maxWidth: .infinity)
+                        .onSubmit { if !isCheckingPort { checkPort() } }
 
                     TextField(settings.t(.toolsPortPort), text: $portNumber)
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 12))
-                        .frame(width: 60)
-
-                    Button(settings.t(.toolsPortButton)) {
-                        checkPort()
-                    }
-                    .buttonStyle(ModernButtonStyle(color: .orange))
-                    .disabled(isCheckingPort || portHost.isEmpty || portNumber.isEmpty)
+                        .frame(width: 66)
+                        .onSubmit { if !isCheckingPort { checkPort() } }
                 }
+
+                Button {
+                    checkPort()
+                } label: {
+                    Text(settings.t(.toolsPortButton))
+                }
+                .buttonStyle(ModernButtonStyle(color: .orange))
+                .disabled(isCheckingPort || portHost.isEmpty || portNumber.isEmpty)
 
                 if isCheckingPort {
-                    HStack {
-                        ProgressView().controlSize(.mini)
-                        Text("...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                if let result = portResult {
-                    Text(result)
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    loadingRow
+                } else if let result = portResult {
+                    let state = result.isOpen ? settings.t(.toolsPortOpen) : settings.t(.toolsPortClosed)
+                    statusBanner("\(result.host):\(result.port) — \(state)", ok: result.isOpen)
                 }
             }
         }
@@ -242,27 +259,86 @@ struct ToolsView: View {
             let isOpen = await NetworkTools.checkPort(host: host, port: port)
             await MainActor.run {
                 isCheckingPort = false
-                portResult = isOpen ? "✓ \(host):\(port) — OPEN" : "✗ \(host):\(port) — CLOSED"
+                portResult = PortCheckResult(host: host, port: port, isOpen: isOpen)
             }
         }
     }
 
-    // MARK: - Card wrapper
+    // MARK: - Components
 
     private func card<Content: View>(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(color)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(color.opacity(0.15))
+                        .frame(width: 24, height: 24)
+                    Image(systemName: icon)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(color)
+                }
                 Text(title)
                     .font(.system(size: 13, weight: .bold))
+                Spacer(minLength: 0)
             }
             content()
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppThemeTokens.Surface.elevated)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(AppThemeTokens.Border.normal, lineWidth: 1)
+        )
         .cornerRadius(12)
+    }
+
+    private func description(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var loadingRow: some View {
+        HStack(spacing: 6) {
+            ProgressView().controlSize(.small)
+            Text("...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func statusBanner(_ text: String, ok: Bool) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .font(.system(size: 11))
+            Text(text)
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .foregroundColor(ok ? .green : .red)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func outputBox(_ text: String) -> some View {
+        ScrollView {
+            Text(text.trimmingCharacters(in: .whitespacesAndNewlines))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(.secondary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxHeight: 130)
+        .padding(8)
+        .background(Color.primary.opacity(0.04))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(AppThemeTokens.Border.subtle, lineWidth: 1)
+        )
+        .cornerRadius(8)
     }
 }

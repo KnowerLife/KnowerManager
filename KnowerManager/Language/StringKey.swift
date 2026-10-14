@@ -91,6 +91,7 @@ enum StringKey {
     case toolsTrafficTitle, toolsTrafficDesc, toolsTrafficIn, toolsTrafficOut
     case toolsPingTitle, toolsPingDesc, toolsPingHost, toolsPingButton
     case toolsPortTitle, toolsPortDesc, toolsPortHost, toolsPortPort, toolsPortButton
+    case toolsPortOpen, toolsPortClosed
     case toolsResult, toolsCopy
     
     // --- General Settings Extra ---

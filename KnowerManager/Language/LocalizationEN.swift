@@ -560,6 +560,8 @@ enum LocalizationEN {
         case .toolsPortHost: return "Host"
         case .toolsPortPort: return "Port"
         case .toolsPortButton: return "Check"
+        case .toolsPortOpen: return "open"
+        case .toolsPortClosed: return "closed"
         case .toolsResult: return "Result"
         case .toolsCopy: return "Copy"
         
