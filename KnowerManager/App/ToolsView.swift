@@ -1,267 +1,209 @@
 import SwiftUI
 
-// MARK: - Вкладка «Инструменты» (Сброс DNS, Монитор трафика, Ping, Проверка порта)
-//
-// Вёрстка рассчитана на узкое окно (DS.width = 380). Кнопки используют
-// ModernButtonStyle (он растягивается на всю ширину), поэтому каждая кнопка
-// стоит в отдельной строке — рядом с полями ввода они сжимали бы друг друга.
-
 struct ToolsView: View {
+    @ObservedObject var store = ToolStore.shared
     @ObservedObject var settings = SettingsManager.shared
-
-    // DNS Flush
-    @State private var dnsStatus: String?
-    @State private var dnsFailed = false
-    @State private var isFlushingDNS = false
-
-    // Traffic
-    @State private var trafficStats = NetworkTools.TrafficStats(bytesIn: 0, bytesOut: 0, packetsIn: 0, packetsOut: 0)
-    @State private var trafficTimer: Timer?
-
-    // Ping
-    @State private var pingHost = "google.com"
-    @State private var pingResult: String?
-    @State private var isPinging = false
-
-    // Port check
-    @State private var portHost = "google.com"
-    @State private var portNumber = "443"
-    @State private var portResult: PortCheckResult?
-    @State private var isCheckingPort = false
-
-    private struct PortCheckResult {
-        let host: String
-        let port: Int
-        let isOpen: Bool
-    }
-
+    
+    // Network Info
+    @State private var networkInfo = NetworkInfoProvider.getActiveInterface()
+    @State private var networkExpanded = false
+    
+    // Keep Awake
+    var keepAwakeTool: Tool? { store.tools.first(where: { $0.id == "keepAwake" }) }
+    
+    // DNS Lookup
+    @State private var dnsDomain = ""
+    @State private var dnsResult: String?
+    @State private var isDnsLoading = false
+    
+    // ARP Flush
+    @State private var showArpAlert = false
+    @State private var arpStatus: String?
+    @State private var arpFailed = false
+    @State private var isArpFlushing = false
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 12) {
-                dnsFlushSection
-                trafficSection
-                pingSection
-                portCheckSection
+                ForEach(store.tools) { tool in
+                    switch tool.type {
+                    case .info:
+                        networkInfoSection(tool: tool)
+                    case .toggle:
+                        toggleSection(tool: tool)
+                    case .action:
+                        actionSection(tool: tool)
+                    }
+                }
                 Spacer().frame(height: 40)
             }
             .padding(12)
         }
-        .onAppear { startTrafficTimer() }
-        .onDisappear { stopTrafficTimer() }
+        .frame(width: DesignSystem.width)
+        .onAppear {
+            networkInfo = NetworkInfoProvider.getActiveInterface()
+        }
     }
-
-    // MARK: - DNS Flush
-
-    private var dnsFlushSection: some View {
-        card(title: settings.t(.toolsDNSTitle), icon: "arrow.clockwise.circle.fill", color: .blue) {
-            VStack(alignment: .leading, spacing: 10) {
-                description(settings.t(.toolsDNSDesc))
-
-                Button {
-                    flushDNS()
+    
+    private func networkInfoSection(tool: Tool) -> some View {
+        card(title: settings.t(tool.titleKey), icon: "info.circle.fill", color: .blue) {
+            VStack(alignment: .leading, spacing: 8) {
+                if let desc = tool.descKey {
+                    description(settings.t(desc))
+                }
+                DisclosureGroup(isExpanded: $networkExpanded) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        infoRow(title: settings.t(.toolInterface), value: networkInfo.name)
+                        infoRow(title: settings.t(.toolIpv4), value: networkInfo.ipv4)
+                        infoRow(title: settings.t(.toolIpv6), value: networkInfo.ipv6)
+                        infoRow(title: settings.t(.toolMac), value: networkInfo.mac)
+                        infoRow(title: settings.t(.toolGateway), value: networkInfo.gateway)
+                        infoRow(title: settings.t(.toolDns), value: networkInfo.dns)
+                    }
+                    .padding(.top, 4)
                 } label: {
-                    Text(settings.t(.toolsFlushDNS))
+                    Text(networkExpanded ? "" : "Подробнее")
                 }
-                .buttonStyle(ModernButtonStyle(color: .blue))
-                .disabled(isFlushingDNS)
-
-                if isFlushingDNS {
-                    loadingRow
-                } else if let status = dnsStatus {
-                    statusBanner(status, ok: !dnsFailed)
-                }
+                .font(.caption)
             }
         }
     }
-
-    private func flushDNS() {
-        dnsStatus = nil
-        dnsFailed = false
-        isFlushingDNS = true
-        // Сброс кэша требует прав администратора: dscacheutil и сброс mDNSResponder
-        // выполняются привилегированно (пароль спрашивается один раз и кэшируется).
-        PrivilegedRunner.shared.runAsAdmin(script: NetworkTools.dnsFlushScript) { ok, message in
-            isFlushingDNS = false
-            dnsFailed = !ok
-            if ok {
-                dnsStatus = settings.t(.toolsFlushDNSResult)
-            } else {
-                let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
-                dnsStatus = trimmed.isEmpty ? settings.t(.toolsFlushDNSFailed) : trimmed
-            }
-        }
-    }
-
-    // MARK: - Traffic Monitor
-
-    private var trafficSection: some View {
-        card(title: settings.t(.toolsTrafficTitle), icon: "arrow.up.arrow.down.circle.fill", color: .green) {
+    
+    private func toggleSection(tool: Tool) -> some View {
+        card(title: settings.t(tool.titleKey), icon: "power.circle.fill", color: .green) {
             VStack(alignment: .leading, spacing: 10) {
-                description(settings.t(.toolsTrafficDesc))
-
-                HStack(spacing: 8) {
-                    trafficTile(icon: "arrow.down", label: settings.t(.toolsTrafficIn),
-                                bytes: trafficStats.bytesIn, color: .blue)
-                    trafficTile(icon: "arrow.up", label: settings.t(.toolsTrafficOut),
-                                bytes: trafficStats.bytesOut, color: .orange)
+                if let desc = tool.descKey {
+                    description(settings.t(desc))
+                }
+                HStack {
+                    Text(settings.t(.toolEnabled))
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { tool.enabled },
+                        set: { store.saveEnabled(tool.id, $0) }
+                    ))
+                    .toggleStyle(.switch)
+                }
+                HStack {
+                    Text(settings.t(.toolShowInMini))
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { tool.showInMiniMenu },
+                        set: { store.saveShowInMini(tool.id, $0) }
+                    ))
+                    .toggleStyle(.switch)
+                }
+                if tool.id == "keepAwake" && tool.enabled {
+                    HStack(spacing: 4) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 6))
+                            .foregroundColor(.green)
+                        Text(settings.t(.toolKeepAwakeActive))
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
                 }
             }
         }
     }
-
-    private func trafficTile(icon: String, label: String, bytes: UInt64, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundColor(color)
-                Text(label)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-            Text(formatBytes(bytes))
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
-                .foregroundColor(color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+    
+    private func actionSection(tool: Tool) -> some View {
+        if tool.id == "dnsLookup" {
+            return AnyView(dnsLookupSection(tool: tool))
+        } else if tool.id == "arpFlush" {
+            return AnyView(arpFlushSection(tool: tool))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(color.opacity(0.10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(color.opacity(0.25), lineWidth: 1)
-        )
-        .cornerRadius(8)
+        return AnyView(EmptyView())
     }
-
-    private func startTrafficTimer() {
-        refreshTraffic()
-        trafficTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
-            refreshTraffic()
-        }
-    }
-
-    private func stopTrafficTimer() {
-        trafficTimer?.invalidate()
-        trafficTimer = nil
-    }
-
-    private func refreshTraffic() {
-        trafficStats = NetworkTools.getTrafficStats()
-    }
-
-    private func formatBytes(_ bytes: UInt64) -> String {
-        let mb = Double(bytes) / 1_048_576
-        if mb < 1 {
-            return String(format: "%.1f KB", Double(bytes) / 1024)
-        } else if mb < 1024 {
-            return String(format: "%.1f MB", mb)
-        } else {
-            return String(format: "%.2f GB", mb / 1024)
-        }
-    }
-
-    // MARK: - Ping
-
-    private var pingSection: some View {
-        card(title: settings.t(.toolsPingTitle), icon: "antenna.radiowaves.left.and.right", color: .purple) {
+    
+    private func dnsLookupSection(tool: Tool) -> some View {
+        card(title: settings.t(tool.titleKey), icon: "magnifyingglass.circle.fill", color: .purple) {
             VStack(alignment: .leading, spacing: 10) {
-                description(settings.t(.toolsPingDesc))
-
-                TextField(settings.t(.toolsPingHost), text: $pingHost)
+                if let desc = tool.descKey {
+                    description(settings.t(desc))
+                }
+                TextField("example.com", text: $dnsDomain)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12))
-                    .onSubmit { if !isPinging { runPing() } }
-
+                    .onSubmit { if !isDnsLoading { runDnsLookup() } }
                 Button {
-                    runPing()
+                    runDnsLookup()
                 } label: {
-                    Text(settings.t(.toolsPingButton))
+                    Text(settings.t(.toolDnsLookupCheck))
                 }
                 .buttonStyle(ModernButtonStyle(color: .purple))
-                .disabled(isPinging || pingHost.isEmpty)
-
-                if isPinging {
+                .disabled(isDnsLoading || dnsDomain.isEmpty)
+                if isDnsLoading {
                     loadingRow
-                } else if let result = pingResult {
+                } else if let result = dnsResult {
                     outputBox(result)
                 }
             }
         }
     }
-
-    private func runPing() {
-        guard !pingHost.isEmpty else { return }
-        isPinging = true
-        pingResult = nil
-        let host = pingHost
+    
+    private func runDnsLookup() {
+        guard !dnsDomain.isEmpty else { return }
+        isDnsLoading = true
+        dnsResult = nil
+        let host = dnsDomain
         Task {
-            let output = await NetworkTools.ping(host: host)
+            let output = await NetworkTools.dnsLookup(host: host)
             await MainActor.run {
-                isPinging = false
-                pingResult = output
+                isDnsLoading = false
+                dnsResult = output
             }
         }
     }
-
-    // MARK: - Port Check
-
-    private var portCheckSection: some View {
-        card(title: settings.t(.toolsPortTitle), icon: "network", color: .orange) {
+    
+    private func arpFlushSection(tool: Tool) -> some View {
+        card(title: settings.t(tool.titleKey), icon: "bolt.circle.fill", color: .orange) {
             VStack(alignment: .leading, spacing: 10) {
-                description(settings.t(.toolsPortDesc))
-
-                HStack(spacing: 8) {
-                    TextField(settings.t(.toolsPortHost), text: $portHost)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.system(size: 12))
-                        .frame(maxWidth: .infinity)
-                        .onSubmit { if !isCheckingPort { checkPort() } }
-
-                    TextField(settings.t(.toolsPortPort), text: $portNumber)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.system(size: 12))
-                        .frame(width: 66)
-                        .onSubmit { if !isCheckingPort { checkPort() } }
+                if let desc = tool.descKey {
+                    description(settings.t(desc))
                 }
-
                 Button {
-                    checkPort()
+                    showArpAlert = true
                 } label: {
-                    Text(settings.t(.toolsPortButton))
+                    Text(settings.t(.toolsFlushDNS))
+                        .foregroundColor(.orange)
                 }
                 .buttonStyle(ModernButtonStyle(color: .orange))
-                .disabled(isCheckingPort || portHost.isEmpty || portNumber.isEmpty)
-
-                if isCheckingPort {
+                .disabled(isArpFlushing)
+                if isArpFlushing {
                     loadingRow
-                } else if let result = portResult {
-                    let state = result.isOpen ? settings.t(.toolsPortOpen) : settings.t(.toolsPortClosed)
-                    statusBanner("\(result.host):\(result.port) — \(state)", ok: result.isOpen)
+                } else if let status = arpStatus {
+                    statusBanner(status, ok: !arpFailed)
                 }
             }
         }
+        .alert(settings.t(.toolArpFlushConfirmTitle), isPresented: $showArpAlert) {
+            Button(settings.t(.btnCancel), role: .cancel) {}
+            Button(settings.t(.btnOK), role: .destructive) {
+                flushArp()
+            }
+        } message: {
+            Text(settings.t(.toolArpFlushConfirm))
+        }
     }
-
-    private func checkPort() {
-        guard !portHost.isEmpty, let port = Int(portNumber) else { return }
-        isCheckingPort = true
-        portResult = nil
-        let host = portHost
-        Task {
-            let isOpen = await NetworkTools.checkPort(host: host, port: port)
-            await MainActor.run {
-                isCheckingPort = false
-                portResult = PortCheckResult(host: host, port: port, isOpen: isOpen)
+    
+    private func flushArp() {
+        arpStatus = nil
+        arpFailed = false
+        isArpFlushing = true
+        ArpFlushRunner.flush { ok, message in
+            isArpFlushing = false
+            arpFailed = !ok
+            if ok {
+                arpStatus = settings.t(.toolArpFlushSuccess)
+            } else {
+                let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+                arpStatus = trimmed.isEmpty ? settings.t(.toolArpFlushFailed) : trimmed
             }
         }
     }
-
-    // MARK: - Components
-
+    
+    // Reuse components
     private func card<Content: View>(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
@@ -282,44 +224,30 @@ struct ToolsView: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppThemeTokens.Surface.elevated)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppThemeTokens.Border.normal, lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppThemeTokens.Border.normal, lineWidth: 1))
         .cornerRadius(12)
     }
-
+    
     private func description(_ text: String) -> some View {
-        Text(text)
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        Text(text).font(.caption).foregroundColor(.secondary).fixedSize(horizontal: false, vertical: true).frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private var loadingRow: some View {
         HStack(spacing: 6) {
             ProgressView().controlSize(.small)
-            Text("...")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+            Text("...").font(.caption).foregroundColor(.secondary)
+        }.frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private func statusBanner(_ text: String, ok: Bool) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.system(size: 11))
-            Text(text)
-                .font(.caption)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(text).font(.caption).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-        }
-        .foregroundColor(ok ? .green : .red)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        }.foregroundColor(ok ? .green : .red).frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private func outputBox(_ text: String) -> some View {
         ScrollView {
             Text(text.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -331,10 +259,15 @@ struct ToolsView: View {
         .frame(maxHeight: 130)
         .padding(8)
         .background(Color.primary.opacity(0.04))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(AppThemeTokens.Border.subtle, lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppThemeTokens.Border.subtle, lineWidth: 1))
         .cornerRadius(8)
+    }
+    
+    private func infoRow(title: String, value: String) -> some View {
+        HStack(alignment: .top) {
+            Text(title + ":").font(.system(size: 10, weight: .medium)).foregroundColor(.secondary)
+            Spacer(minLength: 8)
+            Text(value).font(.system(size: 10, design: .monospaced)).foregroundColor(.primary).textSelection(.enabled).multilineTextAlignment(.trailing)
+        }
     }
 }

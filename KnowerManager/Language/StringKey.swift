@@ -5,7 +5,7 @@ import Foundation
 // Здесь только объявления ключей (без самих переводов).
 // Строки переводов лежат рядом: LocalizationRU.swift и LocalizationEN.swift.
 
-enum StringKey {
+enum StringKey: String, Codable {
     // --- Global ---
     case appTitle
     
@@ -93,6 +93,12 @@ enum StringKey {
     case toolsPortTitle, toolsPortDesc, toolsPortHost, toolsPortPort, toolsPortButton
     case toolsPortOpen, toolsPortClosed
     case toolsResult, toolsCopy
+    // --- Tools (New) ---
+    case toolNetworkInfoTitle, toolNetworkInfoDesc
+    case toolKeepAwakeTitle, toolKeepAwakeDesc, toolKeepAwakeActive, toolKeepAwakeMini
+    case toolDnsLookupTitle, toolDnsLookupDesc, toolDnsLookupCheck, toolDnsLookupResult
+    case toolArpFlushTitle, toolArpFlushDesc, toolArpFlushConfirm, toolArpFlushConfirmTitle, toolArpFlushSuccess, toolArpFlushFailed
+    case toolEnabled, toolShowInMini, toolInterface, toolIpv4, toolIpv6, toolMac, toolGateway, toolDns
     
     // --- General Settings Extra ---
     case hideDockTitle, hideDockDesc

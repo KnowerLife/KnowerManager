@@ -4,19 +4,23 @@ struct MiniMenu: View {
     @ObservedObject var settings = SettingsManager.shared
     @ObservedObject var ocrManager = OCRManager.shared
     @ObservedObject var xray = XrayService.shared
+    @ObservedObject var toolStore = ToolStore.shared
     
     let columns = [
         GridItem(.flexible(), spacing: 8),
         GridItem(.flexible(), spacing: 8)
     ]
     
-    // Вычисляем цветовую схему на основе настроек
     var currentColorScheme: ColorScheme? {
         switch settings.currentTheme {
         case .dark: return .dark
         case .light: return .light
         case .system: return nil
         }
+    }
+    
+    private var miniTools: [Tool] {
+        toolStore.tools.filter { $0.enabled && $0.showInMiniMenu }
     }
     
     var body: some View {
@@ -27,6 +31,9 @@ struct MiniMenu: View {
             VStack(spacing: 12) {
                 vpnStatusSection
                 quickLaunchSection
+                if !miniTools.isEmpty {
+                    miniToolsSection
+                }
                 appTogglesSection
             }
             .padding(12)
@@ -39,12 +46,10 @@ struct MiniMenu: View {
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppThemeTokens.Border.subtle, lineWidth: 1))
         .preferredColorScheme(currentColorScheme)
-        // Обновляем вид при смене языка или темы
         .id("\(settings.currentTheme.rawValue)-\(settings.currentLanguage.rawValue)")
     }
     
     // MARK: - Subviews
-    
     private var headerSection: some View {
         HStack {
             HStack(spacing: 6) {
@@ -81,7 +86,6 @@ struct MiniMenu: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(xray.isRunning ? .green : .secondary)
             }
-            
             VStack(alignment: .leading, spacing: 1) {
                 Text(settings.t(.vpnTitle))
                     .font(.system(size: 10, weight: .bold))
@@ -93,9 +97,7 @@ struct MiniMenu: View {
                         .truncationMode(.middle)
                 }
             }
-            
             Spacer(minLength: 0)
-            
             Button(action: { xray.toggleConnection() }) {
                 Image(systemName: "power")
                     .font(.system(size: 12, weight: .bold))
@@ -115,12 +117,10 @@ struct MiniMenu: View {
             .stroke(xray.isRunning ? Color.green.opacity(0.35) : DesignSystem.strokeColor, lineWidth: 1))
     }
     
-    /// Можно ли переключить соединение: либо уже подключены, либо выбран профиль.
     private var canToggleConnection: Bool {
         xray.isRunning || xray.selectedProfileId != nil
     }
     
-    /// Текст статуса: «Подключено · имя», имя выбранного профиля или «Не подключено».
     private var vpnStatusText: String {
         if xray.isRunning {
             let uptime = uptimeShort
@@ -135,7 +135,6 @@ struct MiniMenu: View {
         return settings.t(.vpnNotConnected)
     }
     
-    /// Короткое отображение времени соединения: «12:34» или «1:02:03».
     private var uptimeShort: String {
         let total = Int(xray.connectionUptime)
         let h = total / 3600
@@ -155,6 +154,16 @@ struct MiniMenu: View {
             }
             actionTile(title: settings.t(.ocrArea), icon: "viewfinder", color: .pink) {
                 ocrManager.captureArea()
+            }
+        }
+    }
+    
+    private var miniToolsSection: some View {
+        LazyVGrid(columns: columns, spacing: 8) {
+            ForEach(miniTools) { tool in
+                if tool.id == "keepAwake" {
+                    MiniStatusTile(title: settings.t(.toolKeepAwakeMini), icon: "moon.zzz.fill", color: .purple)
+                }
             }
         }
     }
@@ -185,13 +194,27 @@ struct MiniMenu: View {
         .buttonStyle(ScaleButtonStyle())
     }
     
-    // MARK: - FOOTER
+    struct MiniStatusTile: View {
+        let title: String; let icon: String; let color: Color
+        var body: some View {
+            HStack(spacing: 6) {
+                ZStack {
+                    Circle().fill(color.opacity(0.15)).frame(width: 24, height: 24)
+                    Image(systemName: icon).font(.system(size: 11, weight: .semibold)).foregroundColor(color)
+                }
+                Text(title).font(.system(size: 9, weight: .medium)).foregroundColor(.primary).lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(6)
+            .background(DesignSystem.cardColor)
+            .cornerRadius(10)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(DesignSystem.strokeColor, lineWidth: 1))
+        }
+    }
     
     private var footerSection: some View {
         HStack(spacing: 0) {
-            // ГРУППА 1: УПРАВЛЕНИЕ ОКНАМИ И ABOUT
             HStack(spacing: 8) {
-                // Главное окно
                 Button(action: { MenuBarManager.shared.openMainWindow() }) {
                     Image(systemName: "macwindow")
                         .font(DesignTokens.Typography.callout.weight(.medium))
@@ -199,8 +222,6 @@ struct MiniMenu: View {
                 .buttonStyle(IconButtonStyle())
                 .foregroundColor(.blue)
                 .help(settings.t(.menuOpenShort))
-                
-                // About
                 Button(action: { MenuBarManager.shared.openAbout() }) {
                     Image(systemName: "info.circle")
                         .font(DesignTokens.Typography.callout.weight(.medium))
@@ -208,8 +229,6 @@ struct MiniMenu: View {
                 .buttonStyle(IconButtonStyle())
                 .foregroundColor(.secondary)
                 .help(settings.t(.menuAbout))
-                
-                // Настройки
                 Button(action: { MenuBarManager.shared.openSettings() }) {
                     Image(systemName: "slider.horizontal.3")
                         .font(DesignTokens.Typography.callout.weight(.medium))
@@ -218,12 +237,8 @@ struct MiniMenu: View {
                 .foregroundColor(.secondary)
                 .help(settings.t(.settingsTitle))
             }
-            
             Spacer()
-            
-            // ГРУППА 2: НАСТРОЙКИ (ЯЗЫК И ТЕМА)
             HStack(spacing: 6) {
-                // Язык
                 Menu {
                     Button("English") { settings.currentLanguage = .english }
                     Button("Русский") { settings.currentLanguage = .russian }
@@ -238,8 +253,6 @@ struct MiniMenu: View {
                 }
                 .menuStyle(BorderlessButtonMenuStyle())
                 .frame(height: 20)
-                
-                // Тема
                 Menu {
                     Button(action: { settings.currentTheme = .system }) {
                         Label(AppTheme.system.localizedName(language: settings.currentLanguage), systemImage: "circle.lefthalf.filled")
@@ -261,10 +274,7 @@ struct MiniMenu: View {
                 .menuStyle(BorderlessButtonMenuStyle())
                 .frame(width: 30, height: 20)
             }
-            
             Spacer()
-            
-            // ГРУППА 3: ВЫХОД
             HStack(spacing: 8) {
                 Button(action: { MenuBarManager.shared.quitApp() }) {
                     Image(systemName: "power")
@@ -280,7 +290,6 @@ struct MiniMenu: View {
         .background(VisualEffectView(material: .headerView, blendingMode: .withinWindow))
     }
     
-    // Иконка для кнопки темы
     private var themeIcon: String {
         switch settings.currentTheme {
         case .system: return "circle.lefthalf.filled"
@@ -290,11 +299,8 @@ struct MiniMenu: View {
     }
 }
 
-// MARK: - MINI COMPONENTS
-
 struct MiniFeatureToggle: View {
     let title: String; let icon: String; let color: Color; @Binding var isOn: Bool
-    
     var body: some View {
         Button(action: { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isOn.toggle() } }) {
             HStack(spacing: 6) {
@@ -311,18 +317,5 @@ struct MiniFeatureToggle: View {
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(isOn ? color.opacity(0.4) : DesignSystem.strokeColor, lineWidth: 1))
         }
         .buttonStyle(ScaleButtonStyle())
-    }
-}
-
-struct MiniToolButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .background(DesignSystem.cardColor.opacity(configuration.isPressed ? 0.5 : 1))
-            .foregroundColor(.primary)
-            .cornerRadius(8)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignSystem.strokeColor, lineWidth: 1))
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
     }
 }
