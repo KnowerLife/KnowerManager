@@ -131,6 +131,7 @@ struct ModernTopBar: View {
             UXUIKit.ModernTabBar(selectedTab: $selectedTab, tabs: tabs, namespace: animation)
         }
         .frame(width: DesignSystem.width)
+        .padding(.horizontal, 12)
     }
 }
 
