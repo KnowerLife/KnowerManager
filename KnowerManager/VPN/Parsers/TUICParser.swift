@@ -55,13 +55,15 @@ class TUICParser {
         return profile
     }
 
-    private func parseHostPort(_ input: String, server: inout String, port: inout Int) {
-        guard let colonIndex = input.lastIndex(of: ":") else {
-            server = input.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+    private func parseHostPort(_ rawInput: String, server: inout String, port: inout Int) {
+        guard let colonIndex = rawInput.lastIndex(of: ":") else {
+            server = rawInput.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
             return
         }
-        server = String(input[..<colonIndex]).replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
-        if let p = Int(String(input[input.index(after: colonIndex)...])), (1...65535).contains(p) {
+        server = String(rawInput[..<colonIndex]).replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
+        // Отсекаем путь/query у порта (формат host:port/?...).
+        let portPart = String(rawInput[rawInput.index(after: colonIndex)...].prefix { $0 != "?" && $0 != "/" })
+        if let p = Int(portPart), (1...65535).contains(p) {
             port = p
         }
     }

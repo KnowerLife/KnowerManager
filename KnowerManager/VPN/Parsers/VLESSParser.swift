@@ -90,7 +90,10 @@ class VLESSParser {
         return profile
     }
     
-    private func parseHostPort(_ input: String, server: inout String, port: inout Int) {
+    private func parseHostPort(_ rawInput: String, server: inout String, port: inout Int) {
+        // Отсекаем путь ("/") и query ("?"), если они попали сюда (формат host:port/?...).
+        let input = String(rawInput.prefix { $0 != "?" && $0 != "/" })
+        guard !input.isEmpty else { return }
         guard let colonIndex = input.lastIndex(of: ":") else {
             server = input.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
             return

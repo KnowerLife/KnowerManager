@@ -191,7 +191,7 @@ final class ProfileProxyTester: ObservableObject {
     }
 
     private func fail(_ message: String) {
-        print("❌ Proxy test failed: \(message)")
+        AppLogger.shared.error("Proxy test failed: \(message)")
         errorText = message
         isTesting = false
         statusText = nil

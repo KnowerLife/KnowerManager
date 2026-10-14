@@ -90,7 +90,7 @@ class VMessParser {
             return profile
             
         } catch {
-            print("❌ VMess Parse Error: \(error)")
+            AppLogger.shared.error("VMess Parse Error: \(error)")
             return nil
         }
     }

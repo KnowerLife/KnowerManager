@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		1A2B3C4D5E6F708192A3B40B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B753BF3F2EE6D5AA0091F418 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B753BF462EE6D5AA0091F418;
+			remoteInfo = KnowerManager;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		B753BF472EE6D5AA0091F418 /* KnowerManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KnowerManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F708192A3B402 /* KnowerManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KnowerManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = KnowerManager;
 			sourceTree = "<group>";
 		};
+		1A2B3C4D5E6F708192A3B406 /* KnowerManagerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KnowerManagerTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B753BF442EE6D5AA0091F418 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F708192A3B404 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				B753BF492EE6D5AA0091F418 /* KnowerManager */,
+				1A2B3C4D5E6F708192A3B406 /* KnowerManagerTests */,
 				B753BF482EE6D5AA0091F418 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				B753BF472EE6D5AA0091F418 /* KnowerManager.app */,
+				1A2B3C4D5E6F708192A3B402 /* KnowerManagerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = B753BF472EE6D5AA0091F418 /* KnowerManager.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1A2B3C4D5E6F708192A3B401 /* KnowerManagerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F708192A3B409 /* Build configuration list for PBXNativeTarget "KnowerManagerTests" */;
+			buildPhases = (
+				1A2B3C4D5E6F708192A3B403 /* Sources */,
+				1A2B3C4D5E6F708192A3B404 /* Frameworks */,
+				1A2B3C4D5E6F708192A3B405 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A2B3C4D5E6F708192A3B40A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1A2B3C4D5E6F708192A3B406 /* KnowerManagerTests */,
+			);
+			name = KnowerManagerTests;
+			packageProductDependencies = (
+			);
+			productName = KnowerManagerTests;
+			productReference = 1A2B3C4D5E6F708192A3B402 /* KnowerManagerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					B753BF462EE6D5AA0091F418 = {
 						CreatedOnToolsVersion = 26.1.1;
+					};
+					1A2B3C4D5E6F708192A3B401 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = B753BF462EE6D5AA0091F418;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				B753BF462EE6D5AA0091F418 /* KnowerManager */,
+				1A2B3C4D5E6F708192A3B401 /* KnowerManagerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B753BF452EE6D5AA0091F418 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F708192A3B405 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1A2B3C4D5E6F708192A3B403 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1A2B3C4D5E6F708192A3B40A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B753BF462EE6D5AA0091F418 /* KnowerManager */;
+			targetProxy = 1A2B3C4D5E6F708192A3B40B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B753BF502EE6D5AB0091F418 /* Debug */ = {
@@ -313,6 +388,54 @@
 			};
 			name = Release;
 		};
+		1A2B3C4D5E6F708192A3B407 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 31;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.knower.manager.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnowerManager.app/Contents/MacOS/KnowerManager";
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F708192A3B408 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 31;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.knower.manager.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnowerManager.app/Contents/MacOS/KnowerManager";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -330,6 +453,15 @@
 			buildConfigurations = (
 				B753BF532EE6D5AB0091F418 /* Debug */,
 				B753BF542EE6D5AB0091F418 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F708192A3B409 /* Build configuration list for PBXNativeTarget "KnowerManagerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F708192A3B407 /* Debug */,
+				1A2B3C4D5E6F708192A3B408 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

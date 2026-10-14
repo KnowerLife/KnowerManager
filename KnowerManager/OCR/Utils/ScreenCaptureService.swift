@@ -240,7 +240,7 @@ class ScreenCaptureService {
                 return NSImage(data: data)
             }
         } catch {
-            print("Debug capture error: \(error)")
+            AppLogger.shared.debug("Debug capture error: \(error)")
         }
         
         return nil

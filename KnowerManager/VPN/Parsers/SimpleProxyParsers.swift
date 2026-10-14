@@ -70,7 +70,7 @@ final class ProxylikeParser {
     }
 
     private func parseHostPort(_ input: String, server: inout String, port: inout Int) {
-        let cleanInput = String(input.prefix { $0 != "?" })
+        let cleanInput = String(input.prefix { $0 != "?" && $0 != "/" })
         guard let colonIndex = cleanInput.lastIndex(of: ":") else {
             server = cleanInput.replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "")
             return

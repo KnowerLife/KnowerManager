@@ -35,7 +35,6 @@ class SSParser {
             let decodedUserInfo = base64Decode(cleanUserInfo) ?? cleanUserInfo
             
             if let profile = extractProfile(userInfo: decodedUserInfo, hostPart: hostPart, name: name) {
-                print("✅ Strategy 1 (SIP002) success")
                 return profile
             }
         }
@@ -49,13 +48,12 @@ class SSParser {
                 let hostPart = String(decodedFull[decodedFull.index(after: atIndex)...])
                 
                 if let profile = extractProfile(userInfo: userInfo, hostPart: hostPart, name: name) {
-                    print("✅ Strategy 2 (Legacy) success")
                     return profile
                 }
             }
         }
         
-        print("❌ SSParser: Format unrecognized for link")
+        AppLogger.shared.warning("SSParser: unrecognized link format")
         return nil
     }
     
@@ -87,7 +85,7 @@ class SSParser {
     
     private func parseHostPort(_ input: String, server: inout String, port: inout Int) {
         // input.split(separator: "?")[0] трапает, если строка пустая или начинается с "?".
-        let cleanInput = String(input.prefix { $0 != "?" })
+        let cleanInput = String(input.prefix { $0 != "?" && $0 != "/" })
         guard !cleanInput.isEmpty else { return }
         
         if let colonIndex = cleanInput.lastIndex(of: ":") {
