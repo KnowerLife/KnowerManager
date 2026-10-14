@@ -238,6 +238,8 @@ struct ToolsView: View {
                 }
                 Text(title)
                     .font(.system(size: 13, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .lineLimit(1)
                 Spacer(minLength: 0)
             }
             content()
