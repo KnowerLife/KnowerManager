@@ -62,7 +62,18 @@ struct ToolsView: View {
                     }
                     .padding(.top, 4)
                 } label: {
-                    Text(networkExpanded ? "" : "Подробнее")
+                    HStack {
+                        Text(networkExpanded ? settings.t(.btnHide) : settings.t(.btnShow))
+                        Spacer()
+                        Button {
+                            networkInfo = NetworkInfoProvider.getActiveInterface()
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 10))
+                        }
+                        .buttonStyle(.borderless)
+                        .help(settings.t(.btnRefresh))
+                    }
                 }
                 .font(.caption)
             }
@@ -75,23 +86,29 @@ struct ToolsView: View {
                 if let desc = tool.descKey {
                     description(settings.t(desc))
                 }
-                HStack {
+                HStack(alignment: .center, spacing: 8) {
                     Text(settings.t(.toolEnabled))
-                    Spacer()
+                        .font(.system(size: 12))
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     Toggle("", isOn: Binding(
                         get: { tool.enabled },
                         set: { store.saveEnabled(tool.id, $0) }
                     ))
                     .toggleStyle(.switch)
+                    .labelsHidden()
+                    .fixedSize()
                 }
-                HStack {
+                HStack(alignment: .center, spacing: 8) {
                     Text(settings.t(.toolShowInMini))
-                    Spacer()
+                        .font(.system(size: 12))
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     Toggle("", isOn: Binding(
                         get: { tool.showInMiniMenu },
                         set: { store.saveShowInMini(tool.id, $0) }
                     ))
                     .toggleStyle(.switch)
+                    .labelsHidden()
+                    .fixedSize()
                 }
                 if tool.id == "keepAwake" && tool.enabled {
                     HStack(spacing: 4) {
@@ -125,7 +142,7 @@ struct ToolsView: View {
                 TextField("example.com", text: $dnsDomain)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12))
-                    .onSubmit { if !isDnsLoading { runDnsLookup() } }
+                    .frame(maxWidth: .infinity)
                 Button {
                     runDnsLookup()
                 } label: {
@@ -165,7 +182,7 @@ struct ToolsView: View {
                 Button {
                     showArpAlert = true
                 } label: {
-                    Text(settings.t(.toolsFlushDNS))
+                    Text(settings.t(.toolArpFlushTitle))
                         .foregroundColor(.orange)
                 }
                 .buttonStyle(ModernButtonStyle(color: .orange))
@@ -243,9 +260,14 @@ struct ToolsView: View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.system(size: 11))
-            Text(text).font(.caption).fixedSize(horizontal: false, vertical: true)
+            Text(text)
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Spacer(minLength: 0)
-        }.foregroundColor(ok ? .green : .red).frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .foregroundColor(ok ? .green : .red)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func outputBox(_ text: String) -> some View {
@@ -265,9 +287,18 @@ struct ToolsView: View {
     
     private func infoRow(title: String, value: String) -> some View {
         HStack(alignment: .top) {
-            Text(title + ":").font(.system(size: 10, weight: .medium)).foregroundColor(.secondary)
-            Spacer(minLength: 8)
-            Text(value).font(.system(size: 10, design: .monospaced)).foregroundColor(.primary).textSelection(.enabled).multilineTextAlignment(.trailing)
+            Text(title + ":")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+                .frame(alignment: .leading)
+            Spacer(minLength: 12)
+            Text(value.isEmpty ? "—" : value)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(.primary)
+                .textSelection(.enabled)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(nil)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 }
