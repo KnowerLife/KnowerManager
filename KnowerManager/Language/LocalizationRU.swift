@@ -316,6 +316,13 @@ enum LocalizationRU {
         case .aiProvider: return "Провайдер"
         case .aiApiKey: return "API Ключ"
         case .aiModel: return "Модель"
+        case .aiTestConnection: return "Проверить подключение"
+        case .aiTestSuccess: return "Подключение успешно"
+        case .aiTemperature: return "Температура"
+        case .aiMaxTokens: return "Макс. токенов"
+        case .aiShowKey: return "Показать"
+        case .aiHideKey: return "Скрыть"
+        case .aiAdvanced: return "Дополнительно"
             
         // --- OCR: тонкая настройка распознавания ---
         case .ocrAdvanced: return "Тонкая настройка"

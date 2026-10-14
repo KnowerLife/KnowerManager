@@ -316,6 +316,13 @@ enum LocalizationEN {
         case .aiProvider: return "Provider"
         case .aiApiKey: return "API Key"
         case .aiModel: return "Model"
+        case .aiTestConnection: return "Test connection"
+        case .aiTestSuccess: return "Connection successful"
+        case .aiTemperature: return "Temperature"
+        case .aiMaxTokens: return "Max tokens"
+        case .aiShowKey: return "Show"
+        case .aiHideKey: return "Hide"
+        case .aiAdvanced: return "Advanced"
             
         // --- OCR: recognition fine-tuning ---
         case .ocrAdvanced: return "Fine-tuning"

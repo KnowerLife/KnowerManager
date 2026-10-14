@@ -120,6 +120,7 @@ enum StringKey {
     case ocrCopy, ocrClear
     case ocrSaveImageTitle
     case aiEnable, aiProvider, aiApiKey, aiModel
+    case aiTestConnection, aiTestSuccess, aiTemperature, aiMaxTokens, aiShowKey, aiHideKey, aiAdvanced
     
     // --- OCR: тонкая настройка распознавания ---
     case ocrAdvanced, ocrRecognition
