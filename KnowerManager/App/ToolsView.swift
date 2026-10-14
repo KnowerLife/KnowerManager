@@ -37,6 +37,7 @@ struct ToolsView: View {
                 }
                 Spacer().frame(height: 40)
             }
+            .frame(width: DesignSystem.width, alignment: .center)
             .padding(12)
         }
         .frame(width: DesignSystem.width)
