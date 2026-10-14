@@ -39,7 +39,7 @@ struct ToolsView: View {
             }
             .padding(12)
         }
-        .frame(width: DesignSystem.width, alignment: .leading)
+        .frame(width: DesignSystem.width)
         .onAppear {
             networkInfo = NetworkInfoProvider.getActiveInterface()
         }
