@@ -243,7 +243,7 @@ struct ToolsView: View {
             content()
         }
         .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: DesignSystem.width - 24, alignment: .leading)
         .background(AppThemeTokens.Surface.elevated)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppThemeTokens.Border.normal, lineWidth: 1))
         .cornerRadius(12)
