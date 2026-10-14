@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# pre-commit — автоматически поднимает версию и билд перед каждым коммитом.
+#
+# Пропустить один раз:
+#   git commit --no-verify
+#   SKIP_VERSION_BUMP=1 git commit -m "..."
+#
+# Отключить совсем: удалить .git/hooks/pre-commit (или scripts/... и переустановить).
+#
+set -euo pipefail
+
+# Позволяет осознанно пропустить бамп.
+if [[ "${SKIP_VERSION_BUMP:-0}" == "1" ]]; then
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "$ROOT" || ! -x "$ROOT/scripts/bump_version.sh" ]]; then
+  # Не мешаем коммиту, если скрипт недоступен.
+  exit 0
+fi
+
+"$ROOT/scripts/bump_version.sh"
+
+git -C "$ROOT" add \
+  KnowerManager.xcodeproj/project.pbxproj \
+  CHANGELOG.md

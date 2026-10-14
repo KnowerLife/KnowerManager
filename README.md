@@ -123,6 +123,37 @@ git lfs pull
 
 ---
 
+## Версионирование
+
+Версия (`MARKETING_VERSION`) и билд (`CURRENT_PROJECT_VERSION`) задаются в
+`KnowerManager.xcodeproj/project.pbxproj` и автоматически попадают в `Info.plist`
+(файл генерируется самой сборкой: `GENERATE_INFOPLIST_FILE = YES`).
+
+На **каждое обновление поднимаются оба значения**: билд всегда `+1`, версия —
+`+1` в последней цифре (patch). Например: `3.0 (31) → 3.0.1 (32)`.
+
+Это делается скриптом (он же синхронизирует заголовок `CHANGELOG.md`):
+
+```bash
+scripts/bump_version.sh             # build +1, patch +1   (по умолчанию)
+scripts/bump_version.sh --minor     # build +1, минор +1    (3.0.1 → 3.1)
+scripts/bump_version.sh --major     # build +1, мажор +1    (3.1 → 4.0)
+scripts/bump_version.sh --build-only
+scripts/bump_version.sh --set 3.2.1 # явная версия + build +1
+```
+
+Чтобы не забывать, после клонирования установите git-хук — он поднимает версию
+и билд автоматически перед каждым коммитом:
+
+```bash
+scripts/install_hooks.sh
+```
+
+Пропустить бамп для отдельного коммита: `git commit --no-verify` либо
+`SKIP_VERSION_BUMP=1 git commit ...`.
+
+---
+
 ## Крупные бинарные ресурсы (Git LFS)
 
 Три файла хранятся в репозитории через **Git LFS** (см. `.gitattributes`):

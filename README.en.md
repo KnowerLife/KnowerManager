@@ -123,6 +123,37 @@ The built `.app` will appear in `DerivedData` (or in `Products` when building fr
 
 ---
 
+## Versioning
+
+The version (`MARKETING_VERSION`) and build (`CURRENT_PROJECT_VERSION`) live in
+`KnowerManager.xcodeproj/project.pbxproj` and are picked up automatically by the
+generated `Info.plist` (`GENERATE_INFOPLIST_FILE = YES`).
+
+**Every update bumps both**: the build always `+1`, the version `+1` in the last
+component (patch). Example: `3.0 (31) → 3.0.1 (32)`.
+
+This is done by a script (it also keeps the `CHANGELOG.md` header in sync):
+
+```bash
+scripts/bump_version.sh             # build +1, patch +1   (default)
+scripts/bump_version.sh --minor     # build +1, minor +1    (3.0.1 → 3.1)
+scripts/bump_version.sh --major     # build +1, major +1    (3.1 → 4.0)
+scripts/bump_version.sh --build-only
+scripts/bump_version.sh --set 3.2.1 # explicit version + build +1
+```
+
+So it is never forgotten, install the git hook after cloning — it bumps the
+version and build automatically before every commit:
+
+```bash
+scripts/install_hooks.sh
+```
+
+Skip the bump for a single commit: `git commit --no-verify` or
+`SKIP_VERSION_BUMP=1 git commit ...`.
+
+---
+
 ## Large binary assets (Git LFS)
 
 Three files are stored in the repository via **Git LFS** (see `.gitattributes`):
