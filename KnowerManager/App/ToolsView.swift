@@ -75,6 +75,7 @@ struct ToolsView: View {
                         .help(settings.t(.btnRefresh))
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .font(.caption)
             }
         }
@@ -183,9 +184,9 @@ struct ToolsView: View {
                     showArpAlert = true
                 } label: {
                     Text(settings.t(.toolArpFlushTitle))
-                        .foregroundColor(.orange)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .buttonStyle(ModernButtonStyle(color: .orange))
+                .buttonStyle(ModernButtonStyle(color: .orange, variant: .outline))
                 .disabled(isArpFlushing)
                 if isArpFlushing {
                     loadingRow
